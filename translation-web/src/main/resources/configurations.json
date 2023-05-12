@@ -1,0 +1,17 @@
+{
+    "detect": {
+        "default": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2LangDetectService",
+        "supported": [ "de", "nl", "pt" ]
+    },
+    "translate": {
+	 	"services": [
+            { 
+                "source": "nl",
+				"target": "en",
+                "classname": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2TranslationService"
+            }
+        ],
+        "default": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2TranslationService",
+        "supported": [ "de", "nl", "pt"]
+    }
+}

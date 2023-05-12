@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>translation-api</artifactId>
+    <groupId>eu.europeana.api</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>translation-web</artifactId>
+  <description>The Web Module of the Translation api</description>
+  <packaging>jar</packaging>
+
+
+  <dependencies>
+  		<dependency>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>translation-definitions</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+  
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${swagger.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.europeana.api.commons</groupId>
+			<artifactId>commons-web</artifactId>
+			<version>${api-commons.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mongodb</groupId>
+					<artifactId>mongo-java-driver</artifactId>
+				</exclusion>
+				<exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+			</exclusions>
+		</dependency>
+				
+  		<dependency>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>post-publication-translation</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+				
+  </dependencies>
+
+	<build>
+		<resources>
+		    <resource>
+		        <directory>src/main/resources</directory>
+		        <filtering>true</filtering>
+		        <includes>
+		            <include>*.properties</include>
+		            <include>*/*.info</include>
+		            <include>*.xml</include>
+		        </includes>
+		        <excludes>
+		            <exclude>**/*.jks</exclude>
+		        </excludes>
+		    </resource>
+		    <resource>
+		        <directory>src/main/resources</directory>
+		        <filtering>false</filtering>
+		        <includes>
+		            <include>**/*.jks</include>
+		            <include>public/**</include>
+		        </includes>
+		    </resource>
+		</resources>
+		<!-- set fixed name for easy deployment -->
+		<finalName>${project.artifactId}</finalName>
+
+		<plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+            <configuration>
+              <classifier>executable</classifier>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+	</build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>

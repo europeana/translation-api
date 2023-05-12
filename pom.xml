@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>eu.europeana</groupId>
+        <artifactId>europeana-parent-pom</artifactId>
+        <version>2.4</version>
+    </parent>
+    
+    <repositories>
+		<repository>
+			<id>libs-release-local</id>
+			<name>europeana-releases</name>
+			<url>https://artifactory.eanadev.org/artifactory/libs-release</url>
+		</repository>
+		<repository>
+			<id>libs-snapshots-local</id>
+			<name>europeana-snapshots</name>
+			<url>https://artifactory.eanadev.org/artifactory/libs-snapshot</url>
+		</repository>
+		<!-- repo for plugins, required to resolve git-commit-id -->
+		<repository>
+			<id>plugins-release</id>
+			<name>artifactory plugins-release</name>
+			<url>https://artifactory.eanadev.org/artifactory/plugins-release</url>
+		</repository>
+	</repositories>  
+
+    <groupId>eu.europeana.api</groupId>
+    <artifactId>translation-api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Translation API</name>
+    <description>API for the language detection and translation</description>
+
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <api-commons.version>0.3.17</api-commons.version>
+        <spring-boot.version>2.5.5</spring-boot.version>
+        <springdoc.version>1.6.14</springdoc.version>
+        <swagger.version>3.0.0</swagger.version>
+        <failsafe.version>3.0.0-M5</failsafe.version>
+        <git-commit-id.version>5.0.0</git-commit-id.version>
+        <git-code-format.version>3.1</git-code-format.version>
+        <surefire.version>3.0.0-M5</surefire.version>
+        <jacoco-plugin.version>0.8.7</jacoco-plugin.version>
+        <pmd-plugin.version>3.15.0</pmd-plugin.version>
+        <spotbugs-plugin.version>4.5.2.0</spotbugs-plugin.version>
+        <sonar-plugin.version>3.7.0.1746</sonar-plugin.version>
+        
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot (because we don't use Spring-Boot as parent pom)-->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <!-- use log4j2 instead -->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>eu.europeana.api.commons</groupId>
+            <artifactId>commons-error</artifactId>
+            <version>${api-commons.version}</version>
+        </dependency>
+
+        <!-- for securing (error) output -->
+        <dependency>
+            <groupId>org.owasp.encoder</groupId>
+            <artifactId>encoder</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- For testing error response contents (not possible with MockMvc)-->
+        <!-- This issue https://github.com/rest-assured/rest-assured/issues/1175 prevent us from upgrading to 4.3.1 -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>xml-path</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <modules>
+	    <module>translation-web</module>
+	    <module>translation-definitions</module>
+  	</modules>
+  
+  
+      <build>
+          <!--  allow Maven to manipulate resource files as a part of the build process.
+                 build.properties by default is expanded by spring-boot-maven-plugin
+          -->
+          <resources>
+              <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+              </resource>
+          </resources>
+          <plugins>
+            <plugin>
+              <groupId>io.github.git-commit-id</groupId>
+              <artifactId>git-commit-id-maven-plugin</artifactId>
+              <version>${git-commit-id.version}</version>
+              <executions>
+                <execution>
+                  <id>get-the-git-infos</id>
+                  <goals>
+                    <goal>revision</goal>
+                  </goals>
+                  <phase>initialize</phase>
+                </execution>
+              </executions>
+              <configuration>
+                <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                <includeOnlyProperties>
+                  <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+                  <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                </includeOnlyProperties>
+                <commitIdGenerationMode>full</commitIdGenerationMode>
+              </configuration>
+            </plugin>
+                <plugin>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-maven-plugin</artifactId>
+                  <version>${spring-boot.version}</version>
+                  <executions>
+                    <execution>
+                      <goals>
+                        <goal>build-info</goal>
+                      </goals>
+                      <configuration>
+                        <additionalProperties>
+                          <project.description>${project.description}</project.description>
+                          <!-- For some reason BuildProperties.getName() doesn't return the correct value,
+                           so we set the name under a different property                      -->
+                          <project.name>${project.name}</project.name>
+                        </additionalProperties>
+                      </configuration>
+                    </execution>
+                  </executions>
+                </plugin>
+            <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-failsafe-plugin</artifactId>
+                  <version>${failsafe.version}</version>
+                  <executions>
+                      <execution>
+                          <goals>
+                              <goal>integration-test</goal>
+                              <goal>verify</goal>
+                          </goals>
+                      </execution>
+                  </executions>
+                <configuration>
+                  <!-- Fixes Integration test not finding beans. May be removed with 3.0.0-M6 is available
+                    See: https://stackoverflow.com/a/65806777/14530159 -->
+                  <useModulePath>false</useModulePath>
+                </configuration>
+              </plugin>
+              <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>build-helper-maven-plugin</artifactId>
+                  <version>3.0.0</version>
+                  <executions>
+                      <execution>
+                          <id>add-integration-test-source</id>
+                        <!-- Normally this would be attached to the generate-test-source phase,
+                          however we attach to generate-sources so that the git-code-format plugin can pick
+                          up integration test source files (see plugin config above) -->
+                        <phase>generate-sources</phase>
+                          <goals>
+                              <goal>add-test-source</goal>
+                          </goals>
+                          <configuration>
+                              <!-- Configures the source directory of our integration tests -->
+                              <sources>
+                                  <source>src/integration-test/java</source>
+                              </sources>
+                          </configuration>
+                      </execution>
+                      <execution>
+                          <id>add-integration-test-resources</id>
+                          <phase>generate-test-resources</phase>
+                          <goals>
+                              <goal>add-test-resource</goal>
+                          </goals>
+                          <configuration>
+                              <!-- Configures the resource directory of our integration tests -->
+                              <resources>
+                                  <resource>
+                                      <filtering>true</filtering>
+                                      <directory>src/integration-test/resources</directory>
+                                  </resource>
+                              </resources>
+                          </configuration>
+                      </execution>
+                  </executions>
+              </plugin>
+            <plugin>
+              <groupId>com.cosium.code</groupId>
+              <artifactId>git-code-format-maven-plugin</artifactId>
+              <version>${git-code-format.version}</version>
+              <configuration>
+                <skip>true</skip>
+                <googleJavaFormatOptions>
+                    <aosp>true</aosp>
+                </googleJavaFormatOptions>
+              </configuration>
+              <executions>
+                <!-- Install git pre-commit hook -->
+                <execution>
+                  <id>install-formatter-hook</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>install-hooks</goal>
+                  </goals>
+                </execution>
+                <!-- Format source files -->
+                <execution>
+                  <id>format-code</id>
+                  <phase>process-sources</phase>
+                  <goals>
+                    <goal>format-code</goal>
+                  </goals>
+                </execution>
+                <!-- On Maven verify phase, fail if any file
+                (including unmodified) is badly formatted -->
+                <execution>
+                  <id>validate-code-format</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>validate-code-format</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+          <pluginManagement>
+				<plugins>
+					<!--This plugin's configuration is used to store Eclipse m2e settings only.
+						It has no influence on the Maven build itself. -->
+					<plugin>
+						<groupId>org.eclipse.m2e</groupId>
+						<artifactId>lifecycle-mapping</artifactId>
+						<version>1.0.0</version>
+						<configuration>
+							<lifecycleMappingMetadata>
+								<pluginExecutions>
+									<pluginExecution>
+										<pluginExecutionFilter>
+											<groupId>com.cosium.code</groupId>
+											<artifactId>git-code-format-maven-plugin</artifactId>
+											<versionRange>${git-code-format.version}</versionRange>
+											<goals>
+												<goal>install-hooks</goal>
+												<goal>format-code</goal>
+												<goal>validate-code-format</goal>
+											</goals>
+										</pluginExecutionFilter>
+										<action>
+											<execute />
+										</action>
+									</pluginExecution>
+								</pluginExecutions>
+							</lifecycleMappingMetadata>
+						</configuration>
+					</plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
+            <version>${surefire.version}</version>
+          </plugin>
+          <plugin>
+            <groupId>org.sonarsource.scanner.maven</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>${sonar-plugin.version}</version>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-plugin.version}</version>
+          </plugin>
+				</plugins>
+    	</pluginManagement>
+  </build>
+
+
+  <profiles>
+    <profile>
+      <id>coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <!-- Plugin has an indirect dependency on an old version os asm. This is disabled, so we
+              can use the asm version specified above. See: https://issueexplorer.com/issue/pmd/pmd/3504#21570220 -->
+            <dependencies>
+              <dependency>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>org.eclipse.sisu.plexus</artifactId>
+                <version>0.0.0.M2a</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>asm</groupId>
+                    <artifactId>asm</artifactId>
+                  </exclusion>
+                </exclusions>
+              </dependency>
+            </dependencies>
+            <version>${pmd-plugin.version}</version>
+            <configuration>
+              <rulesets>
+                <ruleset>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-pmd-ruleset.xml</ruleset>
+              </rulesets>
+              <printFailingErrors>true</printFailingErrors>
+            </configuration>
+            <executions>
+              <execution>
+                <id>aggregate</id>
+                <goals>
+                  <goal>pmd</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>${spotbugs-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>spotbugs</id>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includeFilterFile>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-findbugs-ruleset.xml</includeFilterFile>
+              <!--We just want the reports; build should still pass -->
+              <failOnError>false</failOnError>
+              <!-- Import additional rules from plugins -->
+              <plugins>
+                <plugin>
+                  <groupId>com.h3xstream.findsecbugs</groupId>
+                  <artifactId>findsecbugs-plugin</artifactId>
+                  <version>1.11.0</version>
+                </plugin>
+                <plugin>
+                  <groupId>com.mebigfatguy.fb-contrib</groupId>
+                  <artifactId>fb-contrib</artifactId>
+                  <version>7.4.3.sb</version>
+                </plugin>
+              </plugins>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
