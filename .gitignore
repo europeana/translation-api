@@ -28,3 +28,4 @@ build/
 .vscode/
 
 **/*.user.properties
+**/application.properties
