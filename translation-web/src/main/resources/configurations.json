@@ -1,6 +1,6 @@
 {
     "detect": {
-        "default": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2LangDetectService",
+        "default": "eu.europeana.api.translation.web.service.PangeanicV2LangDetectService",
         "supported": [ "de", "nl", "pt" ]
     },
     "translate": {
@@ -8,10 +8,10 @@
             { 
                 "source": "nl",
 				"target": "en",
-                "classname": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2TranslationService"
+                "classname": "eu.europeana.api.translation.web.service.PangeanicV2TranslationService"
             }
         ],
-        "default": "eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2TranslationService",
+        "default": "eu.europeana.api.translation.web.service.PangeanicV2TranslationService",
         "supported": [ "de", "nl", "pt"]
     }
 }

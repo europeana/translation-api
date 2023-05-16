@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2LangDetectService;
-import eu.europeana.postpublication.translation.service.pangeanic.PangeanicV2TranslationService;
 
 @Configuration
 public class TranslConfig {
@@ -38,14 +36,4 @@ public class TranslConfig {
     return clientDetailsService;
   }
   
-  @Bean
-  public PangeanicV2TranslationService translationService() {
-      return new PangeanicV2TranslationService();
-  }
-
-  @Bean
-  public PangeanicV2LangDetectService detectionService() {
-      return new PangeanicV2LangDetectService();
-  }
-
 }

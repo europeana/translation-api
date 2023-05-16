@@ -49,7 +49,13 @@ public class TranslConfigProps implements InitializingBean {
   
   @Value("${europeana.apikey.serviceurl}")
   private String apiKeyUrl;
+  
+  @Value("${translation.pangeanic.endpoint.detect}")
+  private String pangeanicDetectEndpoint;
 
+  @Value("${translation.pangeanic.endpoint.translate}")
+  private String pangeanicTranslateEndpoint;
+  
   public TranslConfigProps() {
     LOG.info("Initializing TranslConfigProperties bean as: configuration");
   }
@@ -78,6 +84,14 @@ public class TranslConfigProps implements InitializingBean {
     return apiKeyUrl;
   }
 
+  public String getPangeanicDetectEndpoint() {
+    return pangeanicDetectEndpoint;
+  }
+
+  public String getPangeanicTranslateEndpoint() {
+    return pangeanicTranslateEndpoint;
+  }
+  
   @Override
   public void afterPropertiesSet() throws Exception {
     if (testProfileNotActive(activeProfileString)) {

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
-import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
 import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
 import eu.europeana.api.translation.definitions.model.TranslGlobalJsonConfig;

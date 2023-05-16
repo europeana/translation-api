@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.definitions.model.TranslGlobalJsonConfig;
 import eu.europeana.api.translation.definitions.model.TranslServiceJsonConfig;
-import eu.europeana.postpublication.translation.service.LanguageDetectionService;
-import eu.europeana.postpublication.translation.service.TranslationService;
+import eu.europeana.api.translation.web.service.LanguageDetectionService;
+import eu.europeana.api.translation.web.service.TranslationService;
 
 @Component
 public class InitServicesGlobalJsonConfig implements ApplicationListener<ContextRefreshedEvent> {
