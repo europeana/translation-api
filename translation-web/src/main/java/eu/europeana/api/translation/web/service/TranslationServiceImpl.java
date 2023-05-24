@@ -7,24 +7,24 @@ import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
 import eu.europeana.api.translation.definitions.exceptions.TranslationException;
 import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
 import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslResponseJsonConfig;
+import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
+import eu.europeana.api.translation.definitions.model.TranslationRequestJsonConfig;
+import eu.europeana.api.translation.definitions.model.TranslationResponseJsonConfig;
 
 @Service
-public class TranslService {
+public class TranslationServiceImpl {
 
   @Autowired
   private InitServicesGlobalJsonConfig initGlobalJsonConfig;
   
-  public TranslGlobalJsonConfig info() {
+  public TranslationGlobalJsonConfig info() {
     return initGlobalJsonConfig.getAppGlobalJsonConfig();
   }
   
-  public TranslResponseJsonConfig translate(TranslRequestJsonConfig translRequest) throws TranslationException {
+  public TranslationResponseJsonConfig translate(TranslationRequestJsonConfig translRequest) throws TranslationException {
     TranslationService defaultTranslService = getDefaultTranslService();
     List<String> translations = defaultTranslService.translate(translRequest.getText(), translRequest.getTarget(), translRequest.getSource(), translRequest.getDetect());
-    TranslResponseJsonConfig result = new TranslResponseJsonConfig();
+    TranslationResponseJsonConfig result = new TranslationResponseJsonConfig();
     result.setTranslations(translations);
     result.setLang(translRequest.getTarget());
     return result;

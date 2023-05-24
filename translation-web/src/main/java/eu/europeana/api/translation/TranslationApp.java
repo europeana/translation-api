@@ -31,9 +31,9 @@ import org.springframework.context.ApplicationContext;
     ManagementWebSecurityAutoConfiguration.class,
     // DataSources are manually configured (for EM and batch DBs)
     DataSourceAutoConfiguration.class})
-public class TranslApp extends SpringBootServletInitializer {
+public class TranslationApp extends SpringBootServletInitializer {
 
-  private static final Logger logger = LogManager.getLogger(TranslApp.class);
+  private static final Logger logger = LogManager.getLogger(TranslationApp.class);
   /**
    * Main entry point of this application
    *
@@ -50,7 +50,7 @@ public class TranslApp extends SpringBootServletInitializer {
     SocksProxyActivator.activate("config/translation.user.properties");
     */
 
-    ApplicationContext ctx = SpringApplication.run(TranslApp.class, args);
+    ApplicationContext ctx = SpringApplication.run(TranslationApp.class, args);
 
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(ctx);

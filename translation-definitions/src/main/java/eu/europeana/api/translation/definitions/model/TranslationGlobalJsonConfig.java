@@ -5,37 +5,37 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({TranslAppConstants.DETECT_ENDPOINT, TranslAppConstants.TRANSLATE_ENDPOINT})
-public class TranslGlobalJsonConfig {
+@JsonPropertyOrder({TranslationAppConstants.DETECT_ENDPOINT, TranslationAppConstants.TRANSLATE_ENDPOINT})
+public class TranslationGlobalJsonConfig {
 
   private LangDetectJsonConfig langDetectConfig;
-  private TranslJsonConfig translConfig;
+  private TranslationJsonConfig translConfig;
 
-  public TranslGlobalJsonConfig() {
+  public TranslationGlobalJsonConfig() {
     super();
   }
 
-  @JsonGetter(TranslAppConstants.DETECT_ENDPOINT)
+  @JsonGetter(TranslationAppConstants.DETECT_ENDPOINT)
   public LangDetectJsonConfig getLangDetectConfig() {
     return langDetectConfig;
   }
 
-  @JsonSetter(TranslAppConstants.DETECT_ENDPOINT)
+  @JsonSetter(TranslationAppConstants.DETECT_ENDPOINT)
   public void setLangDetectConfig(LangDetectJsonConfig langDetectConfig) {
     this.langDetectConfig = langDetectConfig;
   }
 
-  @JsonGetter(TranslAppConstants.TRANSLATE_ENDPOINT)
-  public TranslJsonConfig getTranslConfig() {
+  @JsonGetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
+  public TranslationJsonConfig getTranslConfig() {
     return translConfig;
   }
 
-  @JsonSetter(TranslAppConstants.TRANSLATE_ENDPOINT)
-  public void setTranslConfig(TranslJsonConfig translConfig) {
+  @JsonSetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
+  public void setTranslConfig(TranslationJsonConfig translConfig) {
     this.translConfig = translConfig;
   }
 }

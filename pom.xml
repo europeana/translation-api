@@ -157,7 +157,8 @@
     <modules>
 	    <module>translation-web</module>
 	    <module>translation-definitions</module>
-  	</modules>
+    <module>translation-tests</module>
+  </modules>
   
   
       <build>
@@ -333,7 +334,7 @@
 											</goals>
 										</pluginExecutionFilter>
 										<action>
-											<execute />
+											<execute/>
 										</action>
 									</pluginExecution>
 								</pluginExecutions>

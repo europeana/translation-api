@@ -3,13 +3,11 @@ package eu.europeana.api.translation.definitions.model;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({})
 public class LangDetectRequestJsonConfig {
 
   private List<String> text;
@@ -23,7 +21,7 @@ public class LangDetectRequestJsonConfig {
     return text;
   }
 
-  @JsonSetter(TranslAppConstants.TEXT)
+  @JsonSetter(TranslationAppConstants.TEXT)
   public void setText(List<String> text) {
     this.text = text;
   }
@@ -32,7 +30,7 @@ public class LangDetectRequestJsonConfig {
     return lang;
   }
 
-  @JsonSetter(TranslAppConstants.LANG)
+  @JsonSetter(TranslationAppConstants.LANG)
   public void setLang(String lang) {
     this.lang = lang;
   }

@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({TranslAppConstants.DEFAULT_CLASSNAME, TranslAppConstants.SUPPORTED_LANGUAGES})
+@JsonPropertyOrder({TranslationAppConstants.DEFAULT_CLASSNAME, TranslationAppConstants.SUPPORTED_LANGUAGES})
 public class LangDetectJsonConfig {
 
   private String defaultClassname;
@@ -20,22 +20,22 @@ public class LangDetectJsonConfig {
     super();
   }
 
-  @JsonGetter(TranslAppConstants.DEFAULT_CLASSNAME)
+  @JsonGetter(TranslationAppConstants.DEFAULT_CLASSNAME)
   public String getDefaultClassname() {
     return defaultClassname;
   }
 
-  @JsonSetter(TranslAppConstants.DEFAULT_CLASSNAME)
+  @JsonSetter(TranslationAppConstants.DEFAULT_CLASSNAME)
   public void setDefaultClassname(String defaultClassname) {
     this.defaultClassname = defaultClassname;
   }
 
-  @JsonGetter(TranslAppConstants.SUPPORTED_LANGUAGES)
+  @JsonGetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
   public List<String> getSupportedLanguages() {
     return supportedLanguages;
   }
 
-  @JsonSetter(TranslAppConstants.SUPPORTED_LANGUAGES)
+  @JsonSetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
   public void setSupportedLanguages(List<String> supportedLanguages) {
     this.supportedLanguages = supportedLanguages;
   }

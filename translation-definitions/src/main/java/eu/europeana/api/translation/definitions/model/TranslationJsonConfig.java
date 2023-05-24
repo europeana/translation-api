@@ -6,48 +6,48 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({TranslAppConstants.SERVICES, TranslAppConstants.DEFAULT_CLASSNAME, TranslAppConstants.SUPPORTED_LANGUAGES})
-public class TranslJsonConfig {
+@JsonPropertyOrder({TranslationAppConstants.SERVICES, TranslationAppConstants.DEFAULT_CLASSNAME, TranslationAppConstants.SUPPORTED_LANGUAGES})
+public class TranslationJsonConfig {
 
-  private List<TranslServiceJsonConfig> services;
+  private List<TranslationServiceJsonConfig> services;
   private String defaultClassname;
   private List<String> supportedLanguages;
 
-  public TranslJsonConfig() {
+  public TranslationJsonConfig() {
     super();
   }
 
-  @JsonGetter(TranslAppConstants.DEFAULT_CLASSNAME)
+  @JsonGetter(TranslationAppConstants.DEFAULT_CLASSNAME)
   public String getDefaultClassname() {
     return defaultClassname;
   }
 
-  @JsonSetter(TranslAppConstants.DEFAULT_CLASSNAME)
+  @JsonSetter(TranslationAppConstants.DEFAULT_CLASSNAME)
   public void setDefaultClassname(String defaultClassname) {
     this.defaultClassname = defaultClassname;
   }
 
-  @JsonGetter(TranslAppConstants.SUPPORTED_LANGUAGES)
+  @JsonGetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
   public List<String> getSupportedLanguages() {
     return supportedLanguages;
   }
 
-  @JsonSetter(TranslAppConstants.SUPPORTED_LANGUAGES)
+  @JsonSetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
   public void setSupportedLanguages(List<String> supportedLanguages) {
     this.supportedLanguages = supportedLanguages;
   }
 
-  @JsonGetter(TranslAppConstants.SERVICES)
-  public List<TranslServiceJsonConfig> getServices() {
+  @JsonGetter(TranslationAppConstants.SERVICES)
+  public List<TranslationServiceJsonConfig> getServices() {
     return services;
   }
 
-  @JsonSetter(TranslAppConstants.SERVICES)
-  public void setServices(List<TranslServiceJsonConfig> services) {
+  @JsonSetter(TranslationAppConstants.SERVICES)
+  public void setServices(List<TranslationServiceJsonConfig> services) {
     this.services = services;
   }
 

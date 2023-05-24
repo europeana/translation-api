@@ -8,20 +8,20 @@ import org.springframework.stereotype.Component;
 import eu.europeana.api.commons.definitions.vocabulary.Role;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.commons.service.authorization.BaseAuthorizationService;
-import eu.europeana.api.translation.config.TranslConfigProps;
+import eu.europeana.api.translation.config.TranslationConfigProps;
 import eu.europeana.api.translation.web.auth.Roles;
 
 @Component
-public class TranslAuthorizationService extends BaseAuthorizationService {
+public class TranslationAuthorizationService extends BaseAuthorizationService {
 
   protected final Logger logger = LogManager.getLogger(getClass());
 
-  private final TranslConfigProps translConfiguration;
+  private final TranslationConfigProps translConfiguration;
   private final EuropeanaClientDetailsService clientDetailsService;
 
   @Autowired
-  public TranslAuthorizationService(
-      TranslConfigProps translConfiguration,
+  public TranslationAuthorizationService(
+      TranslationConfigProps translConfiguration,
       EuropeanaClientDetailsService clientDetailsService) {
     this.translConfiguration = translConfiguration;
     this.clientDetailsService = clientDetailsService;

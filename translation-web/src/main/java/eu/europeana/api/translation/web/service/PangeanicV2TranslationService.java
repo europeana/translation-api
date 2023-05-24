@@ -20,7 +20,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.TranslConfigProps;
+import eu.europeana.api.translation.config.TranslationConfigProps;
 import eu.europeana.api.translation.definitions.exceptions.TranslationException;
 import eu.europeana.api.translation.definitions.vocabulary.PangeanicLanguages;
 import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
@@ -34,7 +34,7 @@ import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
 public class PangeanicV2TranslationService implements TranslationService {
 
     @Autowired private PangeanicV2LangDetectService langDetectService;
-    @Autowired TranslConfigProps translConfigProps;
+    @Autowired TranslationConfigProps translConfigProps;
 
     protected static final Logger LOG = LogManager.getLogger(PangeanicV2TranslationService.class);
     

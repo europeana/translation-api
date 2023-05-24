@@ -4,22 +4,20 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({})
-public class TranslResponseJsonConfig {
+public class TranslationResponseJsonConfig {
 
   private List<String> translations;
   private String lang;
 
-  public TranslResponseJsonConfig() {
+  public TranslationResponseJsonConfig() {
     super();
   }
 
-  @JsonGetter(TranslAppConstants.TRANSLATIONS)
+  @JsonGetter(TranslationAppConstants.TRANSLATIONS)
   public List<String> getTranslations() {
     return translations;
   }
@@ -28,7 +26,7 @@ public class TranslResponseJsonConfig {
     this.translations = translations;
   }
 
-  @JsonGetter(TranslAppConstants.LANG)
+  @JsonGetter(TranslationAppConstants.LANG)
   public String getLang() {
     return lang;
   }

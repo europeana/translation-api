@@ -23,9 +23,9 @@ import org.springframework.context.annotation.PropertySources;
       value = "classpath:translation.user.properties",
       ignoreResourceNotFound = true)
 })
-public class TranslConfigProps implements InitializingBean {
+public class TranslationConfigProps implements InitializingBean {
 
-  private static final Logger LOG = LogManager.getLogger(TranslConfigProps.class);
+  private static final Logger LOG = LogManager.getLogger(TranslationConfigProps.class);
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
   
@@ -56,7 +56,7 @@ public class TranslConfigProps implements InitializingBean {
   @Value("${translation.pangeanic.endpoint.translate}")
   private String pangeanicTranslateEndpoint;
   
-  public TranslConfigProps() {
+  public TranslationConfigProps() {
     LOG.info("Initializing TranslConfigProperties bean as: configuration");
   }
 

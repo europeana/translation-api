@@ -1,6 +1,6 @@
 package eu.europeana.api.translation.serialization;
 
-import static eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants.BEAN_JSON_MAPPER;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.BEAN_JSON_MAPPER;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;

@@ -19,7 +19,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.TranslConfigProps;
+import eu.europeana.api.translation.config.TranslationConfigProps;
 import eu.europeana.api.translation.definitions.exceptions.TranslationException;
 import eu.europeana.api.translation.definitions.vocabulary.PangeanicLanguages;
 import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
@@ -27,7 +27,7 @@ import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
 @Service
 public class PangeanicV2LangDetectService implements LanguageDetectionService {
   
-  @Autowired TranslConfigProps translConfigProps;
+  @Autowired TranslationConfigProps translConfigProps;
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicV2LangDetectService.class);
   private static final double THRESHOLD = 0.5;

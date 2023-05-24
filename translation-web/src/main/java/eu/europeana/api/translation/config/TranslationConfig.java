@@ -9,13 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 
 @Configuration
-public class TranslConfig {
+public class TranslationConfig {
 
-  private static final Logger LOG = LogManager.getLogger(TranslConfig.class);
+  private static final Logger LOG = LogManager.getLogger(TranslationConfig.class);
 
-  @Autowired private TranslConfigProps translConfigProps;
+  @Autowired private TranslationConfigProps translConfigProps;
     
-  public TranslConfig() {
+  public TranslationConfig() {
     LOG.info("Initializing translation configuration bean as: configuration");
   }
   

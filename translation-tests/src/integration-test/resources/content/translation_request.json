@@ -1,0 +1,12 @@
+{
+  "source": "nl",
+  "target": "en",
+  "detect": true,
+  "text": [
+    "house",
+    "huis",
+    "casa",
+    "房子",
+    "bla"
+  ]
+}

@@ -1,6 +1,6 @@
 package eu.europeana.api.translation.definitions.vocabulary;
 
-public class TranslAppConstants {
+public class TranslationAppConstants {
 
   //bean configuration constants
   public static final String BEAN_JSON_MAPPER = "translationJsonMapper";

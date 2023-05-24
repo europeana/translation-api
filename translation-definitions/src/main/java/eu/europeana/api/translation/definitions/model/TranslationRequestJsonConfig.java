@@ -3,21 +3,19 @@ package eu.europeana.api.translation.definitions.model;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import eu.europeana.api.translation.definitions.vocabulary.TranslAppConstants;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({})
-public class TranslRequestJsonConfig {
+public class TranslationRequestJsonConfig {
 
   private String source;
   private String target;
   private Boolean detect;
   private List<String> text;
 
-  public TranslRequestJsonConfig() {
+  public TranslationRequestJsonConfig() {
     super();
   }
 
@@ -25,7 +23,7 @@ public class TranslRequestJsonConfig {
     return source;
   }
 
-  @JsonSetter(TranslAppConstants.SOURCE_LANG)
+  @JsonSetter(TranslationAppConstants.SOURCE_LANG)
   public void setSource(String source) {
     this.source = source;
   }
@@ -34,7 +32,7 @@ public class TranslRequestJsonConfig {
     return target;
   }
 
-  @JsonSetter(TranslAppConstants.TARGET_LANG)
+  @JsonSetter(TranslationAppConstants.TARGET_LANG)
   public void setTarget(String target) {
     this.target = target;
   }
@@ -43,7 +41,7 @@ public class TranslRequestJsonConfig {
     return detect;
   }
 
-  @JsonSetter(TranslAppConstants.DETECT_BOOL)
+  @JsonSetter(TranslationAppConstants.DETECT_BOOL)
   public void setDetect(Boolean detect) {
     this.detect = detect;
   }
@@ -52,7 +50,7 @@ public class TranslRequestJsonConfig {
     return text;
   }
 
-  @JsonSetter(TranslAppConstants.TEXT)
+  @JsonSetter(TranslationAppConstants.TEXT)
   public void setText(List<String> text) {
     this.text = text;
   }
