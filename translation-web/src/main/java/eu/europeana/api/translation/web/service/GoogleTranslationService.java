@@ -13,6 +13,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.tasks.v2.stub.CloudTasksStubSettings;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
+import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
@@ -80,14 +81,19 @@ public class GoogleTranslationService implements TranslationService {
     }
 
     @Override
-    public List<String> translate(List<String> text, String sourceLanguage, String targetLanguage, boolean detect) {
-        TranslateTextRequest request = TranslateTextRequest.newBuilder()
-                .setParent(locationName.toString())
-                .setMimeType(MIME_TYPE_TEXT)
-                .setTargetLanguageCode(targetLanguage)
-                .setSourceLanguageCode(sourceLanguage)
-                .addAllContents(text)
-                .build();
+    public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage, boolean detect) {
+        Builder requestBuilder = TranslateTextRequest.newBuilder()
+            .setParent(locationName.toString())
+            .setMimeType(MIME_TYPE_TEXT)
+            .setTargetLanguageCode(targetLanguage)
+            .addAllContents(text);
+
+        if(sourceLanguage!=null) {
+          requestBuilder.setSourceLanguageCode(sourceLanguage);
+        }
+       
+        TranslateTextRequest request = requestBuilder.build();
+        
         TranslateTextResponse response = this.client.translateText(request);
         List<String> result = new ArrayList<>();
         for (Translation t : response.getTranslationsList()) {
