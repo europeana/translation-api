@@ -56,6 +56,9 @@ public class TranslationConfigProps implements InitializingBean {
   @Value("${translation.pangeanic.endpoint.translate}")
   private String pangeanicTranslateEndpoint;
   
+  @Value("${translation.google.projectId}")
+  private String translationGoogleProjectId;
+  
   public TranslationConfigProps() {
     LOG.info("Initializing TranslConfigProperties bean as: configuration");
   }
@@ -97,6 +100,10 @@ public class TranslationConfigProps implements InitializingBean {
     if (testProfileNotActive(activeProfileString)) {
       verifyRequiredProperties();
     }
+  }
+
+  public String getTranslationGoogleProjectId() {
+    return translationGoogleProjectId;
   }
 
   public static boolean testProfileNotActive(String activeProfileString) {
