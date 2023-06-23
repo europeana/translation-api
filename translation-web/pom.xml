@@ -66,8 +66,9 @@
 		        <directory>src/main/resources</directory>
 		        <filtering>true</filtering>
 		        <includes>
-		            <include>*.properties</include>
-		            <include>*/*.info</include>
+		            <include>**/*.properties</include>
+		            <include>**/*.info</include>
+		            <include>**/*.json</include>
 		            <include>*.xml</include>
 		        </includes>
 		        <excludes>
@@ -85,7 +86,6 @@
 		</resources>
 		<!-- set fixed name for easy deployment -->
 		<finalName>${project.artifactId}</finalName>
-
 		<plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
