@@ -9,6 +9,11 @@ spec:
       containers:
         - name: translation-api
           image: europeana/translation-api
+          env:
+          - name: SPRING_CONFIG_NAME
+            value: "translation.user"
+          - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+            value: "/opt/app/config/translation.user.properties"
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -25,7 +30,7 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - name: secret
-              mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/translation.user.properties"
+              mountPath: "/opt/app/config/translation.user.properties"
               readOnly: true
               subPath: translation.user.properties
       volumes:
