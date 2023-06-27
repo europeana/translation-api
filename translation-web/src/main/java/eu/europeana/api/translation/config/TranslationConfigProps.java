@@ -31,7 +31,7 @@ public class TranslationConfigProps implements InitializingBean {
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
   
-  @Value("${europeana.apikey.jwttoken.signaturekey}")
+  @Value("${europeana.apikey.jwttoken.signaturekey: tmpfake}")
   private String apiKeyPublicKey;
 
   @Value("${authorization.api.name}")
