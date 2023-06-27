@@ -3,13 +3,16 @@ package eu.europeana.api.translation.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 
 /**
  * Container for all settings that we load from the translation.properties file and optionally 
@@ -90,6 +93,17 @@ public class TranslationConfigProps implements InitializingBean {
       verifyRequiredProperties();
     }
   }
+  
+  @PostConstruct
+  public void init() throws Exception {
+    if (isAuthReadEnabled() || isAuthWriteEnabled()) {
+      String jwtTokenSignatureKey = getApiKeyPublicKey();
+      if (jwtTokenSignatureKey == null || jwtTokenSignatureKey.isBlank()) {
+        throw new IllegalStateException("The jwt token signature key cannot be null or empty.");
+      }
+    }
+  }
+
 
   public static boolean testProfileNotActive(String activeProfileString) {
     return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
@@ -110,4 +124,10 @@ public class TranslationConfigProps implements InitializingBean {
     }
   }
   
+  @Bean
+  public EuropeanaClientDetailsService getClientDetailsService() {
+    EuropeanaClientDetailsService clientDetailsService = new EuropeanaClientDetailsService();
+    clientDetailsService.setApiKeyServiceUrl(getApiKeyUrl());
+    return clientDetailsService;
+  }
 }
