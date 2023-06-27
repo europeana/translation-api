@@ -11,7 +11,7 @@ spec:
           image: europeana/translation-api
           env:
           - name: SPRING_CONFIG_NAME
-            value: "translation.user"
+            value: "translation,translation.user"
           - name: SPRING_CONFIG_ADDITIONAL_LOCATION
             value: "/opt/app/config/translation.user.properties"
           ports:
