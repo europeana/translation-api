@@ -34,7 +34,7 @@ public class TranslationConfigProps implements InitializingBean {
   @Value("${europeana.apikey.jwttoken.signaturekey: tmpfake}")
   private String apiKeyPublicKey;
 
-  @Value("${authorization.api.name}")
+  @Value("${authorization.api.name: translation}")
   private String authorizationApiName;
 
   @Value("${auth.read.enabled: true}")
@@ -46,7 +46,7 @@ public class TranslationConfigProps implements InitializingBean {
   @Value("${spring.profiles.active:}")
   private String activeProfileString;
 
-  @Value("${europeana.apikey.serviceurl}")
+  @Value("${europeana.apikey.serviceurl:}")
   private String apiKeyUrl;
   
   @Value("${translation.pangeanic.endpoint.detect}")
@@ -56,7 +56,7 @@ public class TranslationConfigProps implements InitializingBean {
   private String pangeanicTranslateEndpoint;
   
   public TranslationConfigProps() {
-    LOG.info("Initializing TranslConfigProperties bean as: configuration");
+    LOG.info("Initializing TranslConfigProperties bean.");
   }
 
   public String getApiKeyPublicKey() {
