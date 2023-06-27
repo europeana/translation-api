@@ -3,7 +3,6 @@ package eu.europeana.api.translation.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,9 +43,6 @@ public class TranslationConfigProps implements InitializingBean {
   @Value("${spring.profiles.active:}")
   private String activeProfileString;
 
-  @Value("${translation.config.file}")
-  private String translConfigFile;
-  
   @Value("${europeana.apikey.serviceurl}")
   private String apiKeyUrl;
   
@@ -76,10 +72,6 @@ public class TranslationConfigProps implements InitializingBean {
     return authWriteEnabled;
   }
   
-  public String getTranslConfigFile() {
-    return translConfigFile;
-  }  
-  
   public String getApiKeyUrl() {
     return apiKeyUrl;
   }
@@ -107,10 +99,10 @@ public class TranslationConfigProps implements InitializingBean {
   private void verifyRequiredProperties() {
     List<String> missingProps = new ArrayList<>();
 
-    if(StringUtils.isBlank(translConfigFile)) {
-      missingProps.add("translation.config.file");      
-    }
-    
+//    if(StringUtils.isBlank(translConfigFile)) {
+//      missingProps.add("translation.config.file");      
+//    }
+//    
     if (!missingProps.isEmpty()) {
       throw new IllegalStateException(
           String.format(
