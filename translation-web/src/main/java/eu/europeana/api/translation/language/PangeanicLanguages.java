@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.vocabulary;
+package eu.europeana.api.translation.language;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,8 +10,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import eu.europeana.api.translation.definitions.model.Language;
-import eu.europeana.api.translation.definitions.model.LanguagePair;
 
 /**
  * Enum class for Pangeanic supported Languages and the threshold values for the languages during translations

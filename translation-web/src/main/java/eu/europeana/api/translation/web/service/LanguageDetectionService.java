@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.exceptions.TranslationException;
+import eu.europeana.api.translation.web.exception.TranslationException;
 
 public interface LanguageDetectionService {
 

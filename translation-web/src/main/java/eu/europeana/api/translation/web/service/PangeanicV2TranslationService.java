@@ -21,9 +21,9 @@ import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.translation.config.TranslationConfigProps;
-import eu.europeana.api.translation.definitions.exceptions.TranslationException;
-import eu.europeana.api.translation.definitions.vocabulary.PangeanicLanguages;
+import eu.europeana.api.translation.language.PangeanicLanguages;
 import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
+import eu.europeana.api.translation.web.exception.TranslationException;
 
 /**
  * Service to send data to translate to Pangeanic Translate API V2

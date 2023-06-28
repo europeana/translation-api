@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.exceptions;
+package eu.europeana.api.translation.web.exception;
 
 import org.springframework.http.HttpStatus;
 import eu.europeana.api.commons.error.EuropeanaApiException;

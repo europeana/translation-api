@@ -4,12 +4,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.exceptions.TranslationException;
 import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
 import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
 import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
 import eu.europeana.api.translation.definitions.model.TranslationRequestJsonConfig;
 import eu.europeana.api.translation.definitions.model.TranslationResponseJsonConfig;
+import eu.europeana.api.translation.web.exception.TranslationException;
 
 @Service
 public class TranslationServiceImpl {
