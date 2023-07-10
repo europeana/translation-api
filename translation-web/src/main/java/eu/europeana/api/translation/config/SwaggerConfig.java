@@ -42,13 +42,14 @@ public class SwaggerConfig {
    */
   @Bean
   public Docket api() {
+//    return new Docket(DocumentationType.OAS_30)
     return new Docket(DocumentationType.SWAGGER_2)
         .apiInfo(apiInfo())
         .select()
         .apis(RequestHandlerSelectors.basePackage("eu.europeana.api.translation"))
         .paths(PathSelectors.any())
         .build();
-  }
+   }
 
   private ApiInfo apiInfo() {
     return new ApiInfo(
