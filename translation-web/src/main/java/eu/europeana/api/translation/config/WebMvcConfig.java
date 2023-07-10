@@ -64,8 +64,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     // jsonld covers also schema.jsonld
     mediaTypesMaping.put("jsonld", jsonLdMediaType);
 
+    mediaTypesMaping.put(MediaType.TEXT_HTML.getSubtype(), MediaType.TEXT_HTML);
+    
+    mediaTypesMaping.put(MediaType.TEXT_PLAIN.getSubtype(), MediaType.TEXT_PLAIN);
+    
     // xml
-    mediaTypesMaping.put("xml", MediaType.APPLICATION_XML);
+    //mediaTypesMaping.put("xml", MediaType.APPLICATION_XML);
 
     // in case we want to support the .rdf extention later
     //      mediaTypesMaping.put("rdf", MediaType.APPLICATION_XML);
@@ -73,8 +77,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     return mediaTypesMaping;
   }
   
-  @Override
-  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    registry.addResourceHandler("/public/**").addResourceLocations("classpath:/public/");
-  }  
+//  @Override
+//  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//    registry.addResourceHandler("/public/**").addResourceLocations("classpath:/public/");
+//  }  
 }
