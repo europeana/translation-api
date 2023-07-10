@@ -11,13 +11,13 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({TranslationAppConstants.SERVICES, TranslationAppConstants.DEFAULT_CLASSNAME, TranslationAppConstants.SUPPORTED_LANGUAGES})
-public class TranslationJsonConfig {
+public class TranslateCfg {
 
-  private List<TranslationServiceJsonConfig> services;
+  private List<TranslationServiceCfg> services;
   private String defaultClassname;
   private List<String> supportedLanguages;
 
-  public TranslationJsonConfig() {
+  public TranslateCfg() {
     super();
   }
 
@@ -42,12 +42,12 @@ public class TranslationJsonConfig {
   }
 
   @JsonGetter(TranslationAppConstants.SERVICES)
-  public List<TranslationServiceJsonConfig> getServices() {
+  public List<TranslationServiceCfg> getServices() {
     return services;
   }
 
   @JsonSetter(TranslationAppConstants.SERVICES)
-  public void setServices(List<TranslationServiceJsonConfig> services) {
+  public void setServices(List<TranslationServiceCfg> services) {
     this.services = services;
   }
 

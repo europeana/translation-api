@@ -19,17 +19,17 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.TranslationConfigProps;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.language.PangeanicLanguages;
 import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
 import eu.europeana.api.translation.web.exception.TranslationException;
 
 @Service
-public class PangeanicV2LangDetectService implements LanguageDetectionService {
+public class PangeanicLangDetectService implements LanguageDetectionService {
   
-  @Autowired TranslationConfigProps translConfigProps;
+  @Autowired TranslationConfig translationConfig;
 
-  protected static final Logger LOG = LogManager.getLogger(PangeanicV2LangDetectService.class);
+  protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
 
     protected CloseableHttpClient detectClient;
@@ -48,7 +48,7 @@ public class PangeanicV2LangDetectService implements LanguageDetectionService {
         cm.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
 //        SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build(); //We need to set socket keep alive
         detectClient = HttpClients.custom().setConnectionManager(cm).build();
-        LOG.info("Pangeanic Language Detection service is initialized with detect language Endpoint - {}", translConfigProps.getPangeanicDetectEndpoint());
+        LOG.info("Pangeanic Language Detection service is initialized with detect language Endpoint - {}", translationConfig.getPangeanicDetectEndpoint());
     }
 
     @Override
@@ -59,7 +59,7 @@ public class PangeanicV2LangDetectService implements LanguageDetectionService {
     @Override
     public List<String> detectLang(List<String> texts, String langHint) throws TranslationException {
         try {
-            HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(translConfigProps.getPangeanicDetectEndpoint(), texts, langHint, "");
+            HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(translationConfig.getPangeanicDetectEndpoint(), texts, langHint, "");
             return sendDetectRequestAndParse(post);
         } catch (JSONException | IOException e) {
             throw new TranslationException(e.getMessage());

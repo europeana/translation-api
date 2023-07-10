@@ -10,13 +10,13 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG, TranslationAppConstants.CLASSNAME})
-public class TranslationServiceJsonConfig {
+public class TranslationServiceCfg {
 
   private String sourceLang;
   private String targetLang;
   private String classname;
 
-  public TranslationServiceJsonConfig() {
+  public TranslationServiceCfg() {
     super();
   }
 

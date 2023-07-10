@@ -18,7 +18,7 @@ import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
-import eu.europeana.api.translation.config.TranslationConfigProps;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.language.Language;
 
 /**
@@ -31,7 +31,7 @@ public class GoogleTranslationService implements TranslationService {
     private static final Logger LOG = LogManager.getLogger(GoogleTranslationService.class);
     private static final String MIME_TYPE_TEXT = "text/plain";
 
-    @Autowired TranslationConfigProps translConfigProps;
+    @Autowired TranslationConfig translationConfig;
 
     private TranslationServiceClient client;
     private LocationName locationName;
@@ -52,8 +52,8 @@ public class GoogleTranslationService implements TranslationService {
         TranslationServiceSettings tss = TranslationServiceSettings.newBuilder()
                 .setTransportChannelProvider(transportChannelProvider).build();
         this.client = TranslationServiceClient.create(tss);
-        this.locationName = LocationName.of(translConfigProps.getTranslationGoogleProjectId(), "global");
-        LOG.info("GoogleTranslationService initialised, projectId = {}", translConfigProps.getTranslationGoogleProjectId());
+        this.locationName = LocationName.of(translationConfig.getTranslationGoogleProjectId(), "global");
+        LOG.info("GoogleTranslationService initialised, projectId = {}", translationConfig.getTranslationGoogleProjectId());
     }
 
     @PreDestroy

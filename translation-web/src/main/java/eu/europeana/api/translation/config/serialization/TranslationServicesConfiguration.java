@@ -10,32 +10,32 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({TranslationAppConstants.DETECT_ENDPOINT, TranslationAppConstants.TRANSLATE_ENDPOINT})
-public class TranslationGlobalJsonConfig {
+public class TranslationServicesConfiguration {
 
-  private LangDetectJsonConfig langDetectConfig;
-  private TranslationJsonConfig translConfig;
+  private DetectCfg langDetectConfig;
+  private TranslateCfg translConfig;
 
-  public TranslationGlobalJsonConfig() {
+  public TranslationServicesConfiguration() {
     super();
   }
 
   @JsonGetter(TranslationAppConstants.DETECT_ENDPOINT)
-  public LangDetectJsonConfig getLangDetectConfig() {
+  public DetectCfg getLangDetectConfig() {
     return langDetectConfig;
   }
 
   @JsonSetter(TranslationAppConstants.DETECT_ENDPOINT)
-  public void setLangDetectConfig(LangDetectJsonConfig langDetectConfig) {
+  public void setLangDetectConfig(DetectCfg langDetectConfig) {
     this.langDetectConfig = langDetectConfig;
   }
 
   @JsonGetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public TranslationJsonConfig getTranslConfig() {
+  public TranslateCfg getTranslConfig() {
     return translConfig;
   }
 
   @JsonSetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public void setTranslConfig(TranslationJsonConfig translConfig) {
+  public void setTranslConfig(TranslateCfg translConfig) {
     this.translConfig = translConfig;
   }
 }

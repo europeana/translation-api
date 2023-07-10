@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.config.serialization;
+package eu.europeana.api.translation.model;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,14 +8,14 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranslationRequestJsonConfig {
+public class TranslationRequest {
 
   private String source;
   private String target;
   private Boolean detect;
   private List<String> text;
 
-  public TranslationRequestJsonConfig() {
+  public TranslationRequest() {
     super();
   }
 
