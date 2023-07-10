@@ -19,7 +19,7 @@ import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 import eu.europeana.api.translation.config.TranslationConfigProps;
-import eu.europeana.api.translation.definitions.model.Language;
+import eu.europeana.api.translation.language.Language;
 
 /**
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available as well as a projectId

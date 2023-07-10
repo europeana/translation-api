@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.config.serialization;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -13,8 +13,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationServiceJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationGlobalJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationServiceJsonConfig;
 import eu.europeana.api.translation.web.service.LanguageDetectionService;
 import eu.europeana.api.translation.web.service.TranslationService;
 

@@ -13,11 +13,11 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
-import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationResponseJsonConfig;
+import eu.europeana.api.translation.config.serialization.LangDetectRequestJsonConfig;
+import eu.europeana.api.translation.config.serialization.LangDetectResponseJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationGlobalJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationRequestJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationResponseJsonConfig;
 import eu.europeana.api.translation.web.service.TranslationServiceImpl;
 import io.swagger.annotations.ApiOperation;
 
