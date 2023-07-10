@@ -28,4 +28,5 @@ build/
 .vscode/
 
 **/*.user.properties
+**/*auth.json
 **/application.properties
