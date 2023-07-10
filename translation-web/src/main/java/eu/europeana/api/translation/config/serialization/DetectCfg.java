@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.config.serialization;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -11,12 +11,12 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({TranslationAppConstants.DEFAULT_CLASSNAME, TranslationAppConstants.SUPPORTED_LANGUAGES})
-public class LangDetectJsonConfig {
+public class DetectCfg {
 
   private String defaultClassname;
   private List<String> supportedLanguages;
 
-  public LangDetectJsonConfig() {
+  public DetectCfg() {
     super();
   }
 

@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.model;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -8,12 +8,12 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TranslationResponseJsonConfig {
+public class TranslationResponse {
 
   private List<String> translations;
   private String lang;
 
-  public TranslationResponseJsonConfig() {
+  public TranslationResponse() {
     super();
   }
 

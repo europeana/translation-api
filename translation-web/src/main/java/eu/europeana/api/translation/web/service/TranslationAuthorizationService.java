@@ -9,7 +9,7 @@ import eu.europeana.api.commons.definitions.vocabulary.Role;
 import eu.europeana.api.commons.nosql.service.ApiWriteLockService;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.commons.service.authorization.BaseAuthorizationService;
-import eu.europeana.api.translation.config.TranslationConfigProps;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.web.auth.Roles;
 
 @Component
@@ -17,14 +17,14 @@ public class TranslationAuthorizationService extends BaseAuthorizationService {
 
   protected final Logger logger = LogManager.getLogger(getClass());
 
-  private final TranslationConfigProps translConfiguration;
+  private final TranslationConfig translationConfig;
   private final EuropeanaClientDetailsService clientDetailsService;
 
   @Autowired
   public TranslationAuthorizationService(
-      TranslationConfigProps translConfiguration,
+      TranslationConfig translationConfig,
       EuropeanaClientDetailsService clientDetailsService) {
-    this.translConfiguration = translConfiguration;
+    this.translationConfig = translationConfig;
     this.clientDetailsService = clientDetailsService;
   }
 
@@ -35,12 +35,12 @@ public class TranslationAuthorizationService extends BaseAuthorizationService {
 
   @Override
   protected String getSignatureKey() {
-    return translConfiguration.getApiKeyPublicKey();
+    return translationConfig.getApiKeyPublicKey();
   }
 
   @Override
   protected String getApiName() {
-    return translConfiguration.getAuthorizationApiName();
+    return translationConfig.getAuthorizationApiName();
   }
 
   @Override

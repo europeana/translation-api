@@ -20,7 +20,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.TranslationConfigProps;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.language.PangeanicLanguages;
 import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
 import eu.europeana.api.translation.web.exception.TranslationException;
@@ -31,12 +31,12 @@ import eu.europeana.api.translation.web.exception.TranslationException;
  */
 // TODO get api key, for now passed empty
 @Service
-public class PangeanicV2TranslationService implements TranslationService {
+public class PangeanicTranslationService implements TranslationService {
 
-    @Autowired private PangeanicV2LangDetectService langDetectService;
-    @Autowired TranslationConfigProps translConfigProps;
+    @Autowired private PangeanicLangDetectService langDetectService;
+    @Autowired TranslationConfig translationConfig;
 
-    protected static final Logger LOG = LogManager.getLogger(PangeanicV2TranslationService.class);
+    protected static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
     
     protected CloseableHttpClient translateClient;
 
@@ -54,7 +54,7 @@ public class PangeanicV2TranslationService implements TranslationService {
         cm.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
         //SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build(); //We need to set socket keep alive
         translateClient = HttpClients.custom().setConnectionManager(cm).build();
-        LOG.info("Pangeanic translation service is initialized with translate Endpoint - {}", translConfigProps.getPangeanicTranslateEndpoint());
+        LOG.info("Pangeanic translation service is initialized with translate Endpoint - {}", translationConfig.getPangeanicTranslateEndpoint());
     }
 
     /**
@@ -77,7 +77,7 @@ public class PangeanicV2TranslationService implements TranslationService {
                 // In this case source language is the hint. The texts passed will be sent for lang-detection first and later will translated
                 return translateWithLangDetect(texts, targetLanguage, sourceLanguage);
             }
-            HttpPost post = PangeanicTranslationUtils.createTranslateRequest(translConfigProps.getPangeanicTranslateEndpoint(), texts, targetLanguage, sourceLanguage, "" );
+            HttpPost post = PangeanicTranslationUtils.createTranslateRequest(translationConfig.getPangeanicTranslateEndpoint(), texts, targetLanguage, sourceLanguage, "" );
             return PangeanicTranslationUtils.getResults(texts, sendTranslateRequestAndParse(post, sourceLanguage), false);
         } catch (JSONException|IOException e) {
             throw new TranslationException(e.getMessage());
@@ -106,7 +106,7 @@ public class PangeanicV2TranslationService implements TranslationService {
                 if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
                     LOG.debug("NOT translating data for lang {} for detected values {} ", entry.getKey(), entry.getValue());
                 } else {
-                    HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(translConfigProps.getPangeanicTranslateEndpoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
+                    HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(translationConfig.getPangeanicTranslateEndpoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
                     translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));
                 }
             }
