@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: translation-api-deployment
+spec:
+  # selector.matchLabels is provided via Kustomize
+  template:
+    spec:
+      containers:
+        - name: translation-api
+          image: europeana/translation-api
+          env:
+          - name: SPRING_CONFIG_NAME
+            value: "translation,translation.user"
+          - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+            value: "/opt/app/config/translation.user.properties"
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/liveness
+              httpHeaders:
+              - name: Accept
+                value: application/json
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/readiness
+              httpHeaders:
+              - name: Accept
+                value: application/json
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          volumeMounts:
+            - name: secret
+              mountPath: "/opt/app/config/translation.user.properties"
+              readOnly: true
+              subPath: translation.user.properties
+      volumes:
+        - name: secret
+          secret:
+            secretName: translation-api-secret

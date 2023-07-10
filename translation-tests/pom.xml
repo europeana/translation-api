@@ -1,29 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>translation-api</artifactId>
-    <groupId>eu.europeana.api</groupId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>translation-api</artifactId>
+		<groupId>eu.europeana.api</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
 
-  <artifactId>translation-tests</artifactId>
-  <name>translation-tests</name>
-  <description>A simple translation-tests.</description>
+	<artifactId>translation-tests</artifactId>
+	<name>translation-tests</name>
+	<description>A simple translation-tests.</description>
 
-  <properties>
-  	<!-- Sonar - jacoco xmlReportPaths needs to be defined in each module -->
-	<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
+	<properties>
+		<!-- Sonar - jacoco xmlReportPaths needs to be defined in each module -->
+		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
+	</properties>
 
-  <dependencies>
+	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-web</artifactId>
 			<version>${project.version}</version>
-		</dependency>		
-  </dependencies>
-  
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+	</dependencies>
+
+
 	<build>
 		<!-- set fixed name for easy deployment -->
 		<finalName>${project.artifactId}</finalName>
@@ -70,6 +84,6 @@
 			</build>
 		</profile>
 	</profiles>
-  
+
 
 </project>
