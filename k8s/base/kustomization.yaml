@@ -9,3 +9,7 @@ secretGenerator:
   - name: translation-api-secret
     files:
       - translation.user.properties
+  - name: google-auth-secret
+    files:
+      - google-auth.json
+      

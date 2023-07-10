@@ -14,6 +14,8 @@ spec:
             value: "translation,translation.user"
           - name: SPRING_CONFIG_ADDITIONAL_LOCATION
             value: "/opt/app/config/translation.user.properties"
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: "/opt/app/config/google-auth.json"  
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -39,7 +41,14 @@ spec:
               mountPath: "/opt/app/config/translation.user.properties"
               readOnly: true
               subPath: translation.user.properties
+            - name: google-secret
+              mountPath: "/opt/app/config/google-auth.json"
+              readOnly: true
+              subPath: google-auth.json
       volumes:
         - name: secret
           secret:
             secretName: translation-api-secret
+        - name: google-secret
+          secret:
+            secretName: google-auth-secret
