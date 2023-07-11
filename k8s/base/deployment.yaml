@@ -34,7 +34,7 @@ spec:
               httpHeaders:
               - name: Accept
                 value: application/json
-            initialDelaySeconds: 90
+            initialDelaySeconds: 60
             periodSeconds: 60
           volumeMounts:
             - name: secret
