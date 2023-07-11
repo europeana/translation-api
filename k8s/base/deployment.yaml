@@ -25,8 +25,8 @@ spec:
               httpHeaders:
               - name: Accept
                 value: application/json
-            initialDelaySeconds: 60
-            periodSeconds: 30
+            initialDelaySeconds: 90
+            periodSeconds: 60
           readinessProbe:
             httpGet:
               port: 8080
@@ -35,7 +35,7 @@ spec:
               - name: Accept
                 value: application/json
             initialDelaySeconds: 60
-            periodSeconds: 30
+            periodSeconds: 60
           volumeMounts:
             - name: secret
               mountPath: "/opt/app/config/translation.user.properties"
