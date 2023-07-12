@@ -31,7 +31,7 @@ public class TranslationConfig implements InitializingBean {
 //  @Value("${europeana.signaturekey:}")
   private String apiKeyPublicKey;
 
-  @Value("${authorization.api.name: translation}")
+  @Value("${authorization.api.name: translations}")
   private String authorizationApiName;
 
   @Value("${auth.read.enabled: true}")
