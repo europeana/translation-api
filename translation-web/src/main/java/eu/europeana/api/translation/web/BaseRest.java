@@ -14,7 +14,7 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.controller.BaseRestController;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
-import eu.europeana.api.translation.config.TranslationConfigProps;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.serialization.JsonLdSerializer;
 import eu.europeana.api.translation.web.service.RequestPathMethodService;
 import eu.europeana.api.translation.web.service.TranslationAuthorizationService;
@@ -29,7 +29,7 @@ public abstract class BaseRest extends BaseRestController {
 
   @Autowired private RequestPathMethodService requestMethodService;
 
-  @Autowired protected TranslationConfigProps translConfigProps;
+  @Autowired protected TranslationConfig translationConfig;
 
   protected Logger logger = LogManager.getLogger(getClass());
 
@@ -90,7 +90,7 @@ public abstract class BaseRest extends BaseRestController {
   @Override
   public Authentication verifyWriteAccess(String operation, HttpServletRequest request)
       throws ApplicationAuthenticationException {
-    if (translConfigProps.isAuthWriteEnabled()) {
+    if (translationConfig.isAuthWriteEnabled()) {
       return super.verifyWriteAccess(operation, request);
     }
     return null;
@@ -99,7 +99,7 @@ public abstract class BaseRest extends BaseRestController {
   @Override
   public Authentication verifyReadAccess(HttpServletRequest request)
       throws ApplicationAuthenticationException {
-    if (translConfigProps.isAuthReadEnabled()) {
+    if (translationConfig.isAuthReadEnabled()) {
       return super.verifyReadAccess(request);
     }
     return null;

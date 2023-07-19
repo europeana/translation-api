@@ -1,0 +1,15 @@
+resources:
+  - deployment.yaml
+
+commonLabels:
+  app: translation-api
+
+# expects files to be in the same directory
+secretGenerator:
+  - name: translation-api-secret
+    files:
+      - translation.user.properties
+  - name: google-auth-secret
+    files:
+      - google-auth.json
+      

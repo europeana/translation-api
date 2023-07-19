@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.language;
 
 /**
  * Class to hold the Language pair values supported by the Translation services

@@ -13,8 +13,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationServiceJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
+import eu.europeana.api.translation.config.serialization.TranslationServiceCfg;
 import eu.europeana.api.translation.web.service.LanguageDetectionService;
 import eu.europeana.api.translation.web.service.TranslationService;
 
@@ -26,11 +26,11 @@ public class InitServicesGlobalJsonConfig implements ApplicationListener<Context
   
   @Autowired ApplicationContext applicationContext;
 
-  TranslationGlobalJsonConfig appGlobalJsonConfig;
+  TranslationServicesConfiguration appGlobalJsonConfig;
   List<LanguageDetectionService> langDetectServices = new ArrayList<>();
   List<TranslationService> translServices = new ArrayList<>();
 
-  public TranslationGlobalJsonConfig getAppGlobalJsonConfig() {
+  public TranslationServicesConfiguration getAppGlobalJsonConfig() {
     return appGlobalJsonConfig;
   }
   
@@ -56,10 +56,10 @@ public class InitServicesGlobalJsonConfig implements ApplicationListener<Context
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
 
-    appGlobalJsonConfig = new ObjectMapper().readValue(content, TranslationGlobalJsonConfig.class);
+    appGlobalJsonConfig = new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
     LanguageDetectionService defaultLangDetectService = (LanguageDetectionService) applicationContext.getBean(Class.forName(appGlobalJsonConfig.getLangDetectConfig().getDefaultClassname()));
     langDetectServices.add(defaultLangDetectService);
-    for(TranslationServiceJsonConfig translServiceConfig : appGlobalJsonConfig.getTranslConfig().getServices()) {
+    for(TranslationServiceCfg translServiceConfig : appGlobalJsonConfig.getTranslConfig().getServices()) {
       TranslationService translService = (TranslationService) applicationContext.getBean(Class.forName(translServiceConfig.getClassname()));
       translServices.add(translService);
     }

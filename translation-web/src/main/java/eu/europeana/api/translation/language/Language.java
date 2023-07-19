@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.language;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import eu.europeana.api.translation.definitions.exceptions.InvalidParamValueException;
+import eu.europeana.api.translation.web.exception.InvalidParamValueException;
 
 /**
  * Supported languages for filtering record data

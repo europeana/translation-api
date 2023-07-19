@@ -4,12 +4,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.exceptions.TranslationException;
-import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationResponseJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
+import eu.europeana.api.translation.model.LangDetectRequest;
+import eu.europeana.api.translation.model.LangDetectResponse;
+import eu.europeana.api.translation.model.TranslationRequest;
+import eu.europeana.api.translation.model.TranslationResponse;
+import eu.europeana.api.translation.web.exception.TranslationException;
 
 @Service
 public class TranslationServiceImpl {
@@ -17,23 +17,23 @@ public class TranslationServiceImpl {
   @Autowired
   private InitServicesGlobalJsonConfig initGlobalJsonConfig;
   
-  public TranslationGlobalJsonConfig info() {
+  public TranslationServicesConfiguration info() {
     return initGlobalJsonConfig.getAppGlobalJsonConfig();
   }
   
-  public TranslationResponseJsonConfig translate(TranslationRequestJsonConfig translRequest) throws TranslationException {
+  public TranslationResponse translate(TranslationRequest translRequest) throws TranslationException {
     TranslationService defaultTranslService = getDefaultTranslService();
     List<String> translations = defaultTranslService.translate(translRequest.getText(), translRequest.getTarget(), translRequest.getSource(), translRequest.getDetect());
-    TranslationResponseJsonConfig result = new TranslationResponseJsonConfig();
+    TranslationResponse result = new TranslationResponse();
     result.setTranslations(translations);
     result.setLang(translRequest.getTarget());
     return result;
   }
   
-  public LangDetectResponseJsonConfig detectLang(LangDetectRequestJsonConfig langDetectRequest) throws TranslationException {
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws TranslationException {
     LanguageDetectionService defaultLangDetectService = getDefaultLangDetectService();
     List<String> langs = defaultLangDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
-    LangDetectResponseJsonConfig result = new LangDetectResponseJsonConfig();
+    LangDetectResponse result = new LangDetectResponse();
     result.setLangs(langs);
     result.setLang(langDetectRequest.getLang());
     return result;

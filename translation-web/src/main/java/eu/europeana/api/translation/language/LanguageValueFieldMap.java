@@ -1,9 +1,9 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.language;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
+import org.springframework.lang.NonNull;
 
 public class LanguageValueFieldMap extends LinkedHashMap<String, List<String>> {
 
@@ -11,14 +11,14 @@ public class LanguageValueFieldMap extends LinkedHashMap<String, List<String>> {
    * 
    */
   private static final long serialVersionUID = -7661674399244406380L;
-    @Nonnull
+    @NonNull
     private final String fieldName;
 
     /**
      * Create a new map for a particular field
      * @param fieldName the fieldName
      */
-    public LanguageValueFieldMap(@Nonnull String fieldName) {
+    public LanguageValueFieldMap(@NonNull String fieldName) {
         this.fieldName = fieldName;
     }
 
@@ -44,7 +44,7 @@ public class LanguageValueFieldMap extends LinkedHashMap<String, List<String>> {
         this.fieldName = fieldName;
     }
 
-    @Nonnull
+    @NonNull
     public String getFieldName() {
         return fieldName;
     }

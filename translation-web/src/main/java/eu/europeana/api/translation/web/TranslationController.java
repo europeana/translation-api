@@ -13,11 +13,11 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
-import eu.europeana.api.translation.definitions.model.LangDetectRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.LangDetectResponseJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationGlobalJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationRequestJsonConfig;
-import eu.europeana.api.translation.definitions.model.TranslationResponseJsonConfig;
+import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
+import eu.europeana.api.translation.model.LangDetectRequest;
+import eu.europeana.api.translation.model.LangDetectResponse;
+import eu.europeana.api.translation.model.TranslationRequest;
+import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.web.service.TranslationServiceImpl;
 import io.swagger.annotations.ApiOperation;
 
@@ -25,11 +25,11 @@ import io.swagger.annotations.ApiOperation;
 @ConditionalOnWebApplication
 public class TranslationController extends BaseRest {
 
-  private final TranslationServiceImpl translService;
+  private final TranslationServiceImpl translationService;
 
   @Autowired
-  public TranslationController(TranslationServiceImpl translService) {
-    this.translService=translService;
+  public TranslationController(TranslationServiceImpl translationService) {
+    this.translationService=translationService;
   }
 
   @ApiOperation(
@@ -44,7 +44,7 @@ public class TranslationController extends BaseRest {
 
     verifyReadAccess(request);
     
-    TranslationGlobalJsonConfig translGlobalConfig = translService.info();
+    TranslationServicesConfiguration translGlobalConfig = translationService.info();
     
     String result = serialize(translGlobalConfig);
     
@@ -59,12 +59,12 @@ public class TranslationController extends BaseRest {
       value = {"/detect"},
       method = RequestMethod.POST,
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> detectLang(@RequestBody LangDetectRequestJsonConfig langDetectRequest, HttpServletRequest request)
+  public ResponseEntity<String> detectLang(@RequestBody LangDetectRequest langDetectRequest, HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
 
     verifyWriteAccess(Operations.CREATE, request);
 
-    LangDetectResponseJsonConfig result = translService.detectLang(langDetectRequest);
+    LangDetectResponse result = translationService.detectLang(langDetectRequest);
     
     String resultJson = serialize(result);
     
@@ -79,12 +79,12 @@ public class TranslationController extends BaseRest {
       value = {"/translate"},
       method = RequestMethod.POST,
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> translate(@RequestBody TranslationRequestJsonConfig translRequest, HttpServletRequest request)
+  public ResponseEntity<String> translate(@RequestBody TranslationRequest translRequest, HttpServletRequest request)
       throws ApplicationAuthenticationException, EuropeanaApiException {
 
     verifyWriteAccess(Operations.CREATE, request);
 
-    TranslationResponseJsonConfig result = translService.translate(translRequest);
+    TranslationResponse result = translationService.translate(translRequest);
     
     String resultJson = serialize(result);
     

@@ -17,7 +17,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.http.MediaType;
-import eu.europeana.api.translation.definitions.model.Language;
+import eu.europeana.api.translation.language.Language;
 
 public class PangeanicTranslationUtils {
 
