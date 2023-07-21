@@ -1,21 +1,27 @@
 {
     "detect": {
-        "default": "eu.europeana.api.translation.web.service.PangeanicLangDetectService",
-        "supported": [ "en", "fr", "de" ]
+    	"services": [
+            {
+            	"id": "PangeanicLangDetectService",
+              	"classname": "eu.europeana.api.translation.web.service.PangeanicLangDetectService",
+              	"supported": [ "en", "fr", "de" ]
+            }
+        ],
+        "default": "PangeanicLangDetectService"
     },
     "translate": {
 	 	"services": [
             { 
-                "source": "de",
-				"target": "en",
-                "classname": "eu.europeana.api.translation.web.service.PangeanicTranslationService"
+                "id": "PangeanicTranslationService",
+                "classname": "eu.europeana.api.translation.web.service.PangeanicTranslationService",
+                "supported": [ "de-en", "fr-en" ]
             },
             {
-            	"target": "en",
-            	"classname": "eu.europeana.api.translation.web.service.GoogleTranslationService"
-            }
+            	"id": "GoogleTranslationService",
+            	"classname": "eu.europeana.api.translation.web.service.GoogleTranslationService",
+            	"supported": [ "de-en", "fr-en" ]
+            }                        
         ],
-        "default": "eu.europeana.api.translation.web.service.GoogleTranslationService",
-        "supported": [ "en", "fr", "de"]
+        "default": "PangeanicTranslationService"
     }
 }

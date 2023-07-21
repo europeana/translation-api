@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
+import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
@@ -60,7 +61,7 @@ public class TranslationController extends BaseRest {
       method = RequestMethod.POST,
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> detectLang(@RequestBody LangDetectRequest langDetectRequest, HttpServletRequest request)
-      throws ApplicationAuthenticationException, EuropeanaApiException {
+      throws ApplicationAuthenticationException, EuropeanaApiException, ParamValidationException {
 
     verifyWriteAccess(Operations.CREATE, request);
 
@@ -80,7 +81,7 @@ public class TranslationController extends BaseRest {
       method = RequestMethod.POST,
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> translate(@RequestBody TranslationRequest translRequest, HttpServletRequest request)
-      throws ApplicationAuthenticationException, EuropeanaApiException {
+      throws ApplicationAuthenticationException, EuropeanaApiException, ParamValidationException {
 
     verifyWriteAccess(Operations.CREATE, request);
 

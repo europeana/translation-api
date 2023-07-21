@@ -167,4 +167,8 @@ public class PangeanicTranslationService implements TranslationService {
             }
         }
     }
+
+    @Override
+    public void setSupportedLangs(List<String> supportedLangPairs) {
+    }
 }

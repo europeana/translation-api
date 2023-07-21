@@ -135,4 +135,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
         }
     }
 
+    @Override
+    public void setSupportedLangs(List<String> supportedLangPairs) {
+    }
 }

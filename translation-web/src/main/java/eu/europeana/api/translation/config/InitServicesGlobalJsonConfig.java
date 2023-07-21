@@ -13,8 +13,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
+import eu.europeana.api.translation.config.serialization.DetectServiceCfg;
 import eu.europeana.api.translation.config.serialization.TranslationServiceCfg;
+import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
 import eu.europeana.api.translation.web.service.LanguageDetectionService;
 import eu.europeana.api.translation.web.service.TranslationService;
 
@@ -57,10 +58,14 @@ public class InitServicesGlobalJsonConfig implements ApplicationListener<Context
     String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
 
     appGlobalJsonConfig = new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
-    LanguageDetectionService defaultLangDetectService = (LanguageDetectionService) applicationContext.getBean(Class.forName(appGlobalJsonConfig.getLangDetectConfig().getDefaultClassname()));
-    langDetectServices.add(defaultLangDetectService);
+    for(DetectServiceCfg detectServiceCfg : appGlobalJsonConfig.getLangDetectConfig().getServices()) {
+      LanguageDetectionService detectService = (LanguageDetectionService) applicationContext.getBean(Class.forName(detectServiceCfg.getClassname()));
+      detectService.setSupportedLangs(detectServiceCfg.getSupportedLangs());
+      langDetectServices.add(detectService);
+    }    
     for(TranslationServiceCfg translServiceConfig : appGlobalJsonConfig.getTranslConfig().getServices()) {
       TranslationService translService = (TranslationService) applicationContext.getBean(Class.forName(translServiceConfig.getClassname()));
+      translService.setSupportedLangs(translServiceConfig.getSupportedLangs());
       translServices.add(translService);
     }
   }

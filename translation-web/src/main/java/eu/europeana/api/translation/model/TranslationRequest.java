@@ -13,6 +13,7 @@ public class TranslationRequest {
   private String source;
   private String target;
   private Boolean detect;
+  private String service;
   private List<String> text;
 
   public TranslationRequest() {
@@ -44,6 +45,15 @@ public class TranslationRequest {
   @JsonSetter(TranslationAppConstants.DETECT_BOOL)
   public void setDetect(Boolean detect) {
     this.detect = detect;
+  }
+
+  public String getService() {
+    return service;
+  }
+
+  @JsonSetter(TranslationAppConstants.SERVICE)
+  public void setService(String service) {
+    this.service = service;
   }
 
   public List<String> getText() {

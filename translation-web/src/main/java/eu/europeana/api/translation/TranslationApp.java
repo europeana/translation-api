@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ImportResource;
 
 /**
  * Main application. Allows deploying as a war and logs instance data when deployed in Cloud Foundry
@@ -31,6 +32,7 @@ import org.springframework.context.ApplicationContext;
     ManagementWebSecurityAutoConfiguration.class,
     // DataSources are manually configured (for EM and batch DBs)
     DataSourceAutoConfiguration.class})
+@ImportResource("classpath:translation-web-context.xml") //used only for the error messages bean config
 public class TranslationApp extends SpringBootServletInitializer {
 
   private static final Logger logger = LogManager.getLogger(TranslationApp.class);

@@ -17,7 +17,7 @@ import eu.europeana.api.translation.tests.BaseTranslationTest;
 public class TranslationRestIT extends BaseTranslationTest {
 
   @Test
-  public void lang_detection() throws Exception {
+  public void langDetection() throws Exception {
     
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST);
     
@@ -39,10 +39,56 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
+  public void langDetectionWithoutLangParam() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_2);
+    mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void langDetectionInvalidLangParam() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_1);
+    mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void langDetectionInvalidServiceParam() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_2);
+    mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void langDetectionValidServiceParamInvalidLangParam() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_3);
+    mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   public void translation() throws Exception {
-    
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST);
-    
     String result = mockMvc
         .perform(
             post(BASE_URL_TRANSLATE)
@@ -59,5 +105,53 @@ public class TranslationRestIT extends BaseTranslationTest {
     List<String> translations = Collections.singletonList(json.getString("translations"));
     assertTrue(translations.size()>0);
   }
+
+  @Test
+  public void translationWithServiceParam() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);
+    mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void translationInvalidSourceLangWithServiceParam() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_1);
+    mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  public void translationInvalidServiceParam() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_2);
+    mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
   
+  @Test
+  public void translationInvalidSourceLang() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_3);
+    mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isBadRequest());
+  }
+
 }

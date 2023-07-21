@@ -19,6 +19,7 @@ import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.language.Language;
 
 /**
@@ -35,6 +36,7 @@ public class GoogleTranslationService implements TranslationService {
 
     private TranslationServiceClient client;
     private LocationName locationName;
+    private List<String> supportedLanguagePairs;
 
     /**
      * Creates a new client that can send translation requests to Google Cloud Translate. Note that the client needs
@@ -104,7 +106,12 @@ public class GoogleTranslationService implements TranslationService {
 
     @Override
     public boolean isSupported(String srcLang, String trgLang) {
-      return true;
+      return supportedLanguagePairs.contains(srcLang + TranslationAppConstants.LANG_DELIMITER + trgLang);
+    }
+
+    @Override
+    public void setSupportedLangs(List<String> supportedLangPairs) {
+      supportedLanguagePairs=new ArrayList<String>(supportedLangPairs);
     }
 
 }

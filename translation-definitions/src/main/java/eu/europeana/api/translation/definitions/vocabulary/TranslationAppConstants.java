@@ -10,12 +10,15 @@ public class TranslationAppConstants {
   public static final String TRANSLATE_ENDPOINT = "translate";
   
   //app configuration fields
-  public static final String DEFAULT_CLASSNAME = "default";
+  public static final String SERVICE_ID = "id";
+  public static final String DEFAULT_SERVICE_ID = "default";
   public static final String CLASSNAME = "classname";
   public static final String SUPPORTED_LANGUAGES = "supported";
   public static final String SERVICES = "services";
+  public static final String SERVICE = "service";
   public static final String SOURCE_LANG = "source";
   public static final String TARGET_LANG = "target";
+  public static final String LANG_DELIMITER = "-";
   
   //api request/response fields
   public static final String TEXT = "text";

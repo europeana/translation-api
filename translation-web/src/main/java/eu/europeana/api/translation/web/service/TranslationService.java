@@ -8,6 +8,11 @@ import eu.europeana.api.translation.web.exception.TranslationException;
  */
 public interface TranslationService {
 
+    /**
+     * Set the supported language pairs.
+     * @param supportedLangPairs
+     */
+    void setSupportedLangs(List<String> supportedLangPairs);
 
     /**
      * To validate the given pair of source and target language is valid for translation

@@ -13,7 +13,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 public class TranslationServicesConfiguration {
 
   private DetectCfg langDetectConfig;
-  private TranslateCfg translConfig;
+  private TranslationCfg translConfig;
 
   public TranslationServicesConfiguration() {
     super();
@@ -30,12 +30,12 @@ public class TranslationServicesConfiguration {
   }
 
   @JsonGetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public TranslateCfg getTranslConfig() {
+  public TranslationCfg getTranslConfig() {
     return translConfig;
   }
 
   @JsonSetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public void setTranslConfig(TranslateCfg translConfig) {
+  public void setTranslConfig(TranslationCfg translConfig) {
     this.translConfig = translConfig;
   }
 }
