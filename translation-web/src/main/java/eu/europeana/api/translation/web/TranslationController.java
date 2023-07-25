@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.web;
 
+import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -17,7 +18,6 @@ import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
-import eu.europeana.api.translation.model.InfoResponse;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.model.TranslationRequest;
@@ -49,21 +49,22 @@ public class TranslationController extends BaseRest {
       method = RequestMethod.GET,
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> getInfo(HttpServletRequest request) throws ApplicationAuthenticationException, EuropeanaApiException {
-    InfoResponse infoResp = new InfoResponse();
     ObjectMapper mapper = new ObjectMapper();
+    ObjectNode info = mapper.createObjectNode();
     ObjectNode build = mapper.createObjectNode();
     build.put("branch", gitProperties.get("branch"));
     build.put("number", gitProperties.get("commit.id.abbrev"));
-    build.put("date", gitProperties.get("build.time"));
-    infoResp.setBuild(build);
+    Date buildTime = new Date(Long.valueOf(gitProperties.get("build.time")));
+    build.put("date", buildTime.toString());
+    info.putPOJO("build", build);
     ObjectNode app = mapper.createObjectNode();
     app.put("name", translationBuildInfo.get("project.name"));
     app.put("version", translationBuildInfo.get("version"));
     app.put("description", translationBuildInfo.get("project.description"));
-    infoResp.setApp(app);
-    infoResp.setConfig(initGlobalJsonConfig.getAppGlobalJsonConfig());
+    info.putPOJO("app", app);
+    info.putPOJO("config", initGlobalJsonConfig.getAppGlobalJsonConfig());
     
-    String result = serialize(infoResp);
+    String result = serialize(info);
     
     return generateResponseEntity(request, result);
   }
