@@ -15,9 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
+import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
+import eu.europeana.api.translation.config.I18nConstants;
 import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.model.TranslationRequest;
@@ -81,6 +84,11 @@ public class TranslationController extends BaseRest {
       throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);
+    
+    //validate mandatory params
+    if(langDetectRequest.getText()==null) {
+      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY, new String[] {TranslationAppConstants.TEXT});
+    }
 
     LangDetectResponse result = translationService.detectLang(langDetectRequest);
     
@@ -101,6 +109,17 @@ public class TranslationController extends BaseRest {
       throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);
+    
+    //validate mandatory params
+    if(translRequest.getText()==null) {
+      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY, new String[] {TranslationAppConstants.TEXT});
+    }
+    if(translRequest.getSource()==null) {
+      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY, new String[] {TranslationAppConstants.SOURCE_LANG});
+    }
+    if(translRequest.getTarget()==null) {
+      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY, new String[] {TranslationAppConstants.TARGET_LANG});
+    }
 
     TranslationResponse result = translationService.translate(translRequest);
     

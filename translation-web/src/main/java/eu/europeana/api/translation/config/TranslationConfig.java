@@ -98,6 +98,10 @@ public class TranslationConfig implements InitializingBean {
     return translationGoogleProjectId;
   }
 
+  public void setTranslationGoogleProjectId(String translationGoogleProjectId) {
+    this.translationGoogleProjectId = translationGoogleProjectId;
+  }
+
   public static boolean testProfileNotActive(String activeProfileString) {
     return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
   }
