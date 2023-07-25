@@ -86,7 +86,7 @@ public class TranslationConfig implements InitializingBean {
   public String getPangeanicTranslateEndpoint() {
     return pangeanicTranslateEndpoint;
   }
-
+  
   @Override
   public void afterPropertiesSet() throws Exception {
     if (testProfileNotActive(activeProfileString)) {
@@ -131,4 +131,5 @@ public class TranslationConfig implements InitializingBean {
     clientDetailsService.setApiKeyServiceUrl(getApiKeyUrl());
     return clientDetailsService;
   }
+
 }

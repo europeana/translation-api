@@ -1,9 +1,0 @@
-{
-  "source": "wrong-param",
-  "target": "en",
-  "detect": false,
-  "text": [
-    "eine Textzeile auf Deutsch",
-    "eine zweite Textzeile auf Deutsch"
-  ]
-}

@@ -13,6 +13,7 @@ public class LangDetectRequest {
   private List<String> text;
   private String lang;
   private String service;
+  private String fallback;
 
   public LangDetectRequest() {
     super();
@@ -45,5 +46,14 @@ public class LangDetectRequest {
     this.service = service;
   }
   
+  public String getFallback() {
+    return fallback;
+  }
+
+  @JsonSetter(TranslationAppConstants.FALLBACK)
+  public void setFallback(String fallback) {
+    this.fallback = fallback;
+  }
+
 }
 

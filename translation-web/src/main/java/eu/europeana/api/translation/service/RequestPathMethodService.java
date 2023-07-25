@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;

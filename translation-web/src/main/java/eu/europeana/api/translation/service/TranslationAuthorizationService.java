@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

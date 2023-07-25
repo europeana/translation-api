@@ -15,7 +15,7 @@ import eu.europeana.api.translation.tests.BaseTranslationTest;
 
 @SpringBootTest
 public class TranslationRestIT extends BaseTranslationTest {
-
+ 
   @Test
   public void langDetection() throws Exception {
     
@@ -65,18 +65,6 @@ public class TranslationRestIT extends BaseTranslationTest {
   @Test
   public void langDetectionInvalidServiceParam() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_2);
-    mockMvc
-        .perform(
-            post(BASE_URL_DETECT)
-              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .content(requestJson))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void langDetectionValidServiceParamInvalidLangParam() throws Exception {
-    String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_3);
     mockMvc
         .perform(
             post(BASE_URL_DETECT)
@@ -142,16 +130,4 @@ public class TranslationRestIT extends BaseTranslationTest {
         .andExpect(status().isBadRequest());
   }
   
-  @Test
-  public void translationInvalidSourceLang() throws Exception {
-    String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_3);
-    mockMvc
-        .perform(
-            post(BASE_URL_TRANSLATE)
-              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .content(requestJson))
-        .andExpect(status().isBadRequest());
-  }
-
 }

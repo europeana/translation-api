@@ -10,24 +10,25 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({TranslationAppConstants.DEFAULT_SERVICE_ID, TranslationAppConstants.SERVICES})
+@JsonPropertyOrder({TranslationAppConstants.SUPPORTED_LANGUAGES, TranslationAppConstants.SERVICES, TranslationAppConstants.DEFAULT_SERVICE_ID})
 public class DetectCfg {
 
-  private String defaultServiceId;
+  private List<String> supported;
   private List<DetectServiceCfg> services;
+  private String defaultServiceId;
 
   public DetectCfg() {
     super();
   }
 
-  @JsonGetter(TranslationAppConstants.DEFAULT_SERVICE_ID)
-  public String getDefaultServiceId() {
-    return defaultServiceId;
+  @JsonGetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
+  public List<String> getSupported() {
+    return supported;
   }
 
-  @JsonSetter(TranslationAppConstants.DEFAULT_SERVICE_ID)
-  public void setDefaultServiceId(String defaultServiceId) {
-    this.defaultServiceId = defaultServiceId;
+  @JsonSetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
+  public void setSupported(List<String> supportedLangs) {
+    this.supported = supportedLangs;
   }
 
   @JsonGetter(TranslationAppConstants.SERVICES)
@@ -40,4 +41,14 @@ public class DetectCfg {
     this.services = services;
   }
 
+  @JsonGetter(TranslationAppConstants.DEFAULT_SERVICE_ID)
+  public String getDefaultServiceId() {
+    return defaultServiceId;
+  }
+
+  @JsonSetter(TranslationAppConstants.DEFAULT_SERVICE_ID)
+  public void setDefaultServiceId(String defaultServiceId) {
+    this.defaultServiceId = defaultServiceId;
+  }
+  
 }

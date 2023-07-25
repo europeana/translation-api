@@ -1,15 +1,9 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import java.util.List;
 import eu.europeana.api.translation.web.exception.TranslationException;
 
 public interface LanguageDetectionService {
-
-    /**
-     * Set the supported language pairs.
-     * @param supportedLangPairs
-     */
-    void setSupportedLangs(List<String> supportedLangPairs);
 
     boolean isSupported(String srcLang);
 

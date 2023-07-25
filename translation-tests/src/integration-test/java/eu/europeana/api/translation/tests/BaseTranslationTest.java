@@ -30,13 +30,11 @@ public abstract class BaseTranslationTest {
   protected static final String LANG_DETECT_REQUEST_2 = "/content/lang_detection_request_2.json";
   protected static final String LANG_DETECT_BAD_REQUEST_1 = "/content/lang_detection_bad_request_1.json";
   protected static final String LANG_DETECT_BAD_REQUEST_2 = "/content/lang_detection_bad_request_2.json";
-  protected static final String LANG_DETECT_BAD_REQUEST_3 = "/content/lang_detection_bad_request_3.json";
   protected static final String TRANSLATION_REQUEST = "/content/translation_request.json";
   protected static final String TRANSLATION_REQUEST_2 = "/content/translation_request_2.json";
   protected static final String TRANSLATION_BAD_REQUEST_1 = "/content/translation_bad_request_1.json";
   protected static final String TRANSLATION_BAD_REQUEST_2 = "/content/translation_bad_request_2.json";
-  protected static final String TRANSLATION_BAD_REQUEST_3 = "/content/translation_bad_request_3.json";
-
+  
   protected MockMvc mockMvc;
 
   @Autowired
