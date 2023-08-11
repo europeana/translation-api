@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import java.io.IOException;
 import java.util.ArrayList;

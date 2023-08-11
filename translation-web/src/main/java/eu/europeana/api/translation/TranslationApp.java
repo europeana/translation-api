@@ -13,9 +13,13 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import eu.europeana.api.translation.config.BeanNames;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 
 /**
  * Main application. Allows deploying as a war and logs instance data when deployed in Cloud Foundry
@@ -24,37 +28,44 @@ import org.springframework.context.ApplicationContext;
     // Remove these exclusions to re-enable security
     SecurityAutoConfiguration.class,
     // WebMvcAutoConfiguration.class,
-    EmbeddedMongoAutoConfiguration.class, EmbeddedWebServerFactoryCustomizerAutoConfiguration.class,
     MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
-    MongoMetricsAutoConfiguration.class,
-    // MongoMetricsAutoConfiguration.class,
-    ManagementWebSecurityAutoConfiguration.class,
+    EmbeddedMongoAutoConfiguration.class, EmbeddedWebServerFactoryCustomizerAutoConfiguration.class,
+    MongoMetricsAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class,
+    SolrAutoConfiguration.class,
     // DataSources are manually configured (for EM and batch DBs)
     DataSourceAutoConfiguration.class})
 public class TranslationApp extends SpringBootServletInitializer {
 
   private static final Logger logger = LogManager.getLogger(TranslationApp.class);
+
   /**
    * Main entry point of this application
    *
    * @param args command-line arguments
    */
   public static void main(String[] args) {
-    // When deploying to Cloud Foundry, this will log the instance index number, IP and GUID
-    
-    logger.info("CF_INSTANCE_INDEX  = {}, CF_INSTANCE_GUID = {}, CF_INSTANCE_IP  = {}",
-        System.getenv("CF_INSTANCE_INDEX"), System.getenv("CF_INSTANCE_GUID"),
-        System.getenv("CF_INSTANCE_IP"));
 
-    /* Activate socks proxy (if your application requires it) - currently not needed/not working
-    SocksProxyActivator.activate("config/translation.user.properties");
-    */
+    //start the application
+    ConfigurableApplicationContext ctx = SpringApplication.run(TranslationApp.class, args);
 
-    ApplicationContext ctx = SpringApplication.run(TranslationApp.class, args);
-
+    //log beans for debuging purposes
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(ctx);
     }
+    
+    //init translation services
+    try {
+      initTranslationServices(ctx);
+    } catch (Exception e) {
+      //gracefully stop the application in case of configuration problems (code 1 means exception occured at startup) 
+      System.exit(SpringApplication.exit(ctx, () -> 1));
+    }
+  }
+
+  private static void initTranslationServices(ApplicationContext ctx) throws Exception {
+    TranslationServiceProvider translationServiceProvider = (TranslationServiceProvider) ctx
+        .getBean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER);
+    translationServiceProvider.initTranslationServicesConfiguration();
   }
 
   private static void printRegisteredBeans(ApplicationContext ctx) {
@@ -62,5 +73,5 @@ public class TranslationApp extends SpringBootServletInitializer {
     Arrays.sort(beanNames);
     logger.debug("Instantiated beans:");
     logger.debug(StringUtils.join(beanNames, "\n"));
-  }    
+  }
 }

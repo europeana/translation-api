@@ -1,0 +1,4 @@
+- to run the tests locally in eclipse, for each of them (or together) configure the Environment varibale for GOOGLE_APPLICATION_CREDENTIALS in the Debug/RunConfigurations.
+Since the *.user.properties file is moved to /opt/app/config and configured in the Arguments tab of the DebugConfigurations for the main app (--spring.config.name=translation,translation.user --spring.config.additional-location=optional:file:/opt/app/config/translation.user.properties),
+which does not work for the tests, the properties from the *.user.properties file need to be temporarely moved to the .properties file for running the tests.
+- to access the git and build properties files, the project needs to be built with maven first

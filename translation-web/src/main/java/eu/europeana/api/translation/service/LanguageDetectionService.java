@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import java.util.List;
 import eu.europeana.api.translation.web.exception.TranslationException;

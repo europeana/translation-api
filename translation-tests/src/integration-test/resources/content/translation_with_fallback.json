@@ -5,5 +5,7 @@
   "text": [
     "eine Textzeile auf Deutsch",
     "eine zweite Textzeile auf Deutsch"
-  ]
+  ],
+  "service":"GOOGLE",
+  "fallback":"PANGEANIC"
 }

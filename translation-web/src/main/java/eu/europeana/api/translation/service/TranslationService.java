@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import java.util.List;
 import eu.europeana.api.translation.web.exception.TranslationException;
@@ -7,8 +7,7 @@ import eu.europeana.api.translation.web.exception.TranslationException;
  * Generic translation service interface
  */
 public interface TranslationService {
-
-
+  
     /**
      * To validate the given pair of source and target language is valid for translation
      * @param srcLang source language of the data to be translated

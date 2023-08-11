@@ -8,11 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
-import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 
 /**
  * Container for all settings that we load from the translation.properties file and optionally
@@ -86,7 +84,7 @@ public class TranslationConfig implements InitializingBean {
   public String getPangeanicTranslateEndpoint() {
     return pangeanicTranslateEndpoint;
   }
-
+  
   @Override
   public void afterPropertiesSet() throws Exception {
     if (testProfileNotActive(activeProfileString)) {
@@ -96,6 +94,10 @@ public class TranslationConfig implements InitializingBean {
 
   public String getTranslationGoogleProjectId() {
     return translationGoogleProjectId;
+  }
+
+  public void setTranslationGoogleProjectId(String translationGoogleProjectId) {
+    this.translationGoogleProjectId = translationGoogleProjectId;
   }
 
   public static boolean testProfileNotActive(String activeProfileString) {
@@ -124,11 +126,5 @@ public class TranslationConfig implements InitializingBean {
           "The following config properties are not set: %s", String.join("\n", missingProps)));
     }
   }
-
-  @Bean
-  public EuropeanaClientDetailsService getClientDetailsService() {
-    EuropeanaClientDetailsService clientDetailsService = new EuropeanaClientDetailsService();
-    clientDetailsService.setApiKeyServiceUrl(getApiKeyUrl());
-    return clientDetailsService;
-  }
+  
 }

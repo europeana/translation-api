@@ -16,14 +16,14 @@ import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.serialization.JsonLdSerializer;
-import eu.europeana.api.translation.web.service.RequestPathMethodService;
-import eu.europeana.api.translation.web.service.TranslationAuthorizationService;
+import eu.europeana.api.translation.service.RequestPathMethodService;
+import eu.europeana.api.translation.service.TranslationAuthorizationService;
 
 public abstract class BaseRest extends BaseRestController {
 
   @Autowired private TranslationAuthorizationService translAuthorizationService;
 
-  @Autowired private BuildProperties translationBuildInfo;
+  @Autowired protected BuildProperties translationBuildInfo;
 
   @Autowired protected JsonLdSerializer jsonLdSerializer;
 

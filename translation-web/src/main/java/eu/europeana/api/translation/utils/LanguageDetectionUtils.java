@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import eu.europeana.api.translation.language.Language;
 import eu.europeana.api.translation.language.LanguageValueFieldMap;
 
@@ -21,7 +19,7 @@ import eu.europeana.api.translation.language.LanguageValueFieldMap;
  */
 public class LanguageDetectionUtils {
 
-    private static final Logger LOG = LogManager.getLogger(LanguageDetectionUtils.class);
+//    private static final Logger LOG = LogManager.getLogger(LanguageDetectionUtils.class);
 
     private static final String PATTERN = "\\p{L}|[0-9]";
     private static final Pattern unicodeNumberPattern = Pattern.compile(PATTERN);

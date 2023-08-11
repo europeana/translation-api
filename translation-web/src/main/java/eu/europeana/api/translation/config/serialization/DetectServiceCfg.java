@@ -10,12 +10,12 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({TranslationAppConstants.SERVICE_ID, TranslationAppConstants.CLASSNAME})
-public class TranslationServiceCfg {
+public class DetectServiceCfg {
 
   private String id;
   private String classname;
 
-  public TranslationServiceCfg() {
+  public DetectServiceCfg() {
     super();
   }
 

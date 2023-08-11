@@ -13,6 +13,8 @@ public class TranslationRequest {
   private String source;
   private String target;
   private Boolean detect;
+  private String service;
+  private String fallback;
   private List<String> text;
 
   public TranslationRequest() {
@@ -44,6 +46,24 @@ public class TranslationRequest {
   @JsonSetter(TranslationAppConstants.DETECT_BOOL)
   public void setDetect(Boolean detect) {
     this.detect = detect;
+  }
+
+  public String getService() {
+    return service;
+  }
+
+  @JsonSetter(TranslationAppConstants.SERVICE)
+  public void setService(String service) {
+    this.service = service;
+  }
+
+  public String getFallback() {
+    return fallback;
+  }
+
+  @JsonSetter(TranslationAppConstants.FALLBACK)
+  public void setFallback(String fallback) {
+    this.fallback = fallback;
   }
 
   public List<String> getText() {
