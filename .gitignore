@@ -29,6 +29,5 @@ build/
 
 **/*.user.properties
 **/*auth.json
-**/application.properties
 # NOTE: use externalized log4j2.xml
 **/log4j2.xml
