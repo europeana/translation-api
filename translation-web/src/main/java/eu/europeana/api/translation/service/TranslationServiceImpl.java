@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.serialization.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.serialization.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
@@ -18,7 +18,7 @@ import eu.europeana.api.translation.model.TranslationResponse;
 public class TranslationServiceImpl {
 
   @Autowired
-  private TranslationServiceConfigProvider translationServiceConfigProvider;
+  private TranslationServiceProvider translationServiceConfigProvider;
 
   public TranslationResponse translate(TranslationRequest translRequest) throws Exception {
     TranslationService translService = getTranslService(translRequest);

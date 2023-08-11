@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -27,8 +25,7 @@ import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.web.exception.TranslationException;
 
 @Component(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
-public class TranslationServiceConfigProvider
-    implements ApplicationListener<ContextRefreshedEvent> {
+public class TranslationServiceProvider{
 
   @Autowired
   ApplicationContext applicationContext;
@@ -39,11 +36,11 @@ public class TranslationServiceConfigProvider
   Map<String, LanguageDetectionService> langDetectServices = new HashMap<>();
   Map<String, TranslationService> translationServices = new HashMap<>();
 
-  public TranslationServiceConfigProvider() {
+  public TranslationServiceProvider() {
     this(DEFAULT_SERVICE_CONFIG_FILE);
   }
 
-  public TranslationServiceConfigProvider(String serviceConfigFile) {
+  public TranslationServiceProvider(String serviceConfigFile) {
     this.serviceConfigFile = serviceConfigFile; 
   }
 
@@ -59,19 +56,19 @@ public class TranslationServiceConfigProvider
     return translationServices;
   }
 
-  // executed after all beans are initialized, to initialize the services from the main json config
-  // file
-  @Override
-  public void onApplicationEvent(ContextRefreshedEvent event) {
-    try {
-      initTranslationServicesConfiguration();
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "The initialization of the services from the global json config has failed.", e);
-    }
-  }
+//  // executed after all beans are initialized, to initialize the services from the main json config
+//  // file
+//  @Override
+//  public void onApplicationEvent(ContextRefreshedEvent event) {
+//    try {
+//      initTranslationServicesConfiguration();
+//    } catch (Exception e) {
+//      throw new RuntimeException(
+//          "The initialization of the services from the global json config has failed.", e);
+//    }
+//  }
 
-  private void initTranslationServicesConfiguration() throws Exception {
+  public void initTranslationServicesConfiguration() throws Exception {
     readTranslationServicesConfig();
     validateTranslationServicesConfig();
   }
