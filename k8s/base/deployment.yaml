@@ -11,7 +11,7 @@ spec:
           image: europeana/translation-api
           env:
           - name: SPRING_CONFIG_NAME
-            value: "translation,translation.user"
+            value: "application,translation,translation.user"
           - name: SPRING_CONFIG_ADDITIONAL_LOCATION
             value: "/opt/app/config/translation.user.properties"
           - name: GOOGLE_APPLICATION_CREDENTIALS
