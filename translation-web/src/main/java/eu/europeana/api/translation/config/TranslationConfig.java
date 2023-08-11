@@ -3,21 +3,14 @@ package eu.europeana.api.translation.config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import eu.europeana.api.commons.config.i18n.I18nService;
-import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
-import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 
 /**
  * Container for all settings that we load from the translation.properties file and optionally
@@ -133,28 +126,5 @@ public class TranslationConfig implements InitializingBean {
           "The following config properties are not set: %s", String.join("\n", missingProps)));
     }
   }
-
-  @Bean(TranslationBeans.BEAN_CLIENT_DETAILS_SERVICE)
-  public EuropeanaClientDetailsService getClientDetailsService() {
-    EuropeanaClientDetailsService clientDetailsService = new EuropeanaClientDetailsService();
-    clientDetailsService.setApiKeyServiceUrl(getApiKeyUrl());
-    return clientDetailsService;
-  }
-
-  @Bean(TranslationBeans.BEAN_I18N_SERVICE)
-  public I18nService getI18nService() {
-    I18nServiceImpl i18nService = new I18nServiceImpl();
-    return i18nService;
-  }
-
-  @Bean("messageSource")
-  public MessageSource getMessageSource() {
-    ReloadableResourceBundleMessageSource messageSource =  new ReloadableResourceBundleMessageSource();
-    messageSource.setBasename("classpath:messages");
-    messageSource.setDefaultEncoding("utf-8");
-    messageSource.setDefaultLocale(Locale.ENGLISH);
-    return messageSource;
-  }
-  
   
 }

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.InitServicesGlobalJsonConfig;
+import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
 import eu.europeana.api.translation.config.serialization.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.serialization.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
@@ -18,7 +18,7 @@ import eu.europeana.api.translation.model.TranslationResponse;
 public class TranslationServiceImpl {
 
   @Autowired
-  private InitServicesGlobalJsonConfig initGlobalJsonConfig;
+  private TranslationServiceConfigProvider translationServiceConfigProvider;
 
   public TranslationResponse translate(TranslationRequest translRequest) throws Exception {
     TranslationService translService = getTranslService(translRequest);
@@ -75,7 +75,7 @@ public class TranslationServiceImpl {
     if(translRequest.getFallback()==null) {
       return null;
     }
-    TranslationService fallback = initGlobalJsonConfig.getTranslServices().get(translRequest.getFallback());
+    TranslationService fallback = translationServiceConfigProvider.getTranslationServices().get(translRequest.getFallback());
     if(fallback==null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.FALLBACK, translRequest.getFallback()});
     }
@@ -87,7 +87,7 @@ public class TranslationServiceImpl {
   
   private TranslationService getTranslService(TranslationRequest translRequest) throws ParamValidationException {
     //check if the "source" and "target" params are supported 
-    List<TranslationLangPairCfg> langPairCfgList = initGlobalJsonConfig.getAppGlobalJsonConfig().getTranslConfig().getSupported();
+    List<TranslationLangPairCfg> langPairCfgList = translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getSupported();
     boolean langPairSupported = false;
     for(TranslationLangPairCfg langPairCfg : langPairCfgList) {
       if(langPairCfg.getSrcLang().contains(translRequest.getSource()) && langPairCfg.getTrgLang().contains(translRequest.getTarget())) {
@@ -100,7 +100,7 @@ public class TranslationServiceImpl {
     }
     //get the right transl service
     if(translRequest.getService() != null) {
-      TranslationService result = initGlobalJsonConfig.getTranslServices().get(translRequest.getService());
+      TranslationService result = translationServiceConfigProvider.getTranslationServices().get(translRequest.getService());
       if(result==null) {
         throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SERVICE, translRequest.getService()});
       }
@@ -111,13 +111,13 @@ public class TranslationServiceImpl {
     }
     else {
       //check if the src and trg langs are in the mappings and choose that service
-      for(TranslationMappingCfg translMappingCfg : initGlobalJsonConfig.getAppGlobalJsonConfig().getTranslConfig().getMappings()) {
+      for(TranslationMappingCfg translMappingCfg : translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getMappings()) {
         if(translMappingCfg.getSrcLang().contains(translRequest.getSource()) && translMappingCfg.getTrgLang().contains(translRequest.getTarget())) {
-          return initGlobalJsonConfig.getTranslServices().get(translMappingCfg.getServiceId());
+          return translationServiceConfigProvider.getTranslationServices().get(translMappingCfg.getServiceId());
         }
       }
       //otherwise choose the default service
-      return initGlobalJsonConfig.getTranslServices().get(initGlobalJsonConfig.getAppGlobalJsonConfig().getTranslConfig().getDefaultServiceId());
+      return translationServiceConfigProvider.getTranslationServices().get(translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getDefaultServiceId());
     }
   }
 
@@ -125,7 +125,7 @@ public class TranslationServiceImpl {
     if(langDetectRequest.getFallback()==null) {
       return null;
     }
-    LanguageDetectionService fallback = initGlobalJsonConfig.getLangDetectServices().get(langDetectRequest.getFallback());
+    LanguageDetectionService fallback = translationServiceConfigProvider.getLangDetectServices().get(langDetectRequest.getFallback());
     if(fallback==null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.FALLBACK, langDetectRequest.getFallback()});
     }
@@ -137,12 +137,12 @@ public class TranslationServiceImpl {
 
   private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest) throws ParamValidationException {
     //check if "lang" from the request is supported
-    if(langDetectRequest.getLang()!=null && !initGlobalJsonConfig.getAppGlobalJsonConfig().getLangDetectConfig().getSupported().contains(langDetectRequest.getLang())) {
+    if(langDetectRequest.getLang()!=null && !translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(langDetectRequest.getLang())) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
     }
     //get the right lang detect service
     if(langDetectRequest.getService() != null) {
-      LanguageDetectionService result = initGlobalJsonConfig.getLangDetectServices().get(langDetectRequest.getService());
+      LanguageDetectionService result = translationServiceConfigProvider.getLangDetectServices().get(langDetectRequest.getService());
       if(result==null) {
         throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SERVICE, langDetectRequest.getService()});
       }
@@ -153,7 +153,7 @@ public class TranslationServiceImpl {
       return result;
     }
     else {
-      return initGlobalJsonConfig.getLangDetectServices().get(initGlobalJsonConfig.getAppGlobalJsonConfig().getLangDetectConfig().getDefaultServiceId());
+      return translationServiceConfigProvider.getLangDetectServices().get(translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId());
     }
   }
 
