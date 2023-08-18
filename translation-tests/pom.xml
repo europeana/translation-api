@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-web</artifactId>
-			<version>${project.version}</version>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>

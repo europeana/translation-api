@@ -19,7 +19,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import eu.europeana.api.translation.config.BeanNames;
-import eu.europeana.api.translation.config.TranslationServiceProvider;
+import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
 
 /**
  * Main application. Allows deploying as a war and logs instance data when deployed in Cloud Foundry
@@ -57,13 +57,14 @@ public class TranslationApp extends SpringBootServletInitializer {
     try {
       initTranslationServices(ctx);
     } catch (Exception e) {
-      //gracefully stop the application in case of configuration problems (code 1 means exception occured at startup) 
+      //gracefully stop the application in case of configuration problems (code 1 means exception occured at startup)
+      logger.fatal("Stopping application. Translation Service initialization failed due to configuration errors!", e);
       System.exit(SpringApplication.exit(ctx, () -> 1));
     }
   }
 
   private static void initTranslationServices(ApplicationContext ctx) throws Exception {
-    TranslationServiceProvider translationServiceProvider = (TranslationServiceProvider) ctx
+    TranslationServiceConfigProvider translationServiceProvider = (TranslationServiceConfigProvider) ctx
         .getBean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER);
     translationServiceProvider.initTranslationServicesConfiguration();
   }

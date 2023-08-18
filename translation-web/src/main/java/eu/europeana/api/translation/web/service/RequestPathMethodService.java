@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -8,7 +8,6 @@ import eu.europeana.api.commons.web.service.AbstractRequestPathMethodService;
 
 /** This service is used to populate the Allow header in API responses. */
 @Service
-@ConditionalOnWebApplication
 public class RequestPathMethodService extends AbstractRequestPathMethodService {
 
   @Autowired

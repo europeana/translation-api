@@ -1,4 +1,6 @@
-package eu.europeana.api.translation.language;
+package eu.europeana.api.translation.definitions.language;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Class to hold the Language pair values supported by the Translation services
@@ -12,7 +14,7 @@ public class LanguagePair implements Comparable<LanguagePair> {
     private String srcLang;
     private String trgLang;
 
-    public LanguagePair(String srcLang, String trgLang) {
+    public LanguagePair(@NotNull String srcLang, @NotNull String trgLang) {
         this.srcLang = srcLang;
         this.trgLang = trgLang;
     }
@@ -36,4 +38,14 @@ public class LanguagePair implements Comparable<LanguagePair> {
         int ret = srcLang.compareTo(pair.srcLang);
         return (ret != 0 ? ret : trgLang.compareTo(pair.trgLang));
     }
+    
+    @Override
+      public String toString() {
+        return srcLang + '-' + trgLang;
+      }
+    
+    @Override
+      public int hashCode() {
+        return srcLang.hashCode() + trgLang.hashCode();
+      }
 }

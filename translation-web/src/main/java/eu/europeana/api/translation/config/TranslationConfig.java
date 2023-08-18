@@ -18,7 +18,7 @@ import org.springframework.context.annotation.PropertySources;
  */
 @Configuration
 @PropertySources({@PropertySource("classpath:translation.properties"),
-    @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
+@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
 public class TranslationConfig implements InitializingBean {
 
   private static final Logger LOG = LogManager.getLogger(TranslationConfig.class);
@@ -51,7 +51,7 @@ public class TranslationConfig implements InitializingBean {
   private String pangeanicTranslateEndpoint;
   
   @Value("${translation.google.projectId}")
-  private String translationGoogleProjectId;
+  private String googleTranslateProjectId;
   
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
@@ -92,12 +92,12 @@ public class TranslationConfig implements InitializingBean {
     }
   }
 
-  public String getTranslationGoogleProjectId() {
-    return translationGoogleProjectId;
+  public String getGoogleTranslateProjectId() {
+    return googleTranslateProjectId;
   }
 
-  public void setTranslationGoogleProjectId(String translationGoogleProjectId) {
-    this.translationGoogleProjectId = translationGoogleProjectId;
+  public void setTranslationGoogleProjectId(String googleTranslateProjectId) {
+    this.googleTranslateProjectId = googleTranslateProjectId;
   }
 
   public static boolean testProfileNotActive(String activeProfileString) {

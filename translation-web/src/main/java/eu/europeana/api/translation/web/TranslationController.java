@@ -16,17 +16,17 @@ import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
-import eu.europeana.api.translation.service.TranslationServiceImpl;
+import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @Tag(name = "Translation & Detection endoints", description = "Perform language detection and translation")
 public class TranslationController extends BaseRest {
 
-  private final TranslationServiceImpl translationService;
+  private final TranslationWebService translationService;
 
   @Autowired
-  public TranslationController(TranslationServiceImpl translationService) {
+  public TranslationController(TranslationWebService translationService) {
     this.translationService = translationService;
   }
 

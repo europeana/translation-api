@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.utils;
+package eu.europeana.api.translation.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -10,14 +10,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.springframework.http.MediaType;
-import eu.europeana.api.translation.language.Language;
+import eu.europeana.api.translation.definitions.language.Language;
 
 public class PangeanicTranslationUtils {
 
@@ -54,8 +54,8 @@ public class PangeanicTranslationUtils {
         HttpPost post = new HttpPost(translateEndpoint);
         JSONObject body = PangeanicTranslationUtils.createTranslateRequestBody(texts, targetLanguage, sourceLanguage, apikey, true);
         post.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
-        post.setHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        post.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+        post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         if (LOG.isTraceEnabled()) {
             LOG.trace("Sending POST {}", post.getURI());
             LOG.trace("  body {}", body);
@@ -72,8 +72,8 @@ public class PangeanicTranslationUtils {
         HttpPost post = new HttpPost(detectEndpoint);
         JSONObject body = PangeanicTranslationUtils.createDetectRequestBody(texts, hint, apikey);
         post.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
-        post.setHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        post.setHeader(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE);
+        post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+        post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         if (LOG.isTraceEnabled()) {
             LOG.trace("Sending POST {}", post.getURI());
             LOG.trace("  body {}", body);

@@ -3,7 +3,6 @@ package eu.europeana.api.translation.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.PostConstruct;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -17,30 +16,29 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.TranslationConfig;
-import eu.europeana.api.translation.language.PangeanicLanguages;
-import eu.europeana.api.translation.utils.PangeanicTranslationUtils;
-import eu.europeana.api.translation.web.exception.TranslationException;
+import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
-@Service
 public class PangeanicLangDetectService implements LanguageDetectionService {
   
-  @Autowired TranslationConfig translationConfig;
-
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
+  private final String externalServiceEndpoint;
 
     protected CloseableHttpClient detectClient;
 
+    public PangeanicLangDetectService(String endPoint) {
+      this.externalServiceEndpoint = endPoint;
+      init();
+      
+    }
+    
     /**
      * Creates a new client that can send translation requests to Google Cloud Translate. Note that the client needs
      * to be closed when it's not used anymore
      * @throws IOException when there is a problem retrieving the first token
      * @throws JSONException when there is a problem decoding the received token
      */
-    @PostConstruct
     private void init() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(PangeanicTranslationUtils.MAX_CONNECTIONS);
@@ -48,7 +46,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
         cm.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
 //        SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build(); //We need to set socket keep alive
         detectClient = HttpClients.custom().setConnectionManager(cm).build();
-        LOG.info("Pangeanic Language Detection service is initialized with detect language Endpoint - {}", translationConfig.getPangeanicDetectEndpoint());
+        LOG.info("Pangeanic Language Detection service is initialized with detect language Endpoint - {}", getExternalServiceEndPoint());
     }
 
     @Override
@@ -59,7 +57,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     @Override
     public List<String> detectLang(List<String> texts, String langHint) throws TranslationException {
         try {
-            HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(translationConfig.getPangeanicDetectEndpoint(), texts, langHint, "");
+            HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
             return sendDetectRequestAndParse(post);
         } catch (JSONException | IOException e) {
             throw new TranslationException(e.getMessage());
@@ -133,6 +131,10 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
                 LOG.error("Error closing connection to Pangeanic Translation API", e);
             }
         }
+    }
+
+    public String getExternalServiceEndPoint() {
+      return externalServiceEndpoint;
     }
 
 }

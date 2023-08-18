@@ -1,15 +1,11 @@
-package eu.europeana.api.translation.language;
+package eu.europeana.api.translation.definitions.language;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Enum class for Pangeanic supported Languages and the threshold values for the languages during translations
@@ -27,8 +23,6 @@ public enum PangeanicLanguages {
 
     private final double translationThresholds;
 
-    protected static final Logger LOG = LogManager.getLogger(PangeanicLanguages.class);
-
     PangeanicLanguages(double translationThresholds) {
         this.translationThresholds = translationThresholds;
     }
@@ -41,7 +35,7 @@ public enum PangeanicLanguages {
             .map(Enum::name)
             .collect(Collectors.toList()));
 
-    private static final List<LanguagePair> TRANSLATION_PAIRS = new ArrayList<>(Stream.of(PangeanicLanguages.values())
+    private static final Set<LanguagePair> TRANSLATION_PAIRS = new HashSet<>(Stream.of(PangeanicLanguages.values())
             .map(e -> new LanguagePair(e.name(), Language.EN.name()))
             .collect(Collectors.toList()));
 
@@ -74,15 +68,14 @@ public enum PangeanicLanguages {
     /**
      * Returns true if Language pair is supported for Pangeanic Translation
      *
-     * @param srourceLang source langauge
-     * @param targetLang  target lanaguge. Always "en" in the case of Pangeanic
+     * @param sourceLang source language
+     * @param targetLang  target language. Always "en" in the case of Pangeanic
      * @return
      */
-    public static boolean isLanguagePairSupported(String srourceLang, String targetLang) {
+    public static boolean isLanguagePairSupported(String sourceLang, String targetLang) {
         if (!StringUtils.equals(targetLang, Language.ENGLISH)) {
-            LOG.error("For Pangeanic Translations target language must always be 'en' - {}", targetLang);
             return false;
         }
-        return TRANSLATION_PAIRS.contains(new LanguagePair(srourceLang.toUpperCase(Locale.ROOT), targetLang.toUpperCase(Locale.ROOT)));
+        return TRANSLATION_PAIRS.contains(new LanguagePair(sourceLang.toUpperCase(Locale.ROOT), targetLang.toUpperCase(Locale.ROOT)));
     }
 }

@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.utils;
+package eu.europeana.api.translation.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import eu.europeana.api.translation.language.Language;
-import eu.europeana.api.translation.language.LanguageValueFieldMap;
+import eu.europeana.api.translation.definitions.language.Language;
+import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
 
 @Deprecated
 /**

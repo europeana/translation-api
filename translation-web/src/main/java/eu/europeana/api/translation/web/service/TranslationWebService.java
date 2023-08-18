@@ -1,11 +1,11 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.web.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.TranslationServiceProvider;
+import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
 import eu.europeana.api.translation.config.serialization.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.serialization.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
@@ -13,12 +13,14 @@ import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
+import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.TranslationService;
 
 @Service
-public class TranslationServiceImpl {
+public class TranslationWebService {
 
   @Autowired
-  private TranslationServiceProvider translationServiceConfigProvider;
+  private TranslationServiceConfigProvider translationServiceConfigProvider;
 
   public TranslationResponse translate(TranslationRequest translRequest) throws Exception {
     TranslationService translService = getTranslService(translRequest);

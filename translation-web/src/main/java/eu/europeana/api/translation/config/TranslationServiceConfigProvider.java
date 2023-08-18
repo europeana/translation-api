@@ -22,10 +22,10 @@ import eu.europeana.api.translation.config.serialization.TranslationServicesConf
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
-import eu.europeana.api.translation.web.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 @Component(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
-public class TranslationServiceProvider{
+public class TranslationServiceConfigProvider{
 
   @Autowired
   ApplicationContext applicationContext;
@@ -36,11 +36,11 @@ public class TranslationServiceProvider{
   Map<String, LanguageDetectionService> langDetectServices = new HashMap<>();
   Map<String, TranslationService> translationServices = new HashMap<>();
 
-  public TranslationServiceProvider() {
+  public TranslationServiceConfigProvider() {
     this(DEFAULT_SERVICE_CONFIG_FILE);
   }
 
-  public TranslationServiceProvider(String serviceConfigFile) {
+  public TranslationServiceConfigProvider(String serviceConfigFile) {
     this.serviceConfigFile = serviceConfigFile; 
   }
 

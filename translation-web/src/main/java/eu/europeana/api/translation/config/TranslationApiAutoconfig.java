@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.config;
 
 import java.util.Locale;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,13 +9,16 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.service.GoogleTranslationService;
+import eu.europeana.api.translation.service.PangeanicLangDetectService;
+import eu.europeana.api.translation.service.PangeanicTranslationService;
 
 @Configuration
-public class BeanConfig {
+public class TranslationApiAutoconfig {
 
   private final TranslationConfig translationConfig;
 
-  public BeanConfig(TranslationConfig translationConfig) {
+  public TranslationApiAutoconfig(TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
   }
   @Bean(BeanNames.BEAN_CLIENT_DETAILS_SERVICE)
@@ -39,7 +43,21 @@ public class BeanConfig {
     return messageSource;
   }
   
-
-//  public 
+  @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
+  public PangeanicLangDetectService getPangeanicLangDetectService() {
+    return new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint());
+  }
+  
+  @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
+  public PangeanicTranslationService getPangeanicTranslationService(
+      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) 
+      PangeanicLangDetectService pangeanicLangDetectService) {
+    return new PangeanicTranslationService(translationConfig.getPangeanicTranslateEndpoint(), pangeanicLangDetectService);
+  }
+  
+  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
+  public GoogleTranslationService getGoogleTranslationService() {
+    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId());
+  } 
   
 }

@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.language;
+package eu.europeana.api.translation.definitions.language;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import eu.europeana.api.translation.web.exception.InvalidParamValueException;
+import eu.europeana.api.translation.definitions.exceptions.InvalidLanguageException;
 
 /**
  * Supported languages for filtering record data
@@ -36,16 +36,16 @@ public enum Language {
      * @return Language that was found
      * @throws InvalidParamValueException if the string did not match any supported language
      */
-    public static Language validateSingle(String languageAbbrevation) throws InvalidParamValueException {
+    public static Language validateSingle(String languageAbbrevation) throws InvalidLanguageException {
         if (StringUtils.isBlank(languageAbbrevation)) {
-            throw new InvalidParamValueException("Empty language value");
+            throw new InvalidLanguageException("Empty language value");
         }
 
         Language result;
         try {
             result = Language.valueOf(languageAbbrevation.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new InvalidParamValueException("Language value '" + languageAbbrevation + "' is not valid");
+            throw new InvalidLanguageException("Language value '" + languageAbbrevation + "' is not valid");
         }
         return result;
     }
@@ -57,9 +57,9 @@ public enum Language {
      * @return a list of one or more found languages
      * @throws InvalidParamValueException if one of the values is incorrect
      */
-    public static List<Language> validateMultiple(String languageAbbrevations) throws InvalidParamValueException {
+    public static List<Language> validateMultiple(String languageAbbrevations) throws InvalidLanguageException {
         if (StringUtils.isBlank(languageAbbrevations)) {
-            throw new InvalidParamValueException("Empty language value");
+            throw new InvalidLanguageException("Empty language value");
         }
 
         List<Language> result = new ArrayList<>();
@@ -68,7 +68,7 @@ public enum Language {
             result.add(validateSingle(language));
         }
         if (result.isEmpty()) {
-            throw new InvalidParamValueException("Language value '" + languageAbbrevations + "' is not valid");
+            throw new InvalidLanguageException("Language value '" + languageAbbrevations + "' is not valid");
         }
         return result;
     }

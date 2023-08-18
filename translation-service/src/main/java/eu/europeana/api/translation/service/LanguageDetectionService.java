@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-import eu.europeana.api.translation.web.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 public interface LanguageDetectionService {
 
@@ -22,5 +22,11 @@ public interface LanguageDetectionService {
      * to close the engine
      */
     void close();
+    
+    /**
+     * The external endpoint invoked by the service
+     * @return
+     */
+    public String getExternalServiceEndPoint();
 
 }
