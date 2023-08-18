@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.config.serialization;
+package eu.europeana.api.translation.config.services;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -13,7 +13,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 public class TranslationServicesConfiguration {
 
   private DetectCfg langDetectConfig;
-  private TranslationCfg translConfig;
+  private TranslationCfg translationConfig;
 
   public TranslationServicesConfiguration() {
     super();
@@ -30,12 +30,12 @@ public class TranslationServicesConfiguration {
   }
 
   @JsonGetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public TranslationCfg getTranslConfig() {
-    return translConfig;
+  public TranslationCfg getTranslationConfig() {
+    return translationConfig;
   }
 
   @JsonSetter(TranslationAppConstants.TRANSLATE_ENDPOINT)
-  public void setTranslConfig(TranslationCfg translConfig) {
-    this.translConfig = translConfig;
+  public void setTranslationConfig(TranslationCfg translConfig) {
+    this.translationConfig = translConfig;
   }
 }

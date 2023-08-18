@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.config.serialization.DetectServiceCfg;
-import eu.europeana.api.translation.config.serialization.TranslationLangPairCfg;
-import eu.europeana.api.translation.config.serialization.TranslationMappingCfg;
-import eu.europeana.api.translation.config.serialization.TranslationServiceCfg;
-import eu.europeana.api.translation.config.serialization.TranslationServicesConfiguration;
+import eu.europeana.api.translation.config.services.DetectServiceCfg;
+import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
+import eu.europeana.api.translation.config.services.TranslationMappingCfg;
+import eu.europeana.api.translation.config.services.TranslationServiceCfg;
+import eu.europeana.api.translation.config.services.TranslationServicesConfiguration;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
@@ -29,7 +29,7 @@ public class TranslationServiceConfigProvider{
 
   @Autowired
   ApplicationContext applicationContext;
-  public static final String DEFAULT_SERVICE_CONFIG_FILE = "/service_configuration.json";
+  public static final String DEFAULT_SERVICE_CONFIG_FILE = "/translation_service_configuration.json";
   private final String serviceConfigFile;
 
   TranslationServicesConfiguration translationServicesConfig;
@@ -56,18 +56,6 @@ public class TranslationServiceConfigProvider{
     return translationServices;
   }
 
-//  // executed after all beans are initialized, to initialize the services from the main json config
-//  // file
-//  @Override
-//  public void onApplicationEvent(ContextRefreshedEvent event) {
-//    try {
-//      initTranslationServicesConfiguration();
-//    } catch (Exception e) {
-//      throw new RuntimeException(
-//          "The initialization of the services from the global json config has failed.", e);
-//    }
-//  }
-
   public void initTranslationServicesConfiguration() throws Exception {
     readTranslationServicesConfig();
     validateTranslationServicesConfig();
@@ -84,7 +72,7 @@ public class TranslationServiceConfigProvider{
     /*
      * Validate translation config
      */
-    for (TranslationServiceCfg translServiceConfig : translationServicesConfig.getTranslConfig()
+    for (TranslationServiceCfg translServiceConfig : translationServicesConfig.getTranslationConfig()
         .getServices()) {
       // validate unique service ids
       if (translationServices.containsKey(translServiceConfig.getId())) {
@@ -96,12 +84,12 @@ public class TranslationServiceConfigProvider{
     }
     // check that a default service id is a valid one
     if (!translationServices
-        .containsKey(translationServicesConfig.getTranslConfig().getDefaultServiceId())) {
+        .containsKey(translationServicesConfig.getTranslationConfig().getDefaultServiceId())) {
       throw new TranslationException("Translation default service id is invalid.");
     }
     // validate that each service supports the languages declared in the mappings section
     List<String> allMappingsLangPairs = new ArrayList<>();
-    for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslConfig()
+    for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslationConfig()
         .getMappings()) {
       if (translationServices.get(translMapping.getServiceId()) == null) {
         throw new TranslationException(
@@ -121,7 +109,7 @@ public class TranslationServiceConfigProvider{
       }
     }
     // validate all languages from the supported section are actually supported
-    for (TranslationLangPairCfg langPair : translationServicesConfig.getTranslConfig()
+    for (TranslationLangPairCfg langPair : translationServicesConfig.getTranslationConfig()
         .getSupported()) {
       for (String srcLang : langPair.getSrcLang()) {
         for (String trgLang : langPair.getTrgLang()) {
@@ -129,7 +117,7 @@ public class TranslationServiceConfigProvider{
               && !allMappingsLangPairs
                   .contains(srcLang + TranslationAppConstants.LANG_DELIMITER + trgLang)
               && !translationServices
-                  .get(translationServicesConfig.getTranslConfig().getDefaultServiceId())
+                  .get(translationServicesConfig.getTranslationConfig().getDefaultServiceId())
                   .isSupported(srcLang, trgLang)) {
             throw new TranslationException(
                 "The translation services do not support all languages declared in the supported section.");

@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
 import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
-import eu.europeana.api.translation.config.serialization.TranslationLangPairCfg;
-import eu.europeana.api.translation.config.serialization.TranslationMappingCfg;
+import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
+import eu.europeana.api.translation.config.services.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
@@ -89,7 +89,7 @@ public class TranslationWebService {
   
   private TranslationService getTranslService(TranslationRequest translRequest) throws ParamValidationException {
     //check if the "source" and "target" params are supported 
-    List<TranslationLangPairCfg> langPairCfgList = translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getSupported();
+    List<TranslationLangPairCfg> langPairCfgList = translationServiceConfigProvider.getTranslationServicesConfig().getTranslationConfig().getSupported();
     boolean langPairSupported = false;
     for(TranslationLangPairCfg langPairCfg : langPairCfgList) {
       if(langPairCfg.getSrcLang().contains(translRequest.getSource()) && langPairCfg.getTrgLang().contains(translRequest.getTarget())) {
@@ -113,13 +113,13 @@ public class TranslationWebService {
     }
     else {
       //check if the src and trg langs are in the mappings and choose that service
-      for(TranslationMappingCfg translMappingCfg : translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getMappings()) {
+      for(TranslationMappingCfg translMappingCfg : translationServiceConfigProvider.getTranslationServicesConfig().getTranslationConfig().getMappings()) {
         if(translMappingCfg.getSrcLang().contains(translRequest.getSource()) && translMappingCfg.getTrgLang().contains(translRequest.getTarget())) {
           return translationServiceConfigProvider.getTranslationServices().get(translMappingCfg.getServiceId());
         }
       }
       //otherwise choose the default service
-      return translationServiceConfigProvider.getTranslationServices().get(translationServiceConfigProvider.getTranslationServicesConfig().getTranslConfig().getDefaultServiceId());
+      return translationServiceConfigProvider.getTranslationServices().get(translationServiceConfigProvider.getTranslationServicesConfig().getTranslationConfig().getDefaultServiceId());
     }
   }
 

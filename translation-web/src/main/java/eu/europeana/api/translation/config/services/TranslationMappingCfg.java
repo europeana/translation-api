@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.config.serialization;
+package eu.europeana.api.translation.config.services;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;

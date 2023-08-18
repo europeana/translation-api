@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.config.serialization;
+package eu.europeana.api.translation.config.services;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -10,47 +10,36 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({TranslationAppConstants.SUPPORTED_LANGUAGES, TranslationAppConstants.SERVICES, TranslationAppConstants.MAPPINGS, TranslationAppConstants.DEFAULT_SERVICE_ID})
-public class TranslationCfg {
+@JsonPropertyOrder({TranslationAppConstants.SUPPORTED_LANGUAGES, TranslationAppConstants.SERVICES, TranslationAppConstants.DEFAULT_SERVICE_ID})
+public class DetectCfg {
 
-  private List<TranslationLangPairCfg> supported;
-  private List<TranslationServiceCfg> services;
-  private List<TranslationMappingCfg> mappings;
+  private List<String> supported;
+  private List<DetectServiceCfg> services;
   private String defaultServiceId;
 
-  public TranslationCfg() {
+  public DetectCfg() {
     super();
   }
 
   @JsonGetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
-  public List<TranslationLangPairCfg> getSupported() {
+  public List<String> getSupported() {
     return supported;
   }
 
   @JsonSetter(TranslationAppConstants.SUPPORTED_LANGUAGES)
-  public void setSupported(List<TranslationLangPairCfg> supported) {
-    this.supported = supported;
+  public void setSupported(List<String> supportedLangs) {
+    this.supported = supportedLangs;
   }
 
   @JsonGetter(TranslationAppConstants.SERVICES)
-  public List<TranslationServiceCfg> getServices() {
+  public List<DetectServiceCfg> getServices() {
     return services;
   }
 
   @JsonSetter(TranslationAppConstants.SERVICES)
-  public void setServices(List<TranslationServiceCfg> services) {
+  public void setServices(List<DetectServiceCfg> services) {
     this.services = services;
   }
-  
-  @JsonGetter(TranslationAppConstants.MAPPINGS)
-  public List<TranslationMappingCfg> getMappings() {
-    return mappings;
-  }
-
-  @JsonSetter(TranslationAppConstants.MAPPINGS)
-  public void setMappings(List<TranslationMappingCfg> mappings) {
-    this.mappings = mappings;
-  }  
 
   @JsonGetter(TranslationAppConstants.DEFAULT_SERVICE_ID)
   public String getDefaultServiceId() {
@@ -61,5 +50,5 @@ public class TranslationCfg {
   public void setDefaultServiceId(String defaultServiceId) {
     this.defaultServiceId = defaultServiceId;
   }
-
+  
 }
