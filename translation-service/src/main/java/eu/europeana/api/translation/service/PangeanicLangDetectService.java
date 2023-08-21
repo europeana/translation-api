@@ -17,7 +17,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {
   
@@ -55,12 +55,12 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     }
 
     @Override
-    public List<String> detectLang(List<String> texts, String langHint) throws TranslationException {
+    public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
         try {
             HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
             return sendDetectRequestAndParse(post);
         } catch (JSONException | IOException e) {
-            throw new TranslationException(e.getMessage());
+            throw new LanguageDetectionException(e.getMessage());
         }
     }
 
@@ -73,9 +73,9 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
      * @return list of languages detected in the same sequence
      * @throws IOException
      * @throws JSONException
-     * @throws TranslationException
+     * @throws LanguageDetectionException
      */
-    private List<String> sendDetectRequestAndParse(HttpPost post) throws IOException, JSONException, TranslationException {
+    private List<String> sendDetectRequestAndParse(HttpPost post) throws IOException, JSONException, LanguageDetectionException {
         try (CloseableHttpResponse response = detectClient.execute(post)) {
             // Pageanic BUG - sometimes language detect sends 400 Bad request with proper response and error message
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK && response.getStatusLine().getStatusCode() != HttpStatus.SC_BAD_REQUEST) {
@@ -85,13 +85,13 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
                 String json = EntityUtils.toString(response.getEntity());
                 // sometimes language detect sends 200 ok status with empty response data
                 if (json.isEmpty()) {
-                    throw new TranslationException("Language detect returned an empty response");
+                    throw new LanguageDetectionException("Language detect returned an empty response");
                 }
                 JSONObject obj = new JSONObject(json);
 
                 // if json doesn't have detected lanaguge throw a error
                 if (!obj.has(PangeanicTranslationUtils.DETECTED_LANGUAGE)) {
-                    throw new TranslationException("Language detect response doesn't have detected_langs tags");
+                    throw new LanguageDetectionException("Language detect response doesn't have detected_langs tags");
                 }
 
                 List<String> result = new ArrayList<>();

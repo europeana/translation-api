@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public interface LanguageDetectionService {
 
@@ -13,10 +13,10 @@ public interface LanguageDetectionService {
      * @param texts to detect source language
      * @param langHint optional, hint to identify source language in which the texts are available
      * @return
-     * @throws TranslationException
+     * @throws LanguageDetectionException
      */
 
-    List<String> detectLang(List<String> texts, String langHint) throws TranslationException;
+    List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException;
 
     /**
      * to close the engine

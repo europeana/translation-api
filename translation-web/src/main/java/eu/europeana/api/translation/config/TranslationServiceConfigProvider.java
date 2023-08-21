@@ -22,7 +22,7 @@ import eu.europeana.api.translation.config.services.TranslationServicesConfigura
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 @Component(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
 public class TranslationServiceConfigProvider{
@@ -62,13 +62,13 @@ public class TranslationServiceConfigProvider{
   }
 
   private void validateTranslationServicesConfig()
-      throws TranslationException, ClassNotFoundException {
+      throws LanguageDetectionException, ClassNotFoundException {
 
     validateDetectServiceCfg();
     validateTranslationServiceCfg();
   }
 
-  private void validateTranslationServiceCfg() throws TranslationException, ClassNotFoundException {
+  private void validateTranslationServiceCfg() throws LanguageDetectionException, ClassNotFoundException {
     /*
      * Validate translation config
      */
@@ -76,7 +76,7 @@ public class TranslationServiceConfigProvider{
         .getServices()) {
       // validate unique service ids
       if (translationServices.containsKey(translServiceConfig.getId())) {
-        throw new TranslationException("Duplicate service id in the translation config.");
+        throw new LanguageDetectionException("Duplicate service id in the translation config.");
       }
       TranslationService translService = (TranslationService) applicationContext
           .getBean(Class.forName(translServiceConfig.getClassname()));
@@ -85,21 +85,21 @@ public class TranslationServiceConfigProvider{
     // check that a default service id is a valid one
     if (!translationServices
         .containsKey(translationServicesConfig.getTranslationConfig().getDefaultServiceId())) {
-      throw new TranslationException("Translation default service id is invalid.");
+      throw new LanguageDetectionException("Translation default service id is invalid.");
     }
     // validate that each service supports the languages declared in the mappings section
     List<String> allMappingsLangPairs = new ArrayList<>();
     for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslationConfig()
         .getMappings()) {
       if (translationServices.get(translMapping.getServiceId()) == null) {
-        throw new TranslationException(
+        throw new LanguageDetectionException(
             "Translation service id declared in the mappings is invalid.");
       }
       for (String srcLang : translMapping.getSrcLang()) {
         for (String trgLang : translMapping.getTrgLang()) {
           if (!srcLang.equals(trgLang) && !translationServices.get(translMapping.getServiceId())
               .isSupported(srcLang, trgLang)) {
-            throw new TranslationException("Translation service: " + translMapping.getServiceId()
+            throw new LanguageDetectionException("Translation service: " + translMapping.getServiceId()
                 + ", does not support the language pair: " + srcLang
                 + TranslationAppConstants.LANG_DELIMITER + trgLang
                 + ", declared in the mappings section.");
@@ -119,7 +119,7 @@ public class TranslationServiceConfigProvider{
               && !translationServices
                   .get(translationServicesConfig.getTranslationConfig().getDefaultServiceId())
                   .isSupported(srcLang, trgLang)) {
-            throw new TranslationException(
+            throw new LanguageDetectionException(
                 "The translation services do not support all languages declared in the supported section.");
           }
         }
@@ -127,7 +127,7 @@ public class TranslationServiceConfigProvider{
     }
   }
 
-  private void validateDetectServiceCfg() throws TranslationException, ClassNotFoundException {
+  private void validateDetectServiceCfg() throws LanguageDetectionException, ClassNotFoundException {
     /*
      * Validate lang detection config
      */
@@ -135,7 +135,7 @@ public class TranslationServiceConfigProvider{
         .getServices()) {
       // validate unique service ids
       if (langDetectServices.containsKey(detectServiceCfg.getId())) {
-        throw new TranslationException("Duplicate service id in the language detection config.");
+        throw new LanguageDetectionException("Duplicate service id in the language detection config.");
       }
       LanguageDetectionService detectService = (LanguageDetectionService) applicationContext
           .getBean(Class.forName(detectServiceCfg.getClassname()));
@@ -144,14 +144,14 @@ public class TranslationServiceConfigProvider{
     // check that a default service id is a valid one
     if (!langDetectServices
         .containsKey(translationServicesConfig.getLangDetectConfig().getDefaultServiceId())) {
-      throw new TranslationException("Language detection default service id is invalid.");
+      throw new LanguageDetectionException("Language detection default service id is invalid.");
     }
     // validate that the default service supports all languages from the supported section
     for (String supportedLang : translationServicesConfig.getLangDetectConfig().getSupported()) {
       if (!langDetectServices
           .get(translationServicesConfig.getLangDetectConfig().getDefaultServiceId())
           .isSupported(supportedLang)) {
-        throw new TranslationException(
+        throw new LanguageDetectionException(
             "The default language detection service does not support language: " + supportedLang
                 + ", declared in the supported section");
       }

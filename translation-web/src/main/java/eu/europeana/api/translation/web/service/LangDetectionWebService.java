@@ -11,6 +11,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 @Service
 public class LangDetectionWebService {
@@ -24,18 +25,14 @@ public class LangDetectionWebService {
     try {
       langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
     }
-    catch (Exception ePrimary) {
-      //call the fallback service in case of failed lang detection
-      LanguageDetectionService fallback = getLangDetectFallbackService(langDetectRequest);
-      if(fallback==null) {
+    catch (LanguageDetectionException ePrimary) {
+      //check if fallback is available
+      if(langDetectRequest.getFallback()==null) {
         throw ePrimary;
       }
-      try {
-        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
-      }
-      catch (Exception eFallback) {
-        throw ePrimary;
-      }
+      //call the fallback service in case of failed lang detection (non 200 response by remote service)
+      LanguageDetectionService fallback = getServiceInstance(langDetectRequest.getFallback(), langDetectRequest.getLang(), true);
+      langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
     }
     
     LangDetectResponse result = new LangDetectResponse();
@@ -43,42 +40,37 @@ public class LangDetectionWebService {
     result.setLang(langDetectRequest.getLang());
     return result;
   }  
-   
-  
-  private LanguageDetectionService getLangDetectFallbackService(LangDetectRequest langDetectRequest) throws ParamValidationException {
-    if(langDetectRequest.getFallback()==null) {
-      return null;
-    }
-    LanguageDetectionService fallback = translationServiceConfigProvider.getLangDetectServices().get(langDetectRequest.getFallback());
-    if(fallback==null) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.FALLBACK, langDetectRequest.getFallback()});
-    }
-    if(langDetectRequest.getLang()!=null && !fallback.isSupported(langDetectRequest.getLang())) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
-    }
-    return fallback;
-  }
 
   private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest) throws ParamValidationException {
-    //check if "lang" from the request is supported
-    if(langDetectRequest.getLang()!=null && !translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(langDetectRequest.getLang())) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
+    final String requestedServiceId = langDetectRequest.getService();
+    final String languageHint = langDetectRequest.getLang();
+    
+    if(requestedServiceId != null) {
+      return getServiceInstance(requestedServiceId, languageHint);
+    }else {
+      final String defaultServiceId = translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId();
+      return getServiceInstance(defaultServiceId, languageHint); 
     }
-    //get the right lang detect service
-    if(langDetectRequest.getService() != null) {
-      LanguageDetectionService result = translationServiceConfigProvider.getLangDetectServices().get(langDetectRequest.getService());
-      if(result==null) {
-        throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SERVICE, langDetectRequest.getService()});
-      }
-      //check if the "lang" is supported
-      if(langDetectRequest.getLang()!=null && !result.isSupported(langDetectRequest.getLang())) {
-        throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
-      }
-      return result;
+  }
+
+  private LanguageDetectionService getServiceInstance(final String requestedServiceId,
+      final String languageHint) throws ParamValidationException {
+    return getServiceInstance(requestedServiceId, languageHint, false);
+  }
+
+  private LanguageDetectionService getServiceInstance(final String requestedServiceId,
+      final String languageHint, boolean isFallbackService) throws ParamValidationException {
+    LanguageDetectionService detectService = translationServiceConfigProvider.getLangDetectServices().get(requestedServiceId);
+    if(detectService==null) {
+      final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
+      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {paramName, requestedServiceId});
     }
-    else {
-      return translationServiceConfigProvider.getLangDetectServices().get(translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId());
+    //check if the "lang" is supported
+    if(languageHint!=null && !detectService.isSupported(languageHint)) {
+      throw new ParamValidationException(null, I18nConstants.UNSUPORTED_LANGUAGE_BY_DETECT_SERVICE,
+          new String[] {TranslationAppConstants.LANG, requestedServiceId});
     }
+    return detectService;
   }
 
   public boolean isLangDetectionSupported(@NotNull String lang) {
