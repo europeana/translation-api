@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
@@ -49,5 +50,9 @@ public class TranslationMappingCfg {
     @JsonSetter(TranslationAppConstants.SERVICE)
     public void setServiceId(String serviceId) {
       this.serviceId = serviceId;
+    }
+    
+    public boolean isSupported(LanguagePair languagePair){
+      return getTrgLang().contains(languagePair.getTargetLang()) && getSrcLang().contains(languagePair.getTargetLang());
     }
 }

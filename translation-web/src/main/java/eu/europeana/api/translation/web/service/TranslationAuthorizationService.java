@@ -12,6 +12,7 @@ import eu.europeana.api.commons.service.authorization.BaseAuthorizationService;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.web.auth.Roles;
 
+@SuppressWarnings("deprecation")
 @Component
 public class TranslationAuthorizationService extends BaseAuthorizationService {
 

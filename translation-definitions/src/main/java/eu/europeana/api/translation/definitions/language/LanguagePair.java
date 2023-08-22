@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.definitions.language;
 
 import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.StringUtils;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 /**
  * Class to hold the Language pair values supported by the Translation services
@@ -12,11 +14,11 @@ import javax.validation.constraints.NotNull;
 public class LanguagePair implements Comparable<LanguagePair> {
 
     private String srcLang;
-    private String trgLang;
+    private String targetLang;
 
-    public LanguagePair(@NotNull String srcLang, @NotNull String trgLang) {
+    public LanguagePair(String srcLang, @NotNull String targetLang) {
         this.srcLang = srcLang;
-        this.trgLang = trgLang;
+        this.targetLang = targetLang;
     }
 
     public String getSrcLang() {
@@ -30,22 +32,30 @@ public class LanguagePair implements Comparable<LanguagePair> {
         }
 
         LanguagePair pair = (LanguagePair) obj;
-        return srcLang.equals(pair.srcLang) && trgLang.equals(pair.trgLang);
+        return StringUtils.equals(targetLang, pair.targetLang) 
+            && StringUtils.equals(srcLang, pair.srcLang); 
     }
 
     @Override
     public int compareTo(LanguagePair pair) {
-        int ret = srcLang.compareTo(pair.srcLang);
-        return (ret != 0 ? ret : trgLang.compareTo(pair.trgLang));
+        int ret = targetLang.compareTo(pair.targetLang);
+        if(ret == 0) {
+          ret = StringUtils.compare(srcLang, pair.srcLang);
+        }
+        return ret;
     }
     
     @Override
       public String toString() {
-        return srcLang + '-' + trgLang;
+        return srcLang + TranslationAppConstants.LANG_DELIMITER + targetLang;
       }
     
     @Override
       public int hashCode() {
-        return srcLang.hashCode() + trgLang.hashCode();
+        return srcLang==null ? targetLang.hashCode() : srcLang.hashCode() + targetLang.hashCode();
       }
+
+    public String getTargetLang() {
+      return targetLang;
+    }
 }

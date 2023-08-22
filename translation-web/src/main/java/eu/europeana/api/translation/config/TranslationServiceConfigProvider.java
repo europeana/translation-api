@@ -112,7 +112,7 @@ public class TranslationServiceConfigProvider{
     for (TranslationLangPairCfg langPair : translationServicesConfig.getTranslationConfig()
         .getSupported()) {
       for (String srcLang : langPair.getSrcLang()) {
-        for (String trgLang : langPair.getTrgLang()) {
+        for (String trgLang : langPair.getTargetLang()) {
           if (!srcLang.equals(trgLang)
               && !allMappingsLangPairs
                   .contains(srcLang + TranslationAppConstants.LANG_DELIMITER + trgLang)

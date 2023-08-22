@@ -14,7 +14,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 public class TranslationLangPairCfg {
 
     private List<String> srcLang;
-    private List<String> trgLang;
+    private List<String> targetLang;
 
     public TranslationLangPairCfg() {
       super();
@@ -31,13 +31,13 @@ public class TranslationLangPairCfg {
     }
 
     @JsonGetter(TranslationAppConstants.TARGET_LANG)
-    public List<String> getTrgLang() {
-      return trgLang;
+    public List<String> getTargetLang() {
+      return targetLang;
     }
 
     @JsonSetter(TranslationAppConstants.TARGET_LANG)
-    public void setTrgLang(List<String> trgLang) {
-      this.trgLang = trgLang;
+    public void setTargetLang(List<String> targetLang) {
+      this.targetLang = targetLang;
     }
 
 }

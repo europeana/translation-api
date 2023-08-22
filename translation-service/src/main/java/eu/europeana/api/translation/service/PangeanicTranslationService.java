@@ -18,6 +18,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -69,19 +70,27 @@ public class PangeanicTranslationService implements TranslationService {
    * with list of supported languages
    *
    * @param srcLang source language of the data to be translated
-   * @param trgLang target language in which data has to be translated
+   * @param targetLanguage target language in which data has to be translated
    * @return
    */
   @Override
-  public boolean isSupported(String srcLang, String trgLang) {
-    return PangeanicLanguages.isLanguagePairSupported(srcLang, trgLang);
+  public boolean isSupported(String srcLang, String targetLanguage) {
+    if(srcLang == null) {
+      //automatic language detection
+      return isTargetSupported(targetLanguage);  
+    }
+    return PangeanicLanguages.isLanguagePairSupported(srcLang, targetLanguage);
   }
 
+  private boolean isTargetSupported(String targetLanguage) {
+    return PangeanicLanguages.isTargetLanguageSupported(targetLanguage);
+  }
+
+
   @Override
-  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage,
-      boolean detect) throws TranslationException {
+  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage) throws TranslationException {
     try {
-      if (detect) {
+      if (sourceLanguage == null) {
         // In this case source language is the hint. The texts passed will be sent for
         // lang-detection first and later will translated
         return translateWithLangDetect(texts, targetLanguage, sourceLanguage);
@@ -95,7 +104,13 @@ public class PangeanicTranslationService implements TranslationService {
     }
   }
 
-
+  @Override
+  public List<String> translate(List<String> texts, String targetLanguage)
+      throws TranslationException {
+    return translate(texts, targetLanguage, null);
+  }
+  
+  
   /**
    * Translates the texts with no source language. First a lang detect request is sent to identify
    * the source language Later translations are performed
@@ -109,15 +124,21 @@ public class PangeanicTranslationService implements TranslationService {
       String langHint) throws TranslationException {
     try {
       if (langDetectService == null) {
-        throw new TranslationException("no langDetectService configured!");
+        throw new TranslationException("No langDetectService configured!");
       }
-      List<String> detectedLanguages = langDetectService.detectLang(texts, langHint);
+      List<String> detectedLanguages;
+      try {
+        detectedLanguages = langDetectService.detectLang(texts, langHint);
+      } catch (LanguageDetectionException e) {
+        throw new TranslationException("Error when tryng to detect the language of the text input!", e);
+      }
       // create lang-value map for translation
       Map<String, List<String>> detectedLangValueMap =
           PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
       LOG.debug(
           "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
           langHint, detectedLangValueMap.keySet());
+      
       Map<String, String> translations = new LinkedHashMap<>();
       for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
         if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
@@ -199,5 +220,12 @@ public class PangeanicTranslationService implements TranslationService {
   public String getExternalServiceEndPoint() {
     return externalServiceEndpoint;
   }
+
+
+  @Override
+  public String getServiceId() {
+    return "PANGEANIC";
+  }
+  
 
 }

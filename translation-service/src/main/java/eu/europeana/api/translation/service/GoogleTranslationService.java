@@ -14,7 +14,7 @@ import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
-import eu.europeana.api.translation.definitions.language.Language;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
@@ -73,22 +73,27 @@ public class GoogleTranslationService implements TranslationService {
     }
   }
 
-  public List<String> translate(List<String> texts, String targetLanguage,
-      Language sourceLangHint) {
-    TranslateTextRequest request = TranslateTextRequest.newBuilder()
-        .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
-        .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
-    TranslateTextResponse response = this.client.translateText(request);
-    List<String> result = new ArrayList<>();
-    for (Translation t : response.getTranslationsList()) {
-      result.add(t.getTranslatedText());
-    }
-    return result;
+//  public List<String> translate(List<String> texts, String targetLanguage,
+//      Language sourceLangHint) {
+//    TranslateTextRequest request = TranslateTextRequest.newBuilder()
+//        .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
+//        .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
+//    TranslateTextResponse response = this.client.translateText(request);
+//    List<String> result = new ArrayList<>();
+//    for (Translation t : response.getTranslationsList()) {
+//      result.add(t.getTranslatedText());
+//    }
+//    return result;
+//  }
+  
+  @Override
+  public List<String> translate(List<String> texts, String targetLanguage)
+      throws TranslationException {
+    return translate(texts, targetLanguage, null);
   }
 
   @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage,
-      boolean detect) {
+  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) {
     Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
         .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
 
@@ -107,7 +112,15 @@ public class GoogleTranslationService implements TranslationService {
   }
 
   @Override
-  public boolean isSupported(String srcLang, String trgLang) {
+  public boolean isSupported(String srcLang, String targetLanguage) {
+    if(srcLang == null) {
+      //automatic language detection
+      return isTargetSupported(targetLanguage);  
+    }
+    return true;
+  }
+
+  private boolean isTargetSupported(String targetLanguage) {
     return true;
   }
 
@@ -120,4 +133,8 @@ public class GoogleTranslationService implements TranslationService {
     return googleProjectId;
   }
 
+  @Override
+  public String getServiceId() {
+    return "GOOGLE";
+  }
 }

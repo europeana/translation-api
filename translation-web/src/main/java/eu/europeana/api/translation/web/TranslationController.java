@@ -11,6 +11,7 @@ import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.api.translation.config.I18nConstants;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
@@ -36,25 +37,36 @@ public class TranslationController extends BaseRest {
 
     verifyWriteAccess(Operations.CREATE, request);
 
-    // validate mandatory params
-    if (translRequest.getText() == null) {
-      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY,
-          new String[] {TranslationAppConstants.TEXT});
-    }
-    if (translRequest.getSource() == null) {
-      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY,
-          new String[] {TranslationAppConstants.SOURCE_LANG});
-    }
-    if (translRequest.getTarget() == null) {
-      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY,
-          new String[] {TranslationAppConstants.TARGET_LANG});
-    }
+    validateRequest(translRequest);
 
     TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);
 
     return generateResponseEntity(request, resultJson);
+  }
+
+  private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
+    // validate mandatory params
+    if (translationRequest.getText() == null) {
+      throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
+          new String[] {TranslationAppConstants.TEXT});
+    }
+    //source is optional
+//    if (translRequest.getSource() == null) {
+//      throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
+//          new String[] {TranslationAppConstants.SOURCE_LANG});
+//    }
+    if (translationRequest.getTarget() ==  I18nConstants.EMPTY_PARAM_MANDATORY) {
+      throw new ParamValidationException(I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
+          new String[] {TranslationAppConstants.TARGET_LANG});
+    }
+    
+    //validate language pair
+    final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
+    if(!translationService.isTranslationSupported(languagePair)) {
+        throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {languagePair.toString()});
+    }
   }
 
 }

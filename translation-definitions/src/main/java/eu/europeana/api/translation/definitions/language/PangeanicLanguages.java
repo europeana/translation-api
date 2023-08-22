@@ -32,11 +32,11 @@ public enum PangeanicLanguages {
     }
 
     private static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Stream.of(PangeanicLanguages.values())
-            .map(Enum::name)
+            .map(lang -> lang.name().toLowerCase())
             .collect(Collectors.toList()));
 
     private static final Set<LanguagePair> TRANSLATION_PAIRS = new HashSet<>(Stream.of(PangeanicLanguages.values())
-            .map(e -> new LanguagePair(e.name(), Language.EN.name()))
+            .map(e -> new LanguagePair(e.name().toLowerCase(Locale.ROOT), Language.ENGLISH))
             .collect(Collectors.toList()));
 
     /**
@@ -61,9 +61,18 @@ public enum PangeanicLanguages {
      * @return
      */
     public static boolean isLanguageSupported(String language) {
-        return SUPPORTED_LANGUAGES.contains(language.toUpperCase(Locale.ROOT));
+        return SUPPORTED_LANGUAGES.contains(language);
     }
 
+    /**
+     * Returns true is the provided language is supported by Pangeanic
+     *
+     * @param language
+     * @return
+     */
+    public static boolean isTargetLanguageSupported(String language) {
+        return Language.ENGLISH.equals(language);
+    }
 
     /**
      * Returns true if Language pair is supported for Pangeanic Translation
@@ -76,6 +85,6 @@ public enum PangeanicLanguages {
         if (!StringUtils.equals(targetLang, Language.ENGLISH)) {
             return false;
         }
-        return TRANSLATION_PAIRS.contains(new LanguagePair(sourceLang.toUpperCase(Locale.ROOT), targetLang.toUpperCase(Locale.ROOT)));
+        return TRANSLATION_PAIRS.contains(new LanguagePair(sourceLang, targetLang));
     }
 }
