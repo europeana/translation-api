@@ -31,17 +31,23 @@ public class GoogleTranslationService implements TranslationService {
   private LocationName locationName;
 
   public GoogleTranslationService(String googleProjectId) {
-    this.googleProjectId = googleProjectId;
-    init();
+    this(googleProjectId, true);
   }
 
+  public GoogleTranslationService(String googleProjectId, boolean initClientConnection) {
+    this.googleProjectId = googleProjectId;
+    if(initClientConnection) {
+      init();
+    }
+  }
+  
   /**
    * Creates a new client that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
    * 
    * @throws RuntimeException when there is a problem creating the client
    */
-  private void init() throws RuntimeException{
+  public void init() throws RuntimeException{
     try {
 
       // gRPC doesn't like communication via the socks proxy (throws an error) and also doesn't
@@ -60,7 +66,7 @@ public class GoogleTranslationService implements TranslationService {
       this.locationName = LocationName.of(getGoogleProjectId(), "global");
       LOG.info("GoogleTranslationService initialised, projectId = {}", getGoogleProjectId());
     } catch (IOException e) {
-      throw new RuntimeException("Cannot instantiate Googele TranslationServiceClient!", e);
+      throw new RuntimeException("Cannot instantiate Google TranslationServiceClient!", e);
     }
   }
 

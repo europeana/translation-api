@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -16,10 +15,10 @@ import org.springframework.context.annotation.PropertySources;
  * Container for all settings that we load from the translation.properties file and optionally
  * override from translation.user.properties file
  */
-@Configuration
+@Configuration(BeanNames.BEAN_TRANSLATION_CONFIG)
 @PropertySources({@PropertySource("classpath:translation.properties"),
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
-public class TranslationConfig implements InitializingBean {
+public class TranslationConfig{
 
   private static final Logger LOG = LogManager.getLogger(TranslationConfig.class);
   /** Matches spring.profiles.active property in test/resource application.properties file */
@@ -85,12 +84,12 @@ public class TranslationConfig implements InitializingBean {
     return pangeanicTranslateEndpoint;
   }
   
-  @Override
-  public void afterPropertiesSet() throws Exception {
-    if (testProfileNotActive(activeProfileString)) {
-      verifyRequiredProperties();
-    }
-  }
+//  @Override
+//  public void afterPropertiesSet() throws Exception {
+//    if (testProfileNotActive(activeProfileString)) {
+//      verifyRequiredProperties();
+//    }
+//  }
 
   public String getGoogleTranslateProjectId() {
     return googleTranslateProjectId;
@@ -105,7 +104,7 @@ public class TranslationConfig implements InitializingBean {
   }
 
   /** verify properties */
-  private void verifyRequiredProperties() {
+  public void verifyRequiredProperties() {
     List<String> missingProps = new ArrayList<>();
 
     // if(StringUtils.isBlank(translConfigFile)) {

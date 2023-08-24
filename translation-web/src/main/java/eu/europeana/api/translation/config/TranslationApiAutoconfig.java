@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.config;
 
 import java.util.Locale;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -13,12 +14,13 @@ import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
 
-@Configuration
-public class TranslationApiAutoconfig {
+@Configuration()
+public class TranslationApiAutoconfig{
 
   private final TranslationConfig translationConfig;
+  TranslationServiceConfigProvider translationServiceConfigProvider;
 
-  public TranslationApiAutoconfig(TranslationConfig translationConfig) {
+  public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
   }
   @Bean(BeanNames.BEAN_CLIENT_DETAILS_SERVICE)
@@ -57,7 +59,17 @@ public class TranslationApiAutoconfig {
   
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService() {
-    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId());
+    final String projectId = translationConfig.getGoogleTranslateProjectId();
+    //allow service mocking 
+    final boolean initClientConnection = !"google-test".equals(projectId);
+    return new GoogleTranslationService(projectId, initClientConnection);
   } 
   
+  
+  @Bean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
+  public TranslationServiceConfigProvider getTranslationServiceConfigProvider() {
+    this.translationServiceConfigProvider = new TranslationServiceConfigProvider();
+    return translationServiceConfigProvider;
+  }
+
 }

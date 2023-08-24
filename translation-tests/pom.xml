@@ -35,10 +35,15 @@
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>		
+				</exclusion>
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>mockwebserver</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 

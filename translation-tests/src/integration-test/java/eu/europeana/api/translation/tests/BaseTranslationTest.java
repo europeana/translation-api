@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,36 +21,81 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.TranslationApp;
+import eu.europeana.api.translation.tests.utils.IntegrationTestUtils;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 @AutoConfigureMockMvc
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ComponentScan(basePackageClasses = TranslationApp.class)
-public abstract class BaseTranslationTest {
+public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
-  protected static final String BASE_URL_TRANSLATE = "/translate";
-  protected static final String BASE_URL_DETECT = "/detect";
-  protected static final String LANG_DETECT_REQUEST = "/content/lang_detection_request.json";
-  protected static final String LANG_DETECT_REQUEST_2 = "/content/lang_detection_request_2.json";
-  protected static final String LANG_DETECT_BAD_REQUEST_1 = "/content/lang_detection_bad_request_1.json";
-  protected static final String LANG_DETECT_BAD_REQUEST_2 = "/content/lang_detection_bad_request_2.json";
-  protected static final String TRANSLATION_REQUEST = "/content/translation_request.json";
-  protected static final String TRANSLATION_REQUEST_2 = "/content/translation_request_2.json";
-  protected static final String TRANSLATION_WITH_FALLBACK = "/content/translation_with_fallback.json";
-  protected static final String TRANSLATION_BAD_REQUEST_1 = "/content/translation_bad_request_1.json";
-  protected static final String TRANSLATION_BAD_REQUEST_2 = "/content/translation_bad_request_2.json";
-  
   protected MockMvc mockMvc;
 
-  @Autowired
-  protected WebApplicationContext wac;
+  /** Maps Metis dereferenciation URIs to mocked XML responses */
+  public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
+  /** MockWebServer needs to be static, so we can inject its port into the Spring context. */
+  private static MockWebServer mockPangeanic = startPangeanicMockServer();
   
-  @BeforeAll
-  protected void initApplication() {
-    if (mockMvc == null) {
-      this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+  private static Map<String, String> initLanguageDetectMap() {
+    try {
+      return Map.of(
+          loadFile(LANG_DETECT_PANGEANIC_REQUEST).trim(), loadFile(LANG_DETECT_PANGEANIC_RESPONSE),
+          loadFile(LANG_DETECT_PANGEANIC_REQUEST_2).trim(), loadFile(LANG_DETECT_PANGEANIC_RESPONSE_2)
+      );
+    } catch (IOException e) {
+      throw new RuntimeException("Test initialization exception!", e);
     }
   }
+
+  private static MockWebServer startPangeanicMockServer() {
+    MockWebServer mockPangeanic = new MockWebServer();
+    mockPangeanic.setDispatcher(setupPangeanicDispatcher());
+    try {
+      mockPangeanic.start();
+    } catch (IOException e) {
+      throw new RuntimeException("Cannot start pangeanic mock server", e);
+    }
+    return mockPangeanic;
+  }
+  
+  @Autowired
+  protected WebApplicationContext wac;
+
+ 
+//  public void init() throws IOException {
+//
+//    initServices();
+//  }
+
+//  @BeforeEach
+//  protected void setup() throws Exception {
+//    initServices();
+//  }
+
+  @BeforeAll
+  private void initServices() {
+    if (mockMvc == null) {
+      this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+      TranslationApp.initTranslationServices(wac);
+      }
+  }
+
+  @AfterAll
+  private void stopServices() {
+    try {
+      mockPangeanic.shutdown();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+  
+  // @BeforeAll
+  // TranslationApp.initTranslationServices(wac);
 
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {
@@ -56,6 +105,17 @@ public abstract class BaseTranslationTest {
     registry.add("scmBranch", () -> "dev");
     registry.add("buildNumber", () -> "99");
     registry.add("timestamp", () -> System.currentTimeMillis());
+
+    registry.add("translation.pangeanic.endpoint.detect",
+        () -> String.format("http://%s:%s/pangeanic/detect", mockPangeanic.getHostName(),
+            mockPangeanic.getPort()));
+    registry.add("translation.pangeanic.endpoint.translate",
+        () -> String.format("http://%s:%s/pangeanic/translate", mockPangeanic.getHostName(),
+            mockPangeanic.getPort()));
+
+    registry.add("translation.google.projectId", () -> "google-test");
+
+
   }
 
   /**
@@ -76,4 +136,19 @@ public abstract class BaseTranslationTest {
     }
   }
 
+  private static Dispatcher setupPangeanicDispatcher() {
+    return new Dispatcher() {
+      @NotNull
+      @Override
+      public MockResponse dispatch(@NotNull RecordedRequest request) throws InterruptedException {
+        try {
+          String requestBody = Objects.requireNonNull(request.getBody().readUtf8());
+          String responseBody = LANG_DETECT_RESPONSE_MAP.getOrDefault(requestBody.trim(), "");
+          return new MockResponse().setResponseCode(200).setBody(responseBody);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+  }
 }

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,13 +23,15 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
-@Component(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
-public class TranslationServiceConfigProvider{
+public class TranslationServiceConfigProvider {
 
   @Autowired
   ApplicationContext applicationContext;
-  public static final String DEFAULT_SERVICE_CONFIG_FILE = "/translation_service_configuration.json";
+  public static final String DEFAULT_SERVICE_CONFIG_FILE =
+      "/translation_service_configuration.json";
   private final String serviceConfigFile;
+
+//  private static final Logger logger = LogManager.getLogger(TranslationApp.class);
 
   TranslationServicesConfiguration translationServicesConfig;
   Map<String, LanguageDetectionService> langDetectServices = new HashMap<>();
@@ -41,7 +42,7 @@ public class TranslationServiceConfigProvider{
   }
 
   public TranslationServiceConfigProvider(String serviceConfigFile) {
-    this.serviceConfigFile = serviceConfigFile; 
+    this.serviceConfigFile = serviceConfigFile;
   }
 
   public TranslationServicesConfiguration getTranslationServicesConfig() {
@@ -56,9 +57,14 @@ public class TranslationServiceConfigProvider{
     return translationServices;
   }
 
-  public void initTranslationServicesConfiguration() throws Exception {
-    readTranslationServicesConfig();
-    validateTranslationServicesConfig();
+  public void initTranslationServicesConfiguration(){
+    try {
+      // init translation services
+      readTranslationServicesConfig();
+      validateTranslationServicesConfig();
+    }catch(JsonProcessingException | ClassNotFoundException | LanguageDetectionException e) {
+      throw new RuntimeException("Invalid Service Configurations!", e);
+    }
   }
 
   private void validateTranslationServicesConfig()
@@ -68,12 +74,13 @@ public class TranslationServiceConfigProvider{
     validateTranslationServiceCfg();
   }
 
-  private void validateTranslationServiceCfg() throws LanguageDetectionException, ClassNotFoundException {
+  private void validateTranslationServiceCfg()
+      throws LanguageDetectionException, ClassNotFoundException {
     /*
      * Validate translation config
      */
-    for (TranslationServiceCfg translServiceConfig : translationServicesConfig.getTranslationConfig()
-        .getServices()) {
+    for (TranslationServiceCfg translServiceConfig : translationServicesConfig
+        .getTranslationConfig().getServices()) {
       // validate unique service ids
       if (translationServices.containsKey(translServiceConfig.getId())) {
         throw new LanguageDetectionException("Duplicate service id in the translation config.");
@@ -99,8 +106,8 @@ public class TranslationServiceConfigProvider{
         for (String trgLang : translMapping.getTrgLang()) {
           if (!srcLang.equals(trgLang) && !translationServices.get(translMapping.getServiceId())
               .isSupported(srcLang, trgLang)) {
-            throw new LanguageDetectionException("Translation service: " + translMapping.getServiceId()
-                + ", does not support the language pair: " + srcLang
+            throw new LanguageDetectionException("Translation service: "
+                + translMapping.getServiceId() + ", does not support the language pair: " + srcLang
                 + TranslationAppConstants.LANG_DELIMITER + trgLang
                 + ", declared in the mappings section.");
           }
@@ -127,7 +134,8 @@ public class TranslationServiceConfigProvider{
     }
   }
 
-  private void validateDetectServiceCfg() throws LanguageDetectionException, ClassNotFoundException {
+  private void validateDetectServiceCfg()
+      throws LanguageDetectionException, ClassNotFoundException {
     /*
      * Validate lang detection config
      */
@@ -135,7 +143,8 @@ public class TranslationServiceConfigProvider{
         .getServices()) {
       // validate unique service ids
       if (langDetectServices.containsKey(detectServiceCfg.getId())) {
-        throw new LanguageDetectionException("Duplicate service id in the language detection config.");
+        throw new LanguageDetectionException(
+            "Duplicate service id in the language detection config.");
       }
       LanguageDetectionService detectService = (LanguageDetectionService) applicationContext
           .getBean(Class.forName(detectServiceCfg.getClassname()));

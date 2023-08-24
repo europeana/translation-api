@@ -9,6 +9,7 @@ import java.util.List;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class TranslationRestIT extends BaseTranslationTest {
  
   @Autowired TranslationConfig translationConfig;
