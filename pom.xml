@@ -16,8 +16,9 @@
 	<description>API for the language detection and translation</description>
 
 	<modules>
-		<module>translation-web</module>
 		<module>translation-definitions</module>
+		<module>translation-service</module>
+		<module>translation-web</module>
 		<module>translation-tests</module>
 	</modules>
 	
