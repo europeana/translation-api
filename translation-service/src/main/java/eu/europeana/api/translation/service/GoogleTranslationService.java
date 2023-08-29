@@ -92,7 +92,7 @@ public class GoogleTranslationService implements TranslationService {
   @Override
   public void close() {
     if (this.client != null) {
-      LOG.info("Shutting down GoogleTranslationService client...");
+      LOG.debug("Shutting down GoogleTranslationService client...");
       this.client.close();
     }
   }

@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.tests.web.mock;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import com.google.api.core.AbstractApiFuture;
 import com.google.api.core.ApiFuture;
@@ -13,11 +14,22 @@ import com.google.cloud.translate.v3.TranslateTextResponse.Builder;
 import com.google.cloud.translate.v3.stub.HttpJsonTranslationServiceStub;
 import com.google.cloud.translate.v3.stub.TranslationServiceStubSettings;
 import com.google.protobuf.util.JsonFormat;
+import static eu.europeana.api.translation.tests.IntegrationTestUtils.*;
 
 public class MockGServiceStub extends HttpJsonTranslationServiceStub{
 
   static TranslationServiceStubSettings settings = buildSettings();
-  static String DEFAULT_RESPONSE = "{\"translations\":[{\"translatedText\":\"a line of text in German\"},{\"translatedText\":\"a second line of text in German\"}]}";
+  public static final Map<String, String> TRANSLATION_RESPONSE_MAP = initTranslationMap();
+  
+  private static Map<String, String> initTranslationMap() {
+    try {
+      return Map.of(
+          loadFile(TRANSLATION_GOOGLE_REQUEST).replaceAll("\r", "\n").trim(), loadFile(TRANSLATION_GOOGLE_RESPONSE)
+      );
+    } catch (IOException e) {
+      throw new RuntimeException("Test initialization exception!", e);
+    }
+  }
   
   public MockGServiceStub() throws IOException{
     super(buildSettings(), ClientContext.create(settings));
@@ -61,7 +73,8 @@ public class MockGServiceStub extends HttpJsonTranslationServiceStub{
         TranslateTextResponse resp ;
         try {
           final Builder responseBuilder = TranslateTextResponse.newBuilder();
-          JsonFormat.parser().ignoringUnknownFields().merge(DEFAULT_RESPONSE, responseBuilder);
+          String response = getResponse(request);
+          JsonFormat.parser().ignoringUnknownFields().merge(response, responseBuilder);
           resp = responseBuilder.build();          
         } catch (IOException e) {
           throw new RuntimeException(e);
@@ -69,6 +82,24 @@ public class MockGServiceStub extends HttpJsonTranslationServiceStub{
         
         futureCall = new HttpJsonFuture(request, resp); 
         return futureCall;
+      }
+
+      private String getResponse(TranslateTextRequest request) {
+        String req = request.toString().trim();
+        String response = TRANSLATION_RESPONSE_MAP.getOrDefault(req, null);
+        if(response != null) {
+          return response;
+        }
+        for (Map.Entry<String, String> entry : TRANSLATION_RESPONSE_MAP.entrySet()) {
+          String key = entry.getKey();
+          final String key1 = key.replaceAll(" ", "").replaceAll("\n", "");
+          final String req1 = req.replaceAll(" ", "").replaceAll("\n", "");
+          if(key1.equals(req1)) {
+            response = entry.getValue();
+          }
+          
+        }
+        return response;
       }
       
       
