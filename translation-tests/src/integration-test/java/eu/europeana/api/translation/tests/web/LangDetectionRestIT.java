@@ -23,7 +23,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   @Autowired TranslationConfig translationConfig;
   
   @Test
-  public void langDetection() throws Exception {
+  void langDetection() throws Exception {
     
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST);
     
@@ -45,7 +45,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void langDetectionWithoutLangParam() throws Exception {
+  void langDetectionWithoutLangParam() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_2);
     mockMvc
         .perform(
@@ -57,7 +57,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void langDetectionMissingTextParam() throws Exception {
+  void langDetectionMissingTextParam() throws Exception {
     String requestJson = "{}";
     mockMvc
         .perform(
@@ -69,7 +69,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void langDetectionInvalidLangParam() throws Exception {
+  void langDetectionInvalidLangParam() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_1);
     mockMvc
         .perform(
@@ -81,7 +81,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void langDetectionInvalidServiceParam() throws Exception {
+  void langDetectionInvalidServiceParam() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_2);
     mockMvc
         .perform(

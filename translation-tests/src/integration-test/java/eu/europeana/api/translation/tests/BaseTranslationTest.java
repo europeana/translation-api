@@ -30,8 +30,8 @@ import okhttp3.mockwebserver.RecordedRequest;
 
 @AutoConfigureMockMvc
 @DirtiesContext
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ComponentScan(basePackageClasses = TranslationApp.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   protected MockMvc mockMvc;
@@ -90,11 +90,8 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   @AfterAll
   private void stopServices() {
-    try {
-      mockPangeanic.shutdown();
-    } catch (IOException e) {
-      LOG.info("Cannot stop mock server!", e);
-    }
+    //cannot stop the mock server here as all test classes are run by the same runner and the server is static variable
+    //only  
   }
   
   @DynamicPropertySource

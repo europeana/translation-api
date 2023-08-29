@@ -31,14 +31,14 @@ public class TranslationRestIT extends BaseTranslationTest {
   @Autowired GoogleTranslationService googleTranslationService;
   
   @BeforeAll
-  private void mockGoogleTranslate() throws IOException {
+  void mockGoogleTranslate() throws IOException {
     TranslationServiceClient googleClient = new MockGClient(new MockGServiceStub());
     googleTranslationService.init(googleClient);
     
   }
   
   @Test
-  public void translationGoogle() throws Exception {
+  void translationGoogle() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST);
     String result = mockMvc
         .perform(
@@ -58,7 +58,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translationPangeanic() throws Exception {
+  void translationPangeanic() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);
     String result = mockMvc
         .perform(
@@ -78,7 +78,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
   
   @Test
-  public void translationWithServiceParam() throws Exception {
+  void translationWithServiceParam() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);
     mockMvc
         .perform(
@@ -90,7 +90,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translationWithFallback() throws Exception {
+  void translationWithFallback() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_WITH_FALLBACK);
     translationConfig.setTranslationGoogleProjectId("wrong-project-id");
     mockMvc
@@ -103,7 +103,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translateErrorNoTarget() throws Exception {
+  void translateErrorNoTarget() throws Exception {
     String missingTarget = "{"
         + "\"source\": \"de\","
         + "\"detect\": false,"
@@ -120,7 +120,7 @@ public class TranslationRestIT extends BaseTranslationTest {
 
   @Test
   @Disabled("until specs are clarified")  
-  public void translateWithDetect() throws Exception {
+  void translateWithDetect() throws Exception {
     String missingSource = "{"
         + "\"target\": \"en\","
         + "\"detect\": false,"
@@ -136,7 +136,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translateErrorMissingText() throws Exception {
+  void translateErrorMissingText() throws Exception {
     String missingText = "{"
         + "\"source\": \"de\","
         + "\"target\": \"en\","
@@ -152,7 +152,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translationInvalidSourceLangWithServiceParam() throws Exception {
+  void translationInvalidSourceLangWithServiceParam() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_1);
     mockMvc
         .perform(
@@ -164,7 +164,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
 
   @Test
-  public void translationInvalidServiceParam() throws Exception {
+  void translationInvalidServiceParam() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_BAD_REQUEST_2);
     mockMvc
         .perform(
