@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -33,6 +35,8 @@ import okhttp3.mockwebserver.RecordedRequest;
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   protected MockMvc mockMvc;
+  protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
+  
 
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
@@ -89,7 +93,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     try {
       mockPangeanic.shutdown();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.info("Cannot stop mock server!", e);
     }
   }
   
@@ -103,11 +107,19 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     registry.add("timestamp", () -> System.currentTimeMillis());
 
     registry.add("translation.pangeanic.endpoint.detect",
-        () -> String.format("http://%s:%s/pangeanic/detect", mockPangeanic.getHostName(),
-            mockPangeanic.getPort()));
+        () -> {
+          final String pangeanicMockDetect = String.format("http://%s:%s/pangeanic/detect", mockPangeanic.getHostName(),
+              mockPangeanic.getPort());
+          LOG.info("Detect endpoint: {}", pangeanicMockDetect);
+          return pangeanicMockDetect;
+        });
     registry.add("translation.pangeanic.endpoint.translate",
-        () -> String.format("http://%s:%s/pangeanic/translate", mockPangeanic.getHostName(),
-            mockPangeanic.getPort()));
+        () -> {
+          final String pangeanicMockTranslate = String.format("http://%s:%s/pangeanic/translate", mockPangeanic.getHostName(),
+              mockPangeanic.getPort());
+          LOG.info("Translate endpoint: {}", pangeanicMockTranslate);
+          return pangeanicMockTranslate;
+        });
 
     registry.add("translation.google.projectId", () -> "google-test");
     registry.add("translation.google.usehttpclient", () -> "true");

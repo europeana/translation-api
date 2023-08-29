@@ -55,7 +55,6 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(langFieldValue);    
     List<String> translations = Collections.singletonList(json.getString("translations"));
     assertTrue(translations.size()>0);
-    System.out.println("success!");
   }
 
   @Test
@@ -76,7 +75,6 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(langFieldValue);    
     List<String> translations = Collections.singletonList(json.getString("translations"));
     assertTrue(translations.size()>0);
-    System.out.println("success!");
   }
   
   @Test
