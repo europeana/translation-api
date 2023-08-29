@@ -37,6 +37,8 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
+  public static final Map<String, String> TRANSLATION_RESPONSE_MAP = initTranslationMap();
+  
   /** MockWebServer needs to be static, so we can inject its port into the Spring context. */
   private static MockWebServer mockPangeanic = startPangeanicMockServer();
   
@@ -51,6 +53,16 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     }
   }
 
+  private static Map<String, String> initTranslationMap() {
+    try {
+      return Map.of(
+          loadFile(TRANSLATION_PANGEANIC_REQUEST_2).trim(), loadFile(TRANSLATION_PANGEANIC_RESPONSE_2)
+      );
+    } catch (IOException e) {
+      throw new RuntimeException("Test initialization exception!", e);
+    }
+  }
+  
   private static MockWebServer startPangeanicMockServer() {
     MockWebServer mockPangeanic = new MockWebServer();
     mockPangeanic.setDispatcher(setupPangeanicDispatcher());
@@ -65,17 +77,6 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   @Autowired
   protected WebApplicationContext wac;
 
- 
-//  public void init() throws IOException {
-//
-//    initServices();
-//  }
-
-//  @BeforeEach
-//  protected void setup() throws Exception {
-//    initServices();
-//  }
-
   @BeforeAll
   private void initServices() {
     if (mockMvc == null) {
@@ -89,14 +90,10 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     try {
       mockPangeanic.shutdown();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
   
-  // @BeforeAll
-  // TranslationApp.initTranslationServices(wac);
-
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {
     registry.add("auth.read.enabled", () -> "false");
@@ -114,8 +111,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
             mockPangeanic.getPort()));
 
     registry.add("translation.google.projectId", () -> "google-test");
-
-
+    registry.add("translation.google.usehttpclient", () -> "true");
   }
 
   /**
@@ -142,8 +138,19 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
       @Override
       public MockResponse dispatch(@NotNull RecordedRequest request) throws InterruptedException {
         try {
+          
           String requestBody = Objects.requireNonNull(request.getBody().readUtf8());
-          String responseBody = LANG_DETECT_RESPONSE_MAP.getOrDefault(requestBody.trim(), "");
+          boolean isTranslationRequest = request.getPath().endsWith(BASE_URL_TRANSLATE);
+          boolean isLangDetectionRequest = request.getPath().endsWith(BASE_URL_DETECT);
+          String responseBody = "";
+          if(isTranslationRequest) {
+            responseBody = TRANSLATION_RESPONSE_MAP.getOrDefault(requestBody.trim(), "");
+          }
+          
+          if(isLangDetectionRequest) {
+            responseBody = LANG_DETECT_RESPONSE_MAP.getOrDefault(requestBody.trim(), "");
+          }
+          
           return new MockResponse().setResponseCode(200).setBody(responseBody);
         } catch (Exception e) {
           throw new RuntimeException(e);

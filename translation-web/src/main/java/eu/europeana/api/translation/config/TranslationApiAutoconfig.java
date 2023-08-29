@@ -62,7 +62,7 @@ public class TranslationApiAutoconfig{
     final String projectId = translationConfig.getGoogleTranslateProjectId();
     //allow service mocking 
     final boolean initClientConnection = !"google-test".equals(projectId);
-    return new GoogleTranslationService(projectId, initClientConnection);
+    return new GoogleTranslationService(projectId, initClientConnection, translationConfig.useGoogleHttpClient());
   } 
   
   

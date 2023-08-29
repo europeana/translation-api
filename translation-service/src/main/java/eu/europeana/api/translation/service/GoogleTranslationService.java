@@ -31,43 +31,61 @@ public class GoogleTranslationService implements TranslationService {
   private LocationName locationName;
 
   public GoogleTranslationService(String googleProjectId) {
-    this(googleProjectId, true);
+    this(googleProjectId, true, false);
   }
 
-  public GoogleTranslationService(String googleProjectId, boolean initClientConnection) {
+  public GoogleTranslationService(String googleProjectId, boolean initClientConnection,
+      boolean useHttpClient) {
     this.googleProjectId = googleProjectId;
-    if(initClientConnection) {
-      init();
+    if (initClientConnection) {
+      init(useHttpClient);
     }
   }
-  
+
   /**
    * Creates a new client that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
    * 
    * @throws RuntimeException when there is a problem creating the client
    */
-  public void init() throws RuntimeException{
+  public void init(boolean useHttpClient) throws RuntimeException {
     try {
 
       // gRPC doesn't like communication via the socks proxy (throws an error) and also doesn't
       // support the
       // socksNonProxyHosts settings, so this is to tell it to by-pass the configured proxy
-      TransportChannelProvider transportChannelProvider = CloudTasksStubSettings
-          .defaultGrpcTransportProviderBuilder()
-          .setChannelConfigurator(
-              managedChannelBuilder -> managedChannelBuilder.proxyDetector(socketAddress -> null))
-          .build();
-      TranslationServiceSettings tss;
-      tss = TranslationServiceSettings.newBuilder()
-          .setTransportChannelProvider(transportChannelProvider).build();
+      if (useHttpClient) {
+        TranslationServiceSettings translationServiceSettings =
+            TranslationServiceSettings.newHttpJsonBuilder().build();
+        this.client = TranslationServiceClient.create(translationServiceSettings);
+      } else {
+        TransportChannelProvider transportChannelProvider = CloudTasksStubSettings
+            .defaultGrpcTransportProviderBuilder()
+            .setChannelConfigurator(
+                managedChannelBuilder -> managedChannelBuilder.proxyDetector(socketAddress -> null))
+            .build();
 
-      this.client = TranslationServiceClient.create(tss);
+        TranslationServiceSettings tss;
+        tss = TranslationServiceSettings.newBuilder()
+            .setTransportChannelProvider(transportChannelProvider).build();
+
+        this.client = TranslationServiceClient.create(tss);
+      }
+
       this.locationName = LocationName.of(getGoogleProjectId(), "global");
       LOG.info("GoogleTranslationService initialised, projectId = {}", getGoogleProjectId());
     } catch (IOException e) {
       throw new RuntimeException("Cannot instantiate Google TranslationServiceClient!", e);
     }
+  }
+  
+  /**
+   * used mainly for testing purposes. 
+   * @param client
+   */
+  public void init(TranslationServiceClient client) {
+    this.client = client;
+    this.locationName = LocationName.of(getGoogleProjectId(), "global");
   }
 
   // @PreDestroy
@@ -79,19 +97,19 @@ public class GoogleTranslationService implements TranslationService {
     }
   }
 
-//  public List<String> translate(List<String> texts, String targetLanguage,
-//      Language sourceLangHint) {
-//    TranslateTextRequest request = TranslateTextRequest.newBuilder()
-//        .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
-//        .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
-//    TranslateTextResponse response = this.client.translateText(request);
-//    List<String> result = new ArrayList<>();
-//    for (Translation t : response.getTranslationsList()) {
-//      result.add(t.getTranslatedText());
-//    }
-//    return result;
-//  }
-  
+  // public List<String> translate(List<String> texts, String targetLanguage,
+  // Language sourceLangHint) {
+  // TranslateTextRequest request = TranslateTextRequest.newBuilder()
+  // .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
+  // .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
+  // TranslateTextResponse response = this.client.translateText(request);
+  // List<String> result = new ArrayList<>();
+  // for (Translation t : response.getTranslationsList()) {
+  // result.add(t.getTranslatedText());
+  // }
+  // return result;
+  // }
+
   @Override
   public List<String> translate(List<String> texts, String targetLanguage)
       throws TranslationException {
@@ -119,9 +137,9 @@ public class GoogleTranslationService implements TranslationService {
 
   @Override
   public boolean isSupported(String srcLang, String targetLanguage) {
-    if(srcLang == null) {
-      //automatic language detection
-      return isTargetSupported(targetLanguage);  
+    if (srcLang == null) {
+      // automatic language detection
+      return isTargetSupported(targetLanguage);
     }
     return true;
   }

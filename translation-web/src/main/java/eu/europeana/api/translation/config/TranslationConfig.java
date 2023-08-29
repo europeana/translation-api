@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -49,8 +48,12 @@ public class TranslationConfig{
   @Value("${translation.pangeanic.endpoint.translate}")
   private String pangeanicTranslateEndpoint;
   
-  @Value("${translation.google.projectId}")
+  @Value("${translation.google.projectId:}")
   private String googleTranslateProjectId;
+  
+  @Value("${translation.google.usehttpclient: false}")
+  private boolean useGoogleHttpClient;
+  
   
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
@@ -83,13 +86,6 @@ public class TranslationConfig{
   public String getPangeanicTranslateEndpoint() {
     return pangeanicTranslateEndpoint;
   }
-  
-//  @Override
-//  public void afterPropertiesSet() throws Exception {
-//    if (testProfileNotActive(activeProfileString)) {
-//      verifyRequiredProperties();
-//    }
-//  }
 
   public String getGoogleTranslateProjectId() {
     return googleTranslateProjectId;
@@ -99,18 +95,14 @@ public class TranslationConfig{
     this.googleTranslateProjectId = googleTranslateProjectId;
   }
 
-  public static boolean testProfileNotActive(String activeProfileString) {
-    return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
-  }
+//  public static boolean testProfileNotActive(String activeProfileString) {
+//    return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
+//  }
 
   /** verify properties */
   public void verifyRequiredProperties() {
     List<String> missingProps = new ArrayList<>();
 
-    // if(StringUtils.isBlank(translConfigFile)) {
-    // missingProps.add("translation.config.file");
-    // }
-    //
     if (isAuthReadEnabled() && StringUtils.isBlank(getApiKeyUrl())) {
       missingProps.add("europeana.apikey.jwttoken.signaturekey");
     }
@@ -124,6 +116,10 @@ public class TranslationConfig{
       throw new IllegalStateException(String.format(
           "The following config properties are not set: %s", String.join("\n", missingProps)));
     }
+  }
+
+  public boolean useGoogleHttpClient() {
+    return useGoogleHttpClient;
   }
   
 }
