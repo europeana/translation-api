@@ -10,7 +10,11 @@
 	<artifactId>translation-web</artifactId>
 	<description>The Web Module of the Translation api</description>
 	<packaging>jar</packaging>
-
+	
+	<properties>
+		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
+	</properties>
+	
 	<dependencies>
 		<!-- spring & boot dependencies -->
 		

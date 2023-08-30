@@ -10,6 +10,11 @@
 	<artifactId>translation-definitions</artifactId>
 	<name>translation-definitions</name>
 	<description>The shared data model classes shared by the translation API.</description>
+	
+	<properties>
+		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api.commons</groupId>
