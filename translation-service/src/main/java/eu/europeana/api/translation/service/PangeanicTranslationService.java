@@ -126,35 +126,51 @@ public class PangeanicTranslationService implements TranslationService {
       if (langDetectService == null) {
         throw new TranslationException("No langDetectService configured!");
       }
-      List<String> detectedLanguages;
-      try {
-        detectedLanguages = langDetectService.detectLang(texts, langHint);
-      } catch (LanguageDetectionException e) {
-        throw new TranslationException("Error when tryng to detect the language of the text input!", e);
-      }
-      // create lang-value map for translation
-      Map<String, List<String>> detectedLangValueMap =
-          PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
-      LOG.debug(
-          "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
-          langHint, detectedLangValueMap.keySet());
-      
-      Map<String, String> translations = new LinkedHashMap<>();
-      for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
-        if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
-          LOG.debug("NOT translating data for lang {} for detected values {} ", entry.getKey(),
-              entry.getValue());
-        } else {
-          HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
-              getExternalServiceEndPoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
-          translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));
-        }
-      }
+      List<String> detectedLanguages = detectLanguages(texts, langHint);
+      Map<String, String> translations =
+          computeTranslations(texts, targetLanguage, detectedLanguages, langHint);
       return PangeanicTranslationUtils.getResults(texts, translations,
           PangeanicTranslationUtils.nonTranslatedDataExists(detectedLanguages));
     } catch (JSONException | IOException e) {
       throw new TranslationException(e.getMessage());
     }
+  }
+
+
+  private Map<String, String> computeTranslations(List<String> texts, String targetLanguage,
+      List<String> detectedLanguages, String langHint)
+      throws JSONException, IOException, TranslationException {
+    // create lang-value map for translation
+    Map<String, List<String>> detectedLangValueMap =
+        PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
+    LOG.debug(
+        "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
+        langHint, detectedLangValueMap.keySet());
+    
+    Map<String, String> translations = new LinkedHashMap<>();
+    for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
+      if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
+        LOG.debug("NOT translating data for lang {} for detected values {} ", entry.getKey(),
+            entry.getValue());
+      } else {
+        HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
+            getExternalServiceEndPoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
+        translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));
+      }
+    }
+    return translations;
+  }
+
+
+  private List<String> detectLanguages(List<String> texts, String langHint)
+      throws TranslationException {
+    List<String> detectedLanguages;
+    try {
+      detectedLanguages = langDetectService.detectLang(texts, langHint);
+    } catch (LanguageDetectionException e) {
+      throw new TranslationException("Error when tryng to detect the language of the text input!", e);
+    }
+    return detectedLanguages;
   }
 
   private Map<String, String> sendTranslateRequestAndParse(HttpPost post, String sourceLanguage)
