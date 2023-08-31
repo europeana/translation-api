@@ -32,8 +32,7 @@ public class TranslationApiAutoconfig{
 
   @Bean(BeanNames.BEAN_I18N_SERVICE)
   public I18nService getI18nService() {
-    I18nServiceImpl i18nService = new I18nServiceImpl();
-    return i18nService;
+    return new I18nServiceImpl();
   }
 
   @Bean("messageSource")

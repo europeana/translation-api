@@ -22,6 +22,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 public class TranslationServiceConfigProvider {
 
@@ -57,13 +58,13 @@ public class TranslationServiceConfigProvider {
     return translationServices;
   }
 
-  public void initTranslationServicesConfiguration(){
+  public void initTranslationServicesConfiguration() throws TranslationServiceConfigurationException{
     try {
       // init translation services
       readTranslationServicesConfig();
       validateTranslationServicesConfig();
     }catch(JsonProcessingException | ClassNotFoundException | LanguageDetectionException e) {
-      throw new RuntimeException("Invalid Service Configurations!", e);
+      throw new TranslationServiceConfigurationException("Invalid Service Configurations!", e);
     }
   }
 

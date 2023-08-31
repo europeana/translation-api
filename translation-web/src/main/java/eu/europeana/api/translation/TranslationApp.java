@@ -2,8 +2,6 @@ package eu.europeana.api.translation;
 
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.mongo.MongoMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
@@ -38,7 +36,6 @@ import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
     DataSourceAutoConfiguration.class})
 public class TranslationApp extends SpringBootServletInitializer {
 
-  private static final Logger logger = LogManager.getLogger(TranslationApp.class);
   static ConfigurableApplicationContext ctx;
 
   /**
@@ -49,25 +46,25 @@ public class TranslationApp extends SpringBootServletInitializer {
   public static void main(String[] args) {
 
     // start the application
-    ConfigurableApplicationContext ctx = SpringApplication.run(TranslationApp.class, args);
-
-    // log beans for debuging purposes
-    if (logger.isDebugEnabled()) {
-      printRegisteredBeans(ctx);
-    }
-    //
-    verifyMandatoryProperties(ctx);
-    
-    // init translation services
-    initTranslationServices(ctx);
+    SpringApplication.run(TranslationApp.class, args);
   }
 
   @Override
   protected WebApplicationContext run(SpringApplication application) {
-    return super.run(application);
+    WebApplicationContext ctx = super.run(application);
+    // log beans for debuging purposes
+    if (logger.isDebugEnabled()) {
+      printRegisteredBeans(ctx);
+    }
+    // verify required configurations for initialization of translation services
+    verifyMandatoryProperties(ctx);
+    
+    // init translation services
+    initTranslationServices(ctx);
+    return ctx;
   }
 
-  public static void initTranslationServices(ApplicationContext ctx) {
+  public void initTranslationServices(ApplicationContext ctx) {
     try {
       TranslationServiceConfigProvider translationServiceProvider =
           (TranslationServiceConfigProvider) ctx.getBean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER);
@@ -82,7 +79,7 @@ public class TranslationApp extends SpringBootServletInitializer {
     }
   }
 
-  public static void verifyMandatoryProperties(ApplicationContext ctx) {
+  public void verifyMandatoryProperties(ApplicationContext ctx) {
     try {
       eu.europeana.api.translation.config.TranslationConfig TranslationConfig =
           (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
@@ -98,7 +95,7 @@ public class TranslationApp extends SpringBootServletInitializer {
   }
   
   
-  private static void printRegisteredBeans(ApplicationContext ctx) {
+  private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
     Arrays.sort(beanNames);
     logger.debug("Instantiated beans:");
