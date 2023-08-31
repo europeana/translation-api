@@ -1,0 +1,6 @@
+contents: "eine Textzeile auf Deutsch"
+contents: "eine zweite Textzeile auf Deutsch"
+mime_type: "text/plain"
+source_language_code: "de"
+target_language_code: "en"
+parent: "projects/google-test/locations/global"

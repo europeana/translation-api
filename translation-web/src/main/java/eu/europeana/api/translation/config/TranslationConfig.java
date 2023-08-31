@@ -1,12 +1,10 @@
 package eu.europeana.api.translation.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -16,10 +14,10 @@ import org.springframework.context.annotation.PropertySources;
  * Container for all settings that we load from the translation.properties file and optionally
  * override from translation.user.properties file
  */
-@Configuration
+@Configuration(BeanNames.BEAN_TRANSLATION_CONFIG)
 @PropertySources({@PropertySource("classpath:translation.properties"),
-    @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
-public class TranslationConfig implements InitializingBean {
+@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
+public class TranslationConfig{
 
   private static final Logger LOG = LogManager.getLogger(TranslationConfig.class);
   /** Matches spring.profiles.active property in test/resource application.properties file */
@@ -50,8 +48,12 @@ public class TranslationConfig implements InitializingBean {
   @Value("${translation.pangeanic.endpoint.translate}")
   private String pangeanicTranslateEndpoint;
   
-  @Value("${translation.google.projectId}")
-  private String translationGoogleProjectId;
+  @Value("${translation.google.projectId:}")
+  private String googleTranslateProjectId;
+  
+  @Value("${translation.google.usehttpclient: false}")
+  private boolean useGoogleHttpClient;
+  
   
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
@@ -84,34 +86,23 @@ public class TranslationConfig implements InitializingBean {
   public String getPangeanicTranslateEndpoint() {
     return pangeanicTranslateEndpoint;
   }
-  
-  @Override
-  public void afterPropertiesSet() throws Exception {
-    if (testProfileNotActive(activeProfileString)) {
-      verifyRequiredProperties();
-    }
+
+  public String getGoogleTranslateProjectId() {
+    return googleTranslateProjectId;
   }
 
-  public String getTranslationGoogleProjectId() {
-    return translationGoogleProjectId;
+  public void setTranslationGoogleProjectId(String googleTranslateProjectId) {
+    this.googleTranslateProjectId = googleTranslateProjectId;
   }
 
-  public void setTranslationGoogleProjectId(String translationGoogleProjectId) {
-    this.translationGoogleProjectId = translationGoogleProjectId;
-  }
-
-  public static boolean testProfileNotActive(String activeProfileString) {
-    return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
-  }
+//  public static boolean testProfileNotActive(String activeProfileString) {
+//    return Arrays.stream(activeProfileString.split(",")).noneMatch(ACTIVE_TEST_PROFILE::equals);
+//  }
 
   /** verify properties */
-  private void verifyRequiredProperties() {
+  public void verifyRequiredProperties() {
     List<String> missingProps = new ArrayList<>();
 
-    // if(StringUtils.isBlank(translConfigFile)) {
-    // missingProps.add("translation.config.file");
-    // }
-    //
     if (isAuthReadEnabled() && StringUtils.isBlank(getApiKeyUrl())) {
       missingProps.add("europeana.apikey.jwttoken.signaturekey");
     }
@@ -125,6 +116,10 @@ public class TranslationConfig implements InitializingBean {
       throw new IllegalStateException(String.format(
           "The following config properties are not set: %s", String.join("\n", missingProps)));
     }
+  }
+
+  public boolean useGoogleHttpClient() {
+    return useGoogleHttpClient;
   }
   
 }

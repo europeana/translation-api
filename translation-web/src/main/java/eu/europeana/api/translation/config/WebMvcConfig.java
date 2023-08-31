@@ -34,6 +34,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
    * Enable content negotiation via path extension (as long as Spring supports it) and set default content type in
    * case we receive a request without an extension or Accept header
    */
+  @SuppressWarnings("deprecation")
   @Override
   public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
     // Enable content negotiation via path extension. Note that this is deprecated with Spring

@@ -9,22 +9,24 @@
 
 	<artifactId>translation-definitions</artifactId>
 	<name>translation-definitions</name>
-	<description>A simple translation-definitions.</description>
+	<description>The shared data model classes shared by the translation API.</description>
+	
+	<properties>
+		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api.commons</groupId>
 			<artifactId>commons-error</artifactId>
 			<version>${api-commons.version}</version>
 		</dependency>
-<!--
 		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<version>3.0.2</version>
+			<groupId>org.codehaus.jettison</groupId>
+  			<artifactId>jettison</artifactId>
+  			<version>${jettison.version}</version>
 		</dependency>
--->
-
 	</dependencies>
 
-
+  
 </project>

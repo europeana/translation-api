@@ -20,7 +20,7 @@ public class TranslationAppConstants {
   public static final String FALLBACK = "fallback";
   public static final String SOURCE_LANG = "source";
   public static final String TARGET_LANG = "target";
-  public static final String LANG_DELIMITER = ":";
+  public static final char LANG_DELIMITER = '-';
   
   //api request/response fields
   public static final String TEXT = "text";
