@@ -19,26 +19,36 @@ public class LangDetectionWebService {
   @Autowired
   private TranslationServiceConfigProvider translationServiceConfigProvider;
 
-  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws Exception {
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws ParamValidationException, LanguageDetectionException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
+    LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
     try {
       langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
     }
-    catch (LanguageDetectionException ePrimary) {
+    catch (LanguageDetectionException originalError) {
       //check if fallback is available
-      if(langDetectRequest.getFallback()==null) {
-        throw ePrimary;
+      if(fallback == null) {
+        throw originalError;
+      } 
+      try {
+        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());  
+      } catch (Exception e) {
+        throw originalError;
       }
-      //call the fallback service in case of failed lang detection (non 200 response by remote service)
-      LanguageDetectionService fallback = getServiceInstance(langDetectRequest.getFallback(), langDetectRequest.getLang(), true);
-      langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
     }
     
-    LangDetectResponse result = new LangDetectResponse();
-    result.setLangs(langs);
-    result.setLang(langDetectRequest.getLang());
-    return result;
+    return new LangDetectResponse(langs, langDetectRequest.getLang());
+  }
+
+  private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
+      throws ParamValidationException {
+    //only if indicated in request
+    if(langDetectRequest.getFallback() == null) {
+      return null;
+    }
+    //call the fallback service in case of failed lang detection (non 200 response by remote service)
+    return getServiceInstance(langDetectRequest.getFallback(), langDetectRequest.getLang(), true);
   }  
 
   private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest) throws ParamValidationException {

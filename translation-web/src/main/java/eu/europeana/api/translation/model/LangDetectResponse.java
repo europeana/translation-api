@@ -17,6 +17,12 @@ public class LangDetectResponse {
     super();
   }
 
+  public LangDetectResponse(List<String> langs, String lang) {
+    this.langs = langs;
+    this.lang = lang;
+  }
+  
+  
   @JsonGetter(TranslationAppConstants.LANGS)
   public List<String> getLangs() {
     return langs;
