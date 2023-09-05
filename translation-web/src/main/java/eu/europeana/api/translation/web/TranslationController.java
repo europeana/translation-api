@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.web;
 
+import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import eu.europeana.api.commons.definitions.config.i18n.I18nConstants;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
@@ -18,9 +20,6 @@ import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import static eu.europeana.api.translation.config.I18nConstants.EMPTY_PARAM_MANDATORY;
-import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
 
 @RestController
 @Tag(name = "Translation endpoint", description = "Perform text translation")
