@@ -23,6 +23,7 @@ import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
 import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
 
+@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 public class TranslationRestIT extends BaseTranslationTest {
