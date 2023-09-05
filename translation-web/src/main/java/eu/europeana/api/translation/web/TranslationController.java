@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web;
 
 import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
+import static eu.europeana.api.translation.config.I18nConstants.EMPTY_PARAM_MANDATORY;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import eu.europeana.api.commons.definitions.config.i18n.I18nConstants;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
@@ -52,12 +52,12 @@ public class TranslationController extends BaseRest {
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
     if (isBlank(translationRequest.getText())) {
-      throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
+      throw new ParamValidationException( EMPTY_PARAM_MANDATORY, EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TEXT});
     }
 
     if (StringUtils.isEmpty(translationRequest.getTarget())) {
-      throw new ParamValidationException(I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
+      throw new ParamValidationException(EMPTY_PARAM_MANDATORY, EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TARGET_LANG});
     }
     
