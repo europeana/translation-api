@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.web;
 
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,12 +50,12 @@ public class TranslationController extends BaseRest {
 
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
-    if (translationRequest.getText() == null) {
+    if (isBlank(translationRequest.getText())) {
       throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TEXT});
     }
 
-    if (translationRequest.getTarget() ==  I18nConstants.EMPTY_PARAM_MANDATORY) {
+    if (StringUtils.isEmpty(translationRequest.getTarget())) {
       throw new ParamValidationException(I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TARGET_LANG});
     }
@@ -63,6 +65,14 @@ public class TranslationController extends BaseRest {
     if(!translationService.isTranslationSupported(languagePair)) {
         throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {languagePair.toString()});
     }
+  }
+
+  private boolean isBlank(List<String> text) {
+    if (text == null || text.isEmpty()) {
+      return true;
+    }
+    //could verify if all entries are blank here
+    return false;
   }
 
 }
