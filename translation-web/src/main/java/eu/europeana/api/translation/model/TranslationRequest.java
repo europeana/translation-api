@@ -12,7 +12,6 @@ public class TranslationRequest {
 
   private String source;
   private String target;
-  private Boolean detect;
   private String service;
   private String fallback;
   private List<String> text;
@@ -37,15 +36,6 @@ public class TranslationRequest {
   @JsonSetter(TranslationAppConstants.TARGET_LANG)
   public void setTarget(String target) {
     this.target = target;
-  }
-
-  public Boolean getDetect() {
-    return detect;
-  }
-
-  @JsonSetter(TranslationAppConstants.DETECT_BOOL)
-  public void setDetect(Boolean detect) {
-    this.detect = detect;
   }
 
   public String getService() {

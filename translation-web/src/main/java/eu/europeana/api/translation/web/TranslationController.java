@@ -52,11 +52,7 @@ public class TranslationController extends BaseRest {
       throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TEXT});
     }
-    //source is optional
-//    if (translRequest.getSource() == null) {
-//      throw new ParamValidationException( I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
-//          new String[] {TranslationAppConstants.SOURCE_LANG});
-//    }
+
     if (translationRequest.getTarget() ==  I18nConstants.EMPTY_PARAM_MANDATORY) {
       throw new ParamValidationException(I18nConstants.EMPTY_PARAM_MANDATORY, I18nConstants.EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TARGET_LANG});

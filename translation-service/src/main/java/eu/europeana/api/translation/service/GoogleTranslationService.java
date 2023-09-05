@@ -20,7 +20,6 @@ import eu.europeana.api.translation.service.exception.TranslationException;
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
  * as well as a projectId (defined in the application properties).
  */
-// @Service
 public class GoogleTranslationService implements TranslationService {
 
   private static final Logger LOG = LogManager.getLogger(GoogleTranslationService.class);
@@ -88,7 +87,6 @@ public class GoogleTranslationService implements TranslationService {
     this.locationName = LocationName.of(getGoogleProjectId(), "global");
   }
 
-  // @PreDestroy
   @Override
   public void close() {
     if (this.client != null) {
@@ -96,19 +94,6 @@ public class GoogleTranslationService implements TranslationService {
       this.client.close();
     }
   }
-
-  // public List<String> translate(List<String> texts, String targetLanguage,
-  // Language sourceLangHint) {
-  // TranslateTextRequest request = TranslateTextRequest.newBuilder()
-  // .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
-  // .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
-  // TranslateTextResponse response = this.client.translateText(request);
-  // List<String> result = new ArrayList<>();
-  // for (Translation t : response.getTranslationsList()) {
-  // result.add(t.getTranslatedText());
-  // }
-  // return result;
-  // }
 
   @Override
   public List<String> translate(List<String> texts, String targetLanguage)

@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
+import javax.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
@@ -13,7 +14,6 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
-import eu.europeana.api.translation.service.exception.TranslationException;
 
 @Service
 public class TranslationWebService {
@@ -32,31 +32,24 @@ public class TranslationWebService {
     
     List<String> translations = null;
     try {
-      translations = invokeTranslation(translationService, translationRequest);  
-    } catch (Exception ePrimary) {
+      translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());  
+    } catch (Exception originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throw ePrimary;
+        throw originalError;
       }
-      translations = invokeTranslation(fallback, translationRequest);
+      
+      try {
+        translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+      } catch(Exception e) {
+        //return original exception
+        throw originalError;
+      }
     }
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(translations);
     result.setLang(translationRequest.getTarget());
     return result;
-  }
-
-  private List<String> invokeTranslation(TranslationService translationService,
-      TranslationRequest translationRequest) throws TranslationException {
-    List<String> translations;
-    if(translationRequest.getDetect()) {
-      translations =
-          translationService.translate(translationRequest.getText(), translationRequest.getTarget());  
-    } else {
-      translations =
-          translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
-    }
-    return translations;
   }
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest, LanguagePair languagePair)
@@ -84,6 +77,8 @@ public class TranslationWebService {
 
   private TranslationService selectFromLanguageMappings(LanguagePair languagePair)
       throws ParamValidationException {
+    
+    // TODO:refactor to use search
     for (TranslationMappingCfg translMappingCfg : translationServiceConfigProvider
         .getTranslationServicesConfig().getTranslationConfig().getMappings()) {
 
@@ -144,5 +139,10 @@ public class TranslationWebService {
       }
     }
     return false;
+  }
+  
+  @PreDestroy
+  public void close() {
+    //call close method of all translation services
   }
 }

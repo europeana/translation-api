@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
+import javax.annotation.PreDestroy;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,11 @@ public class LangDetectionWebService {
 
   public boolean isLangDetectionSupported(@NotNull String lang) {
     return translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(lang.toLowerCase());
+  }
+  
+  @PreDestroy
+  public void close() {
+    //call close method of all detection services
   }
   
 }
