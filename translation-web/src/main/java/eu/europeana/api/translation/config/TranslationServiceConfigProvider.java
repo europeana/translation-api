@@ -175,8 +175,9 @@ public class TranslationServiceConfigProvider {
       }
       LanguageDetectionService detectService;
       try {
+        final Class<?> beanClass = Class.forName(detectServiceCfg.getClassname());
         detectService = (LanguageDetectionService) applicationContext
-            .getBean(Class.forName(detectServiceCfg.getClassname()));
+            .getBean(beanClass);
       } catch (BeansException | ClassNotFoundException e) {
         throw new LangDetectionServiceConfigurationException(
             "Service bean not available: " + detectServiceCfg.getClassname(), e);

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
@@ -13,6 +14,8 @@ import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsServic
 import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 @Configuration()
 public class TranslationApiAutoconfig{
@@ -66,8 +69,11 @@ public class TranslationApiAutoconfig{
   
   
   @Bean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
-  public TranslationServiceConfigProvider getTranslationServiceConfigProvider() {
+  @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE, BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
+  public TranslationServiceConfigProvider getTranslationServiceConfigProvider() throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
     this.translationServiceConfigProvider = new TranslationServiceConfigProvider();
+    //failing as the service beans are not initialized yet, would need to think of another way to call this initialization 
+//    translationServiceConfigProvider.initTranslationServicesConfiguration();
     return translationServiceConfigProvider;
   }
 
