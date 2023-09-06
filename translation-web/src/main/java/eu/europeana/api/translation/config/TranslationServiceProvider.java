@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,11 @@ import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
+/**
+ * Class used to read the traslation service configurations, validate them, initialize mapping for language detection and translation services 
+ * @author GordeaS
+ *
+ */
 public class TranslationServiceProvider {
 
   @Autowired
@@ -31,17 +36,22 @@ public class TranslationServiceProvider {
       "/translation_service_configuration.json";
   private final String serviceConfigFile;
 
-  // private static final Logger logger = LogManager.getLogger(TranslationApp.class);
-
   TranslationServicesConfiguration translationServicesConfig;
-  Map<String, LanguageDetectionService> langDetectServices = new HashMap<>();
-  Map<String, TranslationService> translationServices = new HashMap<>();
-  private Map<String, TranslationService> langMappings4TranslateServices = new HashMap<>();
+  Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
+  Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
+  Map<String, TranslationService> langMappings4TranslateServices = new ConcurrentHashMap<>();
 
+  /**
+   * Default contructor using default config file
+   */
   public TranslationServiceProvider() {
     this(DEFAULT_SERVICE_CONFIG_FILE);
   }
 
+  /**
+   * Construtor using an atenitive config file
+   * @param serviceConfigFile a config file available in classpath
+   */
   public TranslationServiceProvider(String serviceConfigFile) {
     this.serviceConfigFile = serviceConfigFile;
   }
@@ -58,6 +68,11 @@ public class TranslationServiceProvider {
     return translationServices;
   }
 
+  /**
+   * Initialization of language detection and translation services  
+   * @throws TranslationServiceConfigurationException if translations services are not properly configured
+   * @throws LangDetectionServiceConfigurationException if language detection services are not properly configured
+   */
   public void initTranslationServicesConfiguration()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
       // init translation services
