@@ -106,7 +106,6 @@ public class TranslationRestIT extends BaseTranslationTest {
   void translateErrorNoTarget() throws Exception {
     String missingTarget = "{"
         + "\"source\": \"de\","
-        + "\"detect\": false,"
         + "\"text\": [ \"eine Textzeile auf Deutsch\"]"
         + "}";
     mockMvc
@@ -123,7 +122,6 @@ public class TranslationRestIT extends BaseTranslationTest {
   void translateWithDetect() throws Exception {
     String missingSource = "{"
         + "\"target\": \"en\","
-        + "\"detect\": false,"
         + "\"text\": [ \"eine Textzeile auf Deutsch\"]"
         + "}";
     mockMvc
@@ -139,8 +137,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   void translateErrorMissingText() throws Exception {
     String missingText = "{"
         + "\"source\": \"de\","
-        + "\"target\": \"en\","
-        + "\"detect\": false"
+        + "\"target\": \"en\""
         + "}";
     mockMvc
         .perform(
