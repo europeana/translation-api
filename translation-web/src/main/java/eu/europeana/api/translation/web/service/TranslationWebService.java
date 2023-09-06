@@ -8,7 +8,6 @@ import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
-import eu.europeana.api.translation.config.services.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
