@@ -19,7 +19,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 
 /**
  * Main application. Allows deploying as a war and logs instance data when deployed in Cloud Foundry
@@ -66,8 +66,8 @@ public class TranslationApp extends SpringBootServletInitializer {
 
   public void initTranslationServices(ApplicationContext ctx) {
     try {
-      TranslationServiceConfigProvider translationServiceProvider =
-          (TranslationServiceConfigProvider) ctx.getBean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER);
+      TranslationServiceProvider translationServiceProvider =
+          (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
       translationServiceProvider.initTranslationServicesConfiguration();
     } catch (Exception e) {
       // gracefully stop the application in case of configuration problems (code 1 means exception

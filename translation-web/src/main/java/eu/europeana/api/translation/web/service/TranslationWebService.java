@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.services.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -19,7 +19,7 @@ import eu.europeana.api.translation.service.TranslationService;
 public class TranslationWebService {
 
   @Autowired
-  private TranslationServiceConfigProvider translationServiceConfigProvider;
+  private TranslationServiceProvider translationServiceProvider;
 
   public TranslationResponse translate(TranslationRequest translationRequest) throws Exception {
     LanguagePair languagePair =
@@ -69,7 +69,7 @@ public class TranslationWebService {
     }
 
     // if none selected pick the default
-    final String defaultServiceId = translationServiceConfigProvider.getTranslationServicesConfig()
+    final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig()
         .getTranslationConfig().getDefaultServiceId();
 
     return getTranslationService(defaultServiceId, languagePair);
@@ -78,15 +78,8 @@ public class TranslationWebService {
   private TranslationService selectFromLanguageMappings(LanguagePair languagePair)
       throws ParamValidationException {
     
-    // TODO:refactor to use search
-    for (TranslationMappingCfg translMappingCfg : translationServiceConfigProvider
-        .getTranslationServicesConfig().getTranslationConfig().getMappings()) {
-
-      if (translMappingCfg.isSupported(languagePair)) {
-        return getTranslationService(translMappingCfg.getServiceId(), languagePair);
-      }
-    }
-    return null;
+    final String key = LanguagePair.generateKey(languagePair.getSrcLang(), languagePair.getTargetLang());
+    return translationServiceProvider.getLangMappings4TranslateServices().getOrDefault(key, null);  
   }
 
   private TranslationService getTranslationService(final String serviceId,
@@ -96,7 +89,7 @@ public class TranslationWebService {
   private TranslationService getTranslationService(final String serviceId,
       LanguagePair languagePair, boolean fallback) throws ParamValidationException {
     TranslationService result =
-        translationServiceConfigProvider.getTranslationServices().get(serviceId);
+        translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
@@ -112,7 +105,7 @@ public class TranslationWebService {
 
   public boolean isTranslationSupported(LanguagePair languagePair) {
     // check if the "source" and "target" params are supported
-    List<TranslationLangPairCfg> langPairCfgList = translationServiceConfigProvider
+    List<TranslationLangPairCfg> langPairCfgList = translationServiceProvider
         .getTranslationServicesConfig().getTranslationConfig().getSupported();
     if (languagePair.getSrcLang() == null) {
       return isTargetInList(languagePair.getTargetLang(), langPairCfgList);
@@ -144,5 +137,8 @@ public class TranslationWebService {
   @PreDestroy
   public void close() {
     //call close method of all translation services
+    for (TranslationService service : translationServiceProvider.getTranslationServices().values()) {
+      service.close(); 
+    }
   }
 }

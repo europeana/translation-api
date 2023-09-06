@@ -21,7 +21,7 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 public class TranslationApiAutoconfig{
 
   private final TranslationConfig translationConfig;
-  TranslationServiceConfigProvider translationServiceConfigProvider;
+  TranslationServiceProvider translationServiceConfigProvider;
 
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
@@ -68,10 +68,10 @@ public class TranslationApiAutoconfig{
   } 
   
   
-  @Bean(BeanNames.BEAN_SERVICE_CONFIG_PROVIDER)
+  @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
   @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE, BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
-  public TranslationServiceConfigProvider getTranslationServiceConfigProvider() throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    this.translationServiceConfigProvider = new TranslationServiceConfigProvider();
+  public TranslationServiceProvider getTranslationServiceProvider() throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
+    this.translationServiceConfigProvider = new TranslationServiceProvider();
     //failing as the service beans are not initialized yet, would need to think of another way to call this initialization 
 //    translationServiceConfigProvider.initTranslationServicesConfiguration();
     return translationServiceConfigProvider;

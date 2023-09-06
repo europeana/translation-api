@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.TranslationApp;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import okhttp3.mockwebserver.Dispatcher;
@@ -44,7 +44,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   protected WebApplicationContext wac;
 
   @Autowired
-  TranslationServiceConfigProvider translationServiceConfigProvider;
+  TranslationServiceProvider translationServiceProvider;
   
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
@@ -92,7 +92,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
       this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
     //need to initialize serviceCOnfigurations
-    translationServiceConfigProvider.initTranslationServicesConfiguration();
+    translationServiceProvider.initTranslationServicesConfiguration();
   }
 
   @AfterAll

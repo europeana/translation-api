@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
@@ -18,7 +18,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public class LangDetectionWebService {
 
   @Autowired
-  private TranslationServiceConfigProvider translationServiceConfigProvider;
+  private TranslationServiceProvider translationServiceProvider;
 
   public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws ParamValidationException, LanguageDetectionException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
@@ -59,7 +59,7 @@ public class LangDetectionWebService {
     if(requestedServiceId != null) {
       return getServiceInstance(requestedServiceId, languageHint);
     }else {
-      final String defaultServiceId = translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId();
+      final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId();
       return getServiceInstance(defaultServiceId, languageHint); 
     }
   }
@@ -71,7 +71,7 @@ public class LangDetectionWebService {
 
   private LanguageDetectionService getServiceInstance(final String requestedServiceId,
       final String languageHint, boolean isFallbackService) throws ParamValidationException {
-    LanguageDetectionService detectService = translationServiceConfigProvider.getLangDetectServices().get(requestedServiceId);
+    LanguageDetectionService detectService = translationServiceProvider.getLangDetectServices().get(requestedServiceId);
     if(detectService==null) {
       final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {paramName, requestedServiceId});
@@ -85,12 +85,15 @@ public class LangDetectionWebService {
   }
 
   public boolean isLangDetectionSupported(@NotNull String lang) {
-    return translationServiceConfigProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(lang.toLowerCase());
+    return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(lang.toLowerCase());
   }
   
   @PreDestroy
   public void close() {
     //call close method of all detection services
+    for (LanguageDetectionService service : translationServiceProvider.getLangDetectServices().values()) {
+      service.close(); 
+    }
   }
   
 }

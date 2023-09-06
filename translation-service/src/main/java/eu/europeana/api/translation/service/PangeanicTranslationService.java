@@ -225,7 +225,7 @@ public class PangeanicTranslationService implements TranslationService {
     if (translateClient != null) {
       try {
         this.translateClient.close();
-      } catch (IOException e) {
+      } catch (RuntimeException | IOException e) {
         LOG.error("Error closing connection to Pangeanic Translation API", e);
       }
     }
