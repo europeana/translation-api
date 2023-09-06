@@ -2,6 +2,8 @@ package eu.europeana.api.translation.web.service;
 
 import java.util.List;
 import javax.annotation.PreDestroy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
@@ -13,13 +15,16 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 @Service
 public class TranslationWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-
+  
+  private final Logger logger = LogManager.getLogger(getClass());
+  
   public TranslationResponse translate(TranslationRequest translationRequest) throws Exception {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
@@ -32,7 +37,7 @@ public class TranslationWebService {
     List<String> translations = null;
     try {
       translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());  
-    } catch (Exception originalError) {
+    } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
         throw originalError;
@@ -40,7 +45,10 @@ public class TranslationWebService {
       
       try {
         translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
-      } catch(Exception e) {
+      } catch(TranslationException e) {
+        if(logger.isDebugEnabled()) {
+          logger.debug("Error when calling default service. ", e);
+        }
         //return original exception
         throw originalError;
       }
@@ -74,9 +82,7 @@ public class TranslationWebService {
     return getTranslationService(defaultServiceId, languagePair);
   }
 
-  private TranslationService selectFromLanguageMappings(LanguagePair languagePair)
-      throws ParamValidationException {
-    
+  private TranslationService selectFromLanguageMappings(LanguagePair languagePair){
     final String key = LanguagePair.generateKey(languagePair.getSrcLang(), languagePair.getTargetLang());
     return translationServiceProvider.getLangMappings4TranslateServices().getOrDefault(key, null);  
   }

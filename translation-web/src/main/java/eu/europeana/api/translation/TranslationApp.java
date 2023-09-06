@@ -15,7 +15,6 @@ import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFactoryCustomizerAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
@@ -35,8 +34,6 @@ import eu.europeana.api.translation.config.TranslationServiceProvider;
     // DataSources are manually configured (for EM and batch DBs)
     DataSourceAutoConfiguration.class})
 public class TranslationApp extends SpringBootServletInitializer {
-
-  static ConfigurableApplicationContext ctx;
 
   /**
    * Main entry point of this application

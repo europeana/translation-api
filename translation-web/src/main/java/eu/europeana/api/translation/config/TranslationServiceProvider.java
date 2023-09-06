@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.config;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -10,8 +11,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
@@ -61,23 +60,22 @@ public class TranslationServiceProvider {
 
   public void initTranslationServicesConfiguration()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    try {
       // init translation services
       readServiceConfigurations();
-      validateAndInitServices();
-    } catch (JsonProcessingException e) {
-      throw new TranslationServiceConfigurationException(
-          "Invalid Service Configurations, check json syntax!", e);
-    }
+      validateAndInitServices(); 
   }
   
   private void readServiceConfigurations()
-      throws JsonProcessingException, JsonMappingException {
-    InputStream inputStream = getClass().getResourceAsStream(getServiceConfigFile());
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-    String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    translationServicesConfig =
-        new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
+      throws TranslationServiceConfigurationException {
+    try(InputStream inputStream = getClass().getResourceAsStream(getServiceConfigFile())){
+      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+      String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+      translationServicesConfig =
+          new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
+    } catch (IOException e) {
+      throw new TranslationServiceConfigurationException(
+          "Cannot read serviceConfigfile!", e);
+    }
   }
 
   private void validateAndInitServices() throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
@@ -107,25 +105,30 @@ public class TranslationServiceProvider {
       for (String srcLang : langPair.getSrcLang()) {
         //iterate src lang list
         for (String trgLang : langPair.getTargetLang()) {
-          //src and taret language must be different
-          if(srcLang.equals(trgLang)) {
-            throw new TranslationServiceConfigurationException(
-                "Invalid configuration for supported language pairs by translation service! Target language must be different from the source language: " + srcLang);   
-          }
-          
-          //check if available in language mappings 
-          boolean isSupported = langMappings4TranslateServices.containsKey(LanguagePair.generateKey(srcLang, trgLang));
-          if(!isSupported) {
-            //check if supported by default service
-            isSupported = getDefaultTranslationService().isSupported(srcLang, trgLang);
-          }
-          
-          if(!isSupported) {
-            throw new TranslationServiceConfigurationException(
-                "The translation services do not support all languages declared in the supported section.");
-          }
+          validateSupportedLanguagePair(srcLang, trgLang);
         }
       }
+    }
+  }
+
+  private void validateSupportedLanguagePair(String srcLang, String trgLang)
+      throws TranslationServiceConfigurationException {
+    //src and taret language must be different
+    if(srcLang.equals(trgLang)) {
+      throw new TranslationServiceConfigurationException(
+          "Invalid configuration for supported language pairs by translation service! Target language must be different from the source language: " + srcLang);   
+    }
+    
+    //check if available in language mappings 
+    boolean isSupported = langMappings4TranslateServices.containsKey(LanguagePair.generateKey(srcLang, trgLang));
+    if(!isSupported) {
+      //check if supported by default service
+      isSupported = getDefaultTranslationService().isSupported(srcLang, trgLang);
+    }
+    
+    if(!isSupported) {
+      throw new TranslationServiceConfigurationException(
+          "The translation services do not support all languages declared in the supported section.");
     }
   }
 
@@ -177,30 +180,35 @@ public class TranslationServiceProvider {
       //register language mapping
       for (String srcLang : translMapping.getSrcLang()) {
         for (String trgLang : translMapping.getTrgLang()) {
-          //for each language pair
-          if(srcLang.equals(trgLang)) {
-            throw new TranslationServiceConfigurationException(
-                "Invalid language mapping in service configurations! Target language must be different from the source language: " + srcLang +
-                " for service with id: " + serviceId);   
-          }
-          
-          String key = LanguagePair.generateKey(srcLang, trgLang);
-          if (!translationService
-              .isSupported(srcLang, trgLang)) {
-            throw new TranslationServiceConfigurationException("Invalid service configuration! Translation service: "
-                + serviceId + ", does not support the language pair: " + key
-                + ", declared in the mappings section.");
-          }
-          
-          //prevent duplicate language pair mappings
-          if(getLangMappings4TranslateServices().containsKey(key)) {
-            throw new TranslationServiceConfigurationException("Dupplicate language mapping in service configurations for key: " + key);
-          }
-          
-          getLangMappings4TranslateServices().put(key, translationService);
+          registerLanguageMapping(translationService, srcLang, trgLang);
         }
       }
     }
+  }
+
+  private void registerLanguageMapping(final TranslationService translationService, String srcLang,
+      String trgLang) throws TranslationServiceConfigurationException {
+    //for each language pair
+    if(srcLang.equals(trgLang)) {
+      throw new TranslationServiceConfigurationException(
+          "Invalid language mapping in service configurations! Target language must be different from the source language: " + srcLang +
+          " for service with id: " + translationService.getServiceId());   
+    }
+    
+    String key = LanguagePair.generateKey(srcLang, trgLang);
+    if (!translationService
+        .isSupported(srcLang, trgLang)) {
+      throw new TranslationServiceConfigurationException("Invalid service configuration! Translation service: "
+          + translationService.getServiceId() + ", does not support the language pair: " + key
+          + ", declared in the mappings section.");
+    }
+    
+    //prevent duplicate language pair mappings
+    if(getLangMappings4TranslateServices().containsKey(key)) {
+      throw new TranslationServiceConfigurationException("Dupplicate language mapping in service configurations for key: " + key);
+    }
+    
+    getLangMappings4TranslateServices().put(key, translationService);
   }
 
   private TranslationService verifyRegisteredService(final String serviceId)
@@ -211,8 +219,7 @@ public class TranslationServiceProvider {
       throw new TranslationServiceConfigurationException(
           "Translation service id declared in the mappings is invalid.");
     }
-    final TranslationService translationService = getTranslationServices().get(serviceId);
-    return translationService;
+    return getTranslationServices().get(serviceId);
   }
 
   private void validateDetectServiceCfg() throws LangDetectionServiceConfigurationException {

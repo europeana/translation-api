@@ -1,8 +1,11 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
+import java.util.Locale;
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
@@ -19,7 +22,9 @@ public class LangDetectionWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-
+  
+  private final Logger logger = LogManager.getLogger(getClass());
+  
   public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws ParamValidationException, LanguageDetectionException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
@@ -34,7 +39,10 @@ public class LangDetectionWebService {
       } 
       try {
         langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());  
-      } catch (Exception e) {
+      } catch (LanguageDetectionException e) {
+        if(logger.isDebugEnabled()) {
+          logger.debug("Error when calling default service. ", e);
+        }
         throw originalError;
       }
     }
@@ -85,7 +93,8 @@ public class LangDetectionWebService {
   }
 
   public boolean isLangDetectionSupported(@NotNull String lang) {
-    return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig().getSupported().contains(lang.toLowerCase());
+    return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig()
+        .getSupported().contains(lang.toLowerCase(Locale.ENGLISH));
   }
   
   @PreDestroy

@@ -90,11 +90,15 @@ public class GoogleTranslationService implements TranslationService {
   @Override
   public void close() {
     if (this.client != null) {
-      LOG.debug("Shutting down GoogleTranslationService client...");
+      if(LOG.isDebugEnabled()) {
+        LOG.debug("Shutting down GoogleTranslationService client...");
+      }
       try {
         this.client.close();
       } catch (RuntimeException e) {
-        LOG.info("Unexpected error occured when closing translation service: " + getServiceId(), e);
+        if(LOG.isInfoEnabled()) {
+        LOG.info("Unexpected error occured when closing translation service: {}", getServiceId(), e);
+        }
       }
     }
   }
