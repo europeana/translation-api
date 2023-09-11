@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.ApplicationPreparedEvent;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -20,7 +19,6 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.TranslationApp;
 import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;

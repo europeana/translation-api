@@ -110,22 +110,27 @@ public class GoogleTranslationService implements TranslationService {
   }
 
   @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) {
-    Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
-        .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
-
-    if (sourceLanguage != null) {
-      requestBuilder.setSourceLanguageCode(sourceLanguage);
+  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) throws TranslationException {
+    try {
+      Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
+          .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
+  
+      if (sourceLanguage != null) {
+        requestBuilder.setSourceLanguageCode(sourceLanguage);
+      }
+  
+      TranslateTextRequest request = requestBuilder.build();
+  
+      TranslateTextResponse response = this.client.translateText(request);
+      List<String> result = new ArrayList<>();
+      for (Translation t : response.getTranslationsList()) {
+        result.add(t.getTranslatedText());
+      }
+      return result;
     }
-
-    TranslateTextRequest request = requestBuilder.build();
-
-    TranslateTextResponse response = this.client.translateText(request);
-    List<String> result = new ArrayList<>();
-    for (Translation t : response.getTranslationsList()) {
-      result.add(t.getTranslatedText());
+    catch (Exception ex) {
+      throw new TranslationException(ex.getMessage());
     }
-    return result;
   }
 
   @Override
