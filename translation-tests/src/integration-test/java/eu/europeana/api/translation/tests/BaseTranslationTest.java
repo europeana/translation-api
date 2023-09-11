@@ -91,8 +91,6 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     if (mockMvc == null) {
       this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
-    //need to initialize serviceCOnfigurations
-    translationServiceProvider.initTranslationServicesConfiguration();
   }
 
   @AfterAll

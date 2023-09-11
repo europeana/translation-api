@@ -1,8 +1,17 @@
 package eu.europeana.api.translation.config;
 
+import java.util.Arrays;
 import java.util.Locale;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationPreparedEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,15 +20,18 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.TranslationApp;
 import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
 
 @Configuration()
-public class TranslationApiAutoconfig {
+public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent>{
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
+  private static final Log logger = LogFactory.getLog(TranslationApiAutoconfig.class);
+  
 
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
@@ -79,5 +91,58 @@ public class TranslationApiAutoconfig {
     // translationServiceConfigProvider#initTranslationServicesConfiguration;
     return translationServiceConfigProvider;
   }
+
+  @Override
+  public void onApplicationEvent(ApplicationStartedEvent event) {
+    // TODO Auto-generated method stub
+    // log beans for debuging purposes
+    if (logger.isDebugEnabled()) {
+      printRegisteredBeans(event.getApplicationContext());
+    }
+    // verify required configurations for initialization of translation services
+    verifyMandatoryProperties(event.getApplicationContext());
+    
+    // init translation services
+    initTranslationServices(event.getApplicationContext());
+  }
+  
+  public void initTranslationServices(ApplicationContext ctx) {
+    try {
+      TranslationServiceProvider translationServiceProvider =
+          (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
+      translationServiceProvider.initTranslationServicesConfiguration();
+    } catch (Exception e) {
+      // gracefully stop the application in case of configuration problems (code 1 means exception
+      // occured at startup)
+      logger.fatal(
+          "Stopping application. Translation Service initialization failed due to configuration errors!",
+          e);
+      System.exit(SpringApplication.exit(ctx, () -> 1));
+    }
+  }
+
+  public void verifyMandatoryProperties(ApplicationContext ctx) {
+    try {
+      eu.europeana.api.translation.config.TranslationConfig TranslationConfig =
+          (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
+      TranslationConfig.verifyRequiredProperties();
+    } catch (Exception e) {
+      // gracefully stop the application in case of configuration problems (code 1 means exception
+      // occured at startup)
+      logger.fatal(
+          "Stopping application. Translation Service initialization failed due to configuration errors!",
+          e);
+      System.exit(SpringApplication.exit(ctx, () -> 1));
+    }
+  }
+  
+  
+  private void printRegisteredBeans(ApplicationContext ctx) {
+    String[] beanNames = ctx.getBeanDefinitionNames();
+    Arrays.sort(beanNames);
+    logger.debug("Instantiated beans:");
+    logger.debug(StringUtils.join(beanNames, "\n"));
+  }
+
 
 }
