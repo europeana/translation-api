@@ -129,7 +129,7 @@ public class GoogleTranslationService implements TranslationService {
       return result;
     }
     catch (Exception ex) {
-      throw new TranslationException(ex.getMessage());
+      throw new TranslationException(ex.getMessage(), ex);
     }
   }
 

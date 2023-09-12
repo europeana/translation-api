@@ -3,8 +3,8 @@ package eu.europeana.api.translation.config;
 import java.util.Arrays;
 import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -28,7 +28,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
-  private static final Log logger = LogFactory.getLog(TranslationApiAutoconfig.class);
+  private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
   
 
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
@@ -121,9 +121,9 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   public void verifyMandatoryProperties(ApplicationContext ctx) {
     try {
-      eu.europeana.api.translation.config.TranslationConfig TranslationConfig =
+      eu.europeana.api.translation.config.TranslationConfig translationConfig =
           (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
-      TranslationConfig.verifyRequiredProperties();
+      translationConfig.verifyRequiredProperties();
     } catch (Exception e) {
       // gracefully stop the application in case of configuration problems (code 1 means exception
       // occured at startup)
