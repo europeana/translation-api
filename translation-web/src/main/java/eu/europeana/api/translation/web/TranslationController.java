@@ -1,7 +1,9 @@
 package eu.europeana.api.translation.web;
 
+import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
+import static eu.europeana.api.translation.config.I18nConstants.EMPTY_PARAM_MANDATORY;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,9 +20,6 @@ import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import static eu.europeana.api.translation.config.I18nConstants.EMPTY_PARAM_MANDATORY;
-import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
 
 @RestController
 @Tag(name = "Translation endpoint", description = "Perform text translation")
@@ -52,12 +51,12 @@ public class TranslationController extends BaseRest {
 
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
-    if (translationRequest.getText() == null) {
+    if (isBlank(translationRequest.getText())) {
       throw new ParamValidationException( EMPTY_PARAM_MANDATORY, EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TEXT});
     }
 
-    if (StringUtils.equals(translationRequest.getTarget(), EMPTY_PARAM_MANDATORY)) {
+    if (StringUtils.isEmpty(translationRequest.getTarget())) {
       throw new ParamValidationException(EMPTY_PARAM_MANDATORY, EMPTY_PARAM_MANDATORY,
           new String[] {TranslationAppConstants.TARGET_LANG});
     }
@@ -67,6 +66,14 @@ public class TranslationController extends BaseRest {
     if(!translationService.isTranslationSupported(languagePair)) {
         throw new ParamValidationException(null, INVALID_SERVICE_PARAM, new String[] {languagePair.toString()});
     }
+  }
+
+  private boolean isBlank(List<String> text) {
+    if (text == null || text.isEmpty()) {
+      return true;
+    }
+    //could verify if all entries are blank here
+    return false;
   }
 
 }

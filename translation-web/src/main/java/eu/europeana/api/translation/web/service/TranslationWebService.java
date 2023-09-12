@@ -1,13 +1,15 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
+import javax.annotation.PreDestroy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.translation.config.I18nConstants;
-import eu.europeana.api.translation.config.TranslationServiceConfigProvider;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
-import eu.europeana.api.translation.config.services.TranslationMappingCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
@@ -19,8 +21,10 @@ import eu.europeana.api.translation.service.exception.TranslationException;
 public class TranslationWebService {
 
   @Autowired
-  private TranslationServiceConfigProvider translationServiceConfigProvider;
-
+  private TranslationServiceProvider translationServiceProvider;
+  
+  private final Logger logger = LogManager.getLogger(getClass());
+  
   public TranslationResponse translate(TranslationRequest translationRequest) throws Exception {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
@@ -32,31 +36,27 @@ public class TranslationWebService {
     
     List<String> translations = null;
     try {
-      translations = invokeTranslation(translationService, translationRequest);  
-    } catch (Exception ePrimary) {
+      translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());  
+    } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throw ePrimary;
+        throw originalError;
       }
-      translations = invokeTranslation(fallback, translationRequest);
+      
+      try {
+        translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+      } catch(TranslationException e) {
+        if(logger.isDebugEnabled()) {
+          logger.debug("Error when calling default service. ", e);
+        }
+        //return original exception
+        throw originalError;
+      }
     }
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(translations);
     result.setLang(translationRequest.getTarget());
     return result;
-  }
-
-  private List<String> invokeTranslation(TranslationService translationService,
-      TranslationRequest translationRequest) throws TranslationException {
-    List<String> translations;
-    if(translationRequest.getDetect()) {
-      translations =
-          translationService.translate(translationRequest.getText(), translationRequest.getTarget());  
-    } else {
-      translations =
-          translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
-    }
-    return translations;
   }
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest, LanguagePair languagePair)
@@ -76,22 +76,15 @@ public class TranslationWebService {
     }
 
     // if none selected pick the default
-    final String defaultServiceId = translationServiceConfigProvider.getTranslationServicesConfig()
+    final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig()
         .getTranslationConfig().getDefaultServiceId();
 
     return getTranslationService(defaultServiceId, languagePair);
   }
 
-  private TranslationService selectFromLanguageMappings(LanguagePair languagePair)
-      throws ParamValidationException {
-    for (TranslationMappingCfg translMappingCfg : translationServiceConfigProvider
-        .getTranslationServicesConfig().getTranslationConfig().getMappings()) {
-
-      if (translMappingCfg.isSupported(languagePair)) {
-        return getTranslationService(translMappingCfg.getServiceId(), languagePair);
-      }
-    }
-    return null;
+  private TranslationService selectFromLanguageMappings(LanguagePair languagePair){
+    final String key = LanguagePair.generateKey(languagePair.getSrcLang(), languagePair.getTargetLang());
+    return translationServiceProvider.getLangMappings4TranslateServices().getOrDefault(key, null);  
   }
 
   private TranslationService getTranslationService(final String serviceId,
@@ -101,7 +94,7 @@ public class TranslationWebService {
   private TranslationService getTranslationService(final String serviceId,
       LanguagePair languagePair, boolean fallback) throws ParamValidationException {
     TranslationService result =
-        translationServiceConfigProvider.getTranslationServices().get(serviceId);
+        translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
@@ -117,7 +110,7 @@ public class TranslationWebService {
 
   public boolean isTranslationSupported(LanguagePair languagePair) {
     // check if the "source" and "target" params are supported
-    List<TranslationLangPairCfg> langPairCfgList = translationServiceConfigProvider
+    List<TranslationLangPairCfg> langPairCfgList = translationServiceProvider
         .getTranslationServicesConfig().getTranslationConfig().getSupported();
     if (languagePair.getSrcLang() == null) {
       return isTargetInList(languagePair.getTargetLang(), langPairCfgList);
@@ -144,5 +137,13 @@ public class TranslationWebService {
       }
     }
     return false;
+  }
+  
+  @PreDestroy
+  public void close() {
+    //call close method of all translation services
+    for (TranslationService service : translationServiceProvider.getTranslationServices().values()) {
+      service.close(); 
+    }
   }
 }

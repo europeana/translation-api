@@ -47,8 +47,12 @@ public class LanguagePair implements Comparable<LanguagePair> {
     
     @Override
       public String toString() {
-        return srcLang + TranslationAppConstants.LANG_DELIMITER + targetLang;
+        return generateKey(srcLang, targetLang);
       }
+
+    public static String generateKey(String srcLang, String targetLang) {
+      return srcLang + TranslationAppConstants.LANG_DELIMITER + targetLang;
+    }
     
     @Override
       public int hashCode() {

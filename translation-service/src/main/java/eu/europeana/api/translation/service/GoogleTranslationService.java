@@ -20,7 +20,6 @@ import eu.europeana.api.translation.service.exception.TranslationException;
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
  * as well as a projectId (defined in the application properties).
  */
-// @Service
 public class GoogleTranslationService implements TranslationService {
 
   private static final Logger LOG = LogManager.getLogger(GoogleTranslationService.class);
@@ -88,27 +87,21 @@ public class GoogleTranslationService implements TranslationService {
     this.locationName = LocationName.of(getGoogleProjectId(), "global");
   }
 
-  // @PreDestroy
   @Override
   public void close() {
     if (this.client != null) {
-      LOG.debug("Shutting down GoogleTranslationService client...");
-      this.client.close();
+      if(LOG.isDebugEnabled()) {
+        LOG.debug("Shutting down GoogleTranslationService client...");
+      }
+      try {
+        this.client.close();
+      } catch (RuntimeException e) {
+        if(LOG.isInfoEnabled()) {
+        LOG.info("Unexpected error occured when closing translation service: {}", getServiceId(), e);
+        }
+      }
     }
   }
-
-  // public List<String> translate(List<String> texts, String targetLanguage,
-  // Language sourceLangHint) {
-  // TranslateTextRequest request = TranslateTextRequest.newBuilder()
-  // .setParent(locationName.toString()).setMimeType(MIME_TYPE_TEXT)
-  // .setTargetLanguageCode(targetLanguage).addAllContents(texts).build();
-  // TranslateTextResponse response = this.client.translateText(request);
-  // List<String> result = new ArrayList<>();
-  // for (Translation t : response.getTranslationsList()) {
-  // result.add(t.getTranslatedText());
-  // }
-  // return result;
-  // }
 
   @Override
   public List<String> translate(List<String> texts, String targetLanguage)
@@ -117,22 +110,27 @@ public class GoogleTranslationService implements TranslationService {
   }
 
   @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) {
-    Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
-        .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
-
-    if (sourceLanguage != null) {
-      requestBuilder.setSourceLanguageCode(sourceLanguage);
+  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) throws TranslationException {
+    try {
+      Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
+          .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
+  
+      if (sourceLanguage != null) {
+        requestBuilder.setSourceLanguageCode(sourceLanguage);
+      }
+  
+      TranslateTextRequest request = requestBuilder.build();
+  
+      TranslateTextResponse response = this.client.translateText(request);
+      List<String> result = new ArrayList<>();
+      for (Translation t : response.getTranslationsList()) {
+        result.add(t.getTranslatedText());
+      }
+      return result;
     }
-
-    TranslateTextRequest request = requestBuilder.build();
-
-    TranslateTextResponse response = this.client.translateText(request);
-    List<String> result = new ArrayList<>();
-    for (Translation t : response.getTranslationsList()) {
-      result.add(t.getTranslatedText());
+    catch (Exception ex) {
+      throw new TranslationException(ex.getMessage(), ex);
     }
-    return result;
   }
 
   @Override

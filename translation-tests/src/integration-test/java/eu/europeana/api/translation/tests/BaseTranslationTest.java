@@ -23,6 +23,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.TranslationApp;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -37,7 +40,12 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   protected MockMvc mockMvc;
   protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
   
+  @Autowired
+  protected WebApplicationContext wac;
 
+  @Autowired
+  TranslationServiceProvider translationServiceProvider;
+  
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
   public static final Map<String, String> TRANSLATION_RESPONSE_MAP = initTranslationMap();
@@ -77,16 +85,12 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     return mockPangeanic;
   }
   
-  @Autowired
-  protected WebApplicationContext wac;
-
+  
   @BeforeAll
-  private void initServices() {
+  private void initServices() throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
     if (mockMvc == null) {
       this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
-      //Check if needed?
-//      TranslationApp.initTranslationServices(wac);
-      }
+    }
   }
 
   @AfterAll
