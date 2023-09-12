@@ -64,7 +64,8 @@ public class TranslationController extends BaseRest {
     //validate language pair
     final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     if(!translationService.isTranslationSupported(languagePair)) {
-        throw new ParamValidationException(null, INVALID_SERVICE_PARAM, new String[] {languagePair.toString()});
+        throw new ParamValidationException(null, INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
+            + TranslationAppConstants.TARGET_LANG, languagePair.toString()});
     }
   }
 

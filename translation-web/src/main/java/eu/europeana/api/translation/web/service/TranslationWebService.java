@@ -98,7 +98,7 @@ public class TranslationWebService {
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
-          new String[] {param, serviceId});
+          new String[] {param, serviceId + " (valid values: " + TranslationAppConstants.PANGEANIC + ", " + TranslationAppConstants.GOOGLE + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,

@@ -14,6 +14,7 @@ import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -157,6 +158,6 @@ public class GoogleTranslationService implements TranslationService {
 
   @Override
   public String getServiceId() {
-    return "GOOGLE";
+    return TranslationAppConstants.GOOGLE;
   }
 }

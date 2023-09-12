@@ -32,4 +32,8 @@ public class TranslationAppConstants {
   public static final String APP_INFO = "app";
   public static final String CONFIG_INFO = "config";
   
+  //api supported service ids
+  public static final String GOOGLE = "GOOGLE";
+  public static final String PANGEANIC = "PANGEANIC";
+  
 }

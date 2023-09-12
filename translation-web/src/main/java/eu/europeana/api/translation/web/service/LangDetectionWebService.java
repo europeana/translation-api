@@ -82,7 +82,7 @@ public class LangDetectionWebService {
     LanguageDetectionService detectService = translationServiceProvider.getLangDetectServices().get(requestedServiceId);
     if(detectService==null) {
       final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {paramName, requestedServiceId});
+      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {paramName, requestedServiceId + " (valid values: " + TranslationAppConstants.PANGEANIC + ")"});
     }
     //check if the "lang" is supported
     if(languageHint!=null && !detectService.isSupported(languageHint)) {
