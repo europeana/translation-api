@@ -22,6 +22,8 @@ import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsServic
 import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 @Configuration()
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent>{
@@ -97,43 +99,33 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(event.getApplicationContext());
     }
-    // verify required configurations for initialization of translation services
-    verifyMandatoryProperties(event.getApplicationContext());
     
-    // init translation services
-    initTranslationServices(event.getApplicationContext());
+    try {
+      // verify required configurations for initialization of translation services
+      verifyMandatoryProperties(event.getApplicationContext());
+      
+      // init translation services
+      initTranslationServices(event.getApplicationContext());
+     } catch (Exception e) {
+       // gracefully stop the application in case of configuration problems (code 1 means exception
+       // occured at startup)
+       logger.fatal(
+           "Stopping application. Translation Service initialization failed due to configuration errors!",
+           e);
+       System.exit(SpringApplication.exit(event.getApplicationContext(), () -> 1));
+     }
   }
   
-  public void initTranslationServices(ApplicationContext ctx) {
-    try {
+  public void initTranslationServices(ApplicationContext ctx) throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
       TranslationServiceProvider translationServiceProvider =
           (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
       translationServiceProvider.initTranslationServicesConfiguration();
-    } catch (Exception e) {
-      // gracefully stop the application in case of configuration problems (code 1 means exception
-      // occured at startup)
-      logger.fatal(
-          "Stopping application. Translation Service initialization failed due to configuration errors!",
-          e);
-      System.exit(SpringApplication.exit(ctx, () -> 1));
-    }
   }
 
   public void verifyMandatoryProperties(ApplicationContext ctx) {
-    try {
-      eu.europeana.api.translation.config.TranslationConfig translationConfig =
-          (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
+      TranslationConfig translationConfig = (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
       translationConfig.verifyRequiredProperties();
-    } catch (Exception e) {
-      // gracefully stop the application in case of configuration problems (code 1 means exception
-      // occured at startup)
-      logger.fatal(
-          "Stopping application. Translation Service initialization failed due to configuration errors!",
-          e);
-      System.exit(SpringApplication.exit(ctx, () -> 1));
-    }
   }
-  
   
   private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
