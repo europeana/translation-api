@@ -11,7 +11,7 @@ public interface LanguageDetectionService {
      * The id used to register the service
      * @return the serviceId
      */
-    public String getServiceId();
+    String getServiceId();
 
     /**
      * To fetch the source language for the list of texts.

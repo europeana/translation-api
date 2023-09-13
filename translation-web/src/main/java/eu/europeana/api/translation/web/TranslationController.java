@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.web;
 
+import static eu.europeana.api.commons.definitions.config.i18n.I18nConstants.EMPTY_PARAM_MANDATORY;
 import static eu.europeana.api.translation.config.I18nConstants.INVALID_SERVICE_PARAM;
-import static eu.europeana.api.translation.config.I18nConstants.EMPTY_PARAM_MANDATORY;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -64,8 +64,8 @@ public class TranslationController extends BaseRest {
     //validate language pair
     final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     if(!translationService.isTranslationSupported(languagePair)) {
-        throw new ParamValidationException(null, INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
-            + TranslationAppConstants.TARGET_LANG, languagePair.toString()});
+        throw new ParamValidationException(null, INVALID_SERVICE_PARAM, new String[] {TranslationAppConstants.SOURCE_LANG 
+            + TranslationAppConstants.LANG_DELIMITER + TranslationAppConstants.TARGET_LANG, languagePair.toString()});
     }
   }
 

@@ -13,7 +13,7 @@ public interface TranslationService {
    * The id used to register the service
    * @return the serviceId
    */
-  public String getServiceId();
+  String getServiceId();
 
   /**
    * To validate the given pair of source and target language is valid for translation
@@ -57,7 +57,7 @@ public interface TranslationService {
    * 
    * @return
    */
-  public String getExternalServiceEndPoint();
+  String getExternalServiceEndPoint();
 
 
 }
