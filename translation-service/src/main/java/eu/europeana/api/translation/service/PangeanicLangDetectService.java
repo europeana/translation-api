@@ -17,7 +17,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
-import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {
@@ -25,6 +24,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
   private final String externalServiceEndpoint;
+  private String serviceId;
 
     protected CloseableHttpClient detectClient;
 
@@ -140,7 +140,12 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     
     @Override
     public String getServiceId() {
-      return TranslationAppConstants.PANGEANIC;
+      return serviceId;
+    }
+
+    @Override
+    public void setServiceId(String serviceId) {
+      this.serviceId=serviceId;
     }    
 
 }

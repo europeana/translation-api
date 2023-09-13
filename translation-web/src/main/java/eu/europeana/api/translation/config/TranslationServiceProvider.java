@@ -179,7 +179,7 @@ public class TranslationServiceProvider {
         throw new TranslationServiceConfigurationException(
             "Service bean not available: " + translServiceConfig.getClassname(), e);
       }
-
+      translService.setServiceId(translServiceConfig.getId());
       getTranslationServices().put(translServiceConfig.getId(), translService);
     }
   }
@@ -289,6 +289,7 @@ public class TranslationServiceProvider {
         throw new LangDetectionServiceConfigurationException(
             "Service bean not available: " + detectServiceCfg.getClassname(), e);
       }
+      detectService.setServiceId(detectServiceCfg.getId());
       //add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }

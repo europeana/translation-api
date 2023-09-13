@@ -14,6 +14,8 @@ public interface TranslationService {
    * @return the serviceId
    */
   String getServiceId();
+  
+  void setServiceId(String serviceId);
 
   /**
    * To validate the given pair of source and target language is valid for translation

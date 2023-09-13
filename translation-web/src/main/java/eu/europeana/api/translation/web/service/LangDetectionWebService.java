@@ -31,8 +31,8 @@ public class LangDetectionWebService {
     List<String> langs = null;
     String serviceId = null;
     try {
+      langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
       serviceId = langDetectService.getServiceId();
-      langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
     }
     catch (LanguageDetectionException originalError) {
       //check if fallback is available
@@ -40,8 +40,8 @@ public class LangDetectionWebService {
         throw originalError;
       } 
       try {
+        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
         serviceId = fallback.getServiceId();
-        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());  
       } catch (LanguageDetectionException e) {
         if(logger.isDebugEnabled()) {
           logger.debug("Error when calling default service. ", e);
@@ -86,7 +86,7 @@ public class LangDetectionWebService {
     if(detectService==null) {
       final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, 
-          new String[] {paramName, requestedServiceId + " (valid values: " + TranslationAppConstants.PANGEANIC + ")"});
+          new String[] {paramName, requestedServiceId + " (available services: " + String.join(", ", translationServiceProvider.getLangDetectServices().keySet()) + ")"});
     }
     //check if the "lang" is supported
     if(languageHint!=null && !detectService.isSupported(languageHint)) {
