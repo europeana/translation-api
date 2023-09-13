@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 
 @SpringBootTest
@@ -38,10 +39,12 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    String langFieldValue = json.getString("lang");
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
     assertNotNull(langFieldValue);
-    List<String> langs = Collections.singletonList(json.getString("langs"));
+    List<String> langs = Collections.singletonList(json.getString(TranslationAppConstants.LANGS));
     assertTrue(langs.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
   }
 
   @Test

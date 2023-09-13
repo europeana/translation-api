@@ -12,14 +12,16 @@ public class LangDetectResponse {
 
   private List<String> langs;
   private String lang;
+  private String service;
 
   public LangDetectResponse() {
     super();
   }
 
-  public LangDetectResponse(List<String> langs, String lang) {
+  public LangDetectResponse(List<String> langs, String lang, String service) {
     this.langs = langs;
     this.lang = lang;
+    this.service = service;
   }
   
   
@@ -39,5 +41,14 @@ public class LangDetectResponse {
 
   public void setLang(String lang) {
     this.lang = lang;
+  }
+
+  @JsonGetter(TranslationAppConstants.SERVICE)
+  public String getService() {
+    return service;
+  }
+
+  public void setService(String service) {
+    this.service = service;
   }
 }

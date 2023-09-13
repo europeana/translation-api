@@ -12,6 +12,7 @@ public class TranslationResponse {
 
   private List<String> translations;
   private String lang;
+  private String service;
 
   public TranslationResponse() {
     super();
@@ -33,5 +34,14 @@ public class TranslationResponse {
 
   public void setLang(String lang) {
     this.lang = lang;
+  }
+
+  @JsonGetter(TranslationAppConstants.SERVICE)
+  public String getService() {
+    return service;
+  }
+
+  public void setService(String service) {
+    this.service = service;
   }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.GoogleTranslationService;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
@@ -51,10 +52,12 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    String langFieldValue = json.getString("lang");
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
     assertNotNull(langFieldValue);    
-    List<String> translations = Collections.singletonList(json.getString("translations"));
+    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
     assertTrue(translations.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);    
   }
 
   @Test
@@ -71,10 +74,12 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    String langFieldValue = json.getString("lang");
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
     assertNotNull(langFieldValue);    
-    List<String> translations = Collections.singletonList(json.getString("translations"));
+    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
     assertTrue(translations.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
   }
   
   @Test

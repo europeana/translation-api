@@ -35,7 +35,9 @@ public class TranslationWebService {
     }
     
     List<String> translations = null;
+    String serviceId = null;
     try {
+      serviceId = translationService.getServiceId();
       translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());  
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
@@ -44,6 +46,7 @@ public class TranslationWebService {
       }
       
       try {
+        serviceId = fallback.getServiceId();
         translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
       } catch(TranslationException e) {
         if(logger.isDebugEnabled()) {
@@ -56,6 +59,7 @@ public class TranslationWebService {
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(translations);
     result.setLang(translationRequest.getTarget());
+    result.setService(serviceId);
     return result;
   }
 

@@ -29,7 +29,9 @@ public class LangDetectionWebService {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
+    String serviceId = null;
     try {
+      serviceId = langDetectService.getServiceId();
       langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
     }
     catch (LanguageDetectionException originalError) {
@@ -38,6 +40,7 @@ public class LangDetectionWebService {
         throw originalError;
       } 
       try {
+        serviceId = fallback.getServiceId();
         langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());  
       } catch (LanguageDetectionException e) {
         if(logger.isDebugEnabled()) {
@@ -47,7 +50,7 @@ public class LangDetectionWebService {
       }
     }
     
-    return new LangDetectResponse(langs, langDetectRequest.getLang());
+    return new LangDetectResponse(langs, langDetectRequest.getLang(), serviceId);
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)

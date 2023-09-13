@@ -6,6 +6,12 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public interface LanguageDetectionService {
 
     boolean isSupported(String srcLang);
+    
+    /**
+     * The id used to register the service
+     * @return the serviceId
+     */
+    public String getServiceId();
 
     /**
      * To fetch the source language for the list of texts.

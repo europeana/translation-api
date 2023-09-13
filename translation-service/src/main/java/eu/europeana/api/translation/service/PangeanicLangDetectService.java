@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {
@@ -136,5 +137,10 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     public String getExternalServiceEndPoint() {
       return externalServiceEndpoint;
     }
+    
+    @Override
+    public String getServiceId() {
+      return TranslationAppConstants.PANGEANIC;
+    }    
 
 }
