@@ -18,6 +18,12 @@ public class LangDetectResponse {
     super();
   }
 
+  /**
+   * Constructor with object initialization
+   * @param langs detected languages
+   * @param lang the language hint submitted with the request
+   * @param service the service used to detect the languages
+   */
   public LangDetectResponse(List<String> langs, String lang, String service) {
     this.langs = langs;
     this.lang = lang;
