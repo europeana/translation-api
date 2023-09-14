@@ -54,5 +54,10 @@ public class TranslationAuthorizationService extends BaseAuthorizationService {
     // TODO Auto-generated method stub
     return null;
   }
+  
+  @Override
+  protected boolean isResourceAccessVerificationRequired(String operation) {
+    return false;
+  }
 
 }
