@@ -24,6 +24,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
   private final String externalServiceEndpoint;
+  private String serviceId;
 
     protected CloseableHttpClient detectClient;
 
@@ -136,5 +137,15 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     public String getExternalServiceEndPoint() {
       return externalServiceEndpoint;
     }
+    
+    @Override
+    public String getServiceId() {
+      return serviceId;
+    }
+
+    @Override
+    public void setServiceId(String serviceId) {
+      this.serviceId=serviceId;
+    }    
 
 }

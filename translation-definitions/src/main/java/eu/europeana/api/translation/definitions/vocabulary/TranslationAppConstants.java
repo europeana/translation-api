@@ -31,5 +31,5 @@ public class TranslationAppConstants {
   public static final String BUILD_INFO = "build";
   public static final String APP_INFO = "app";
   public static final String CONFIG_INFO = "config";
-  
+    
 }

@@ -35,6 +35,7 @@ public class PangeanicTranslationService implements TranslationService {
   public final String externalServiceEndpoint;
 
   protected CloseableHttpClient translateClient;
+  private String serviceId;
 
   public PangeanicTranslationService(String externalServiceEndpoint,
       PangeanicLangDetectService langDetectService) {
@@ -240,8 +241,12 @@ public class PangeanicTranslationService implements TranslationService {
 
   @Override
   public String getServiceId() {
-    return "PANGEANIC";
+    return serviceId;
   }
   
+  @Override
+  public void setServiceId(String serviceId) {
+    this.serviceId=serviceId;
+  }    
 
 }

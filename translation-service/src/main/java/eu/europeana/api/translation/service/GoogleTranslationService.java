@@ -28,6 +28,7 @@ public class GoogleTranslationService implements TranslationService {
 
   private TranslationServiceClient client;
   private LocationName locationName;
+  private String serviceId;
 
   public GoogleTranslationService(String googleProjectId) {
     this(googleProjectId, true, false);
@@ -157,6 +158,11 @@ public class GoogleTranslationService implements TranslationService {
 
   @Override
   public String getServiceId() {
-    return "GOOGLE";
+    return serviceId;
+  }
+
+  @Override
+  public void setServiceId(String serviceId) {
+    this.serviceId=serviceId;
   }
 }

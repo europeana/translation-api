@@ -19,7 +19,7 @@ public enum PangeanicLanguages {
     SV(0.7850), FR(0.8650), IT(0.8246), ES(0.8213), CS(0.8410),
     DE(0.8288), LV(0.7884), NL(0.7757), EL(0.8009), FI(0.7975),
     DA(0.7548), SL(0.7514), HU(0.7779), PT(0.7243), ET(0.7424),
-    LT(0.6538), GA(0.8650);
+    LT(0.6538), GA(0.8650), EN(0.8000);
 
     private final double translationThresholds;
 

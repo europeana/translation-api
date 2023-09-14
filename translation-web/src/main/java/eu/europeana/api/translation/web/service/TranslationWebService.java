@@ -35,8 +35,10 @@ public class TranslationWebService {
     }
     
     List<String> translations = null;
+    String serviceId = null;
     try {
-      translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());  
+      translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+      serviceId = translationService.getServiceId();
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
@@ -45,6 +47,7 @@ public class TranslationWebService {
       
       try {
         translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+        serviceId = fallback.getServiceId();
       } catch(TranslationException e) {
         if(logger.isDebugEnabled()) {
           logger.debug("Error when calling default service. ", e);
@@ -56,6 +59,7 @@ public class TranslationWebService {
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(translations);
     result.setLang(translationRequest.getTarget());
+    result.setService(serviceId);
     return result;
   }
 
@@ -98,7 +102,7 @@ public class TranslationWebService {
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
-          new String[] {param, serviceId});
+          new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
       throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,

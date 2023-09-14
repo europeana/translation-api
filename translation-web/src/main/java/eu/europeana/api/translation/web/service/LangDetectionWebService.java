@@ -29,8 +29,10 @@ public class LangDetectionWebService {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
+    String serviceId = null;
     try {
-      langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang()); 
+      langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+      serviceId = langDetectService.getServiceId();
     }
     catch (LanguageDetectionException originalError) {
       //check if fallback is available
@@ -38,7 +40,8 @@ public class LangDetectionWebService {
         throw originalError;
       } 
       try {
-        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());  
+        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+        serviceId = fallback.getServiceId();
       } catch (LanguageDetectionException e) {
         if(logger.isDebugEnabled()) {
           logger.debug("Error when calling default service. ", e);
@@ -47,7 +50,7 @@ public class LangDetectionWebService {
       }
     }
     
-    return new LangDetectResponse(langs, langDetectRequest.getLang());
+    return new LangDetectResponse(langs, langDetectRequest.getLang(), serviceId);
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
@@ -82,7 +85,9 @@ public class LangDetectionWebService {
     LanguageDetectionService detectService = translationServiceProvider.getLangDetectServices().get(requestedServiceId);
     if(detectService==null) {
       final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, new String[] {paramName, requestedServiceId});
+      final String availableServices = translationServiceProvider.getLangDetectServices().keySet().toString();
+      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, 
+          new String[] {paramName, requestedServiceId + " (available services: " + availableServices + ")"});
     }
     //check if the "lang" is supported
     if(languageHint!=null && !detectService.isSupported(languageHint)) {
