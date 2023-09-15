@@ -7,7 +7,11 @@
             {
                 "id": "PANGEANIC"
               , "classname": "eu.europeana.api.translation.service.PangeanicLangDetectService"
-            }
+            },
+            {
+                "id": "GOOGLE"
+              , "classname": "eu.europeana.api.translation.service.GoogleLangDetectService"
+            }            
         ],
         "default": "PANGEANIC"
     },
