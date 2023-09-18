@@ -7,11 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collections;
 import java.util.List;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
@@ -62,13 +64,22 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   @Test
   void langDetectionMissingTextParam() throws Exception {
     String requestJson = "{}";
-    mockMvc
+    String response = mockMvc
         .perform(
             post(BASE_URL_DETECT)
               .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .content(requestJson))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andReturn().getResponse().getContentAsString();
+    
+    JSONObject obj = new JSONObject(response);
+    Assertions.assertEquals(obj.get("success"), false);
+    Assertions.assertEquals(obj.get("status"), HttpStatus.BAD_REQUEST.value());
+    Assertions.assertTrue(obj.has("error"));
+    Assertions.assertTrue(obj.has("message"));
+    Assertions.assertTrue(obj.has("timestamp"));
+    Assertions.assertTrue(obj.has("path"));
   }
 
   @Test

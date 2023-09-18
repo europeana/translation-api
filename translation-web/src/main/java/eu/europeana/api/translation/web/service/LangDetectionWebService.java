@@ -8,14 +8,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.web.exception.ParamValidationException;
-import eu.europeana.api.translation.config.I18nConstants;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
 public class LangDetectionWebService {
@@ -86,13 +85,11 @@ public class LangDetectionWebService {
     if(detectService==null) {
       final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
       final String availableServices = translationServiceProvider.getLangDetectServices().keySet().toString();
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM, 
-          new String[] {paramName, requestedServiceId + " (available services: " + availableServices + ")"});
+      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, paramName, requestedServiceId + " (available services: " + availableServices + ")"));
     }
     //check if the "lang" is supported
     if(languageHint!=null && !detectService.isSupported(languageHint)) {
-      throw new ParamValidationException(null, I18nConstants.UNSUPORTED_LANGUAGE_BY_DETECT_SERVICE,
-          new String[] {TranslationAppConstants.LANG, requestedServiceId});
+      throw new ParamValidationException(String.format(TranslationAppConstants.UNSUPPORTED_LANG_MSG, TranslationAppConstants.LANG, requestedServiceId));
     }
     return detectService;
   }

@@ -32,4 +32,10 @@ public class TranslationAppConstants {
   public static final String APP_INFO = "app";
   public static final String CONFIG_INFO = "config";
     
+  //exceptions messages
+  public static final String MANDATORY_PARAM_EMPTY_MSG = "The parameter '%s' cannot be empty or null.";
+  public static final String INVALID_PARAM_MSG = "An invalid value of the parameter '%s'='%s'.";
+  public static final String UNSUPPORTED_LANG_MSG = "The language '%s' is not supported by the language detection service '%s'!";
+  
+
 }
