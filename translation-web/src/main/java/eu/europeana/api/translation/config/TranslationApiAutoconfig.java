@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.config;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
@@ -64,9 +65,10 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   /**
    * Creates a new client wrapper that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
+   * @throws IOException 
    */
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
-  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() {
+  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException {
     return new GoogleTranslationServiceClientWrapper(translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
   }
 

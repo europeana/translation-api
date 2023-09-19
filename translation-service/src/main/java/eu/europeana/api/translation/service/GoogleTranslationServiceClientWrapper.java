@@ -19,45 +19,41 @@ public class GoogleTranslationServiceClientWrapper {
   private TranslationServiceClient client;
   private boolean closed;
   
-  public GoogleTranslationServiceClientWrapper(String projectId, boolean useHttpClient) {
+  public GoogleTranslationServiceClientWrapper(String projectId, boolean useHttpClient) throws IOException {
     initClient(projectId, useHttpClient);
   }
   
-  private void initClient(String projectId, boolean useHttpClient) {
+  private void initClient(String projectId, boolean useHttpClient) throws IOException {
     // allow service mocking
     final boolean initClientConnection = !"google-test".equals(projectId);
     if(! initClientConnection) {
       return;
     }
     
-    try {
-      // gRPC doesn't like communication via the socks proxy (throws an error) and also doesn't
-      // support the
-      // socksNonProxyHosts settings, so this is to tell it to by-pass the configured proxy
-      if (useHttpClient) {
-        TranslationServiceSettings translationServiceSettings =
-            TranslationServiceSettings.newHttpJsonBuilder().build();
-        
-        logger.info("GoogleTranslationService initialised, projectId = {}", projectId);
-        this.client=TranslationServiceClient.create(translationServiceSettings);
-      } else {
-        TransportChannelProvider transportChannelProvider = CloudTasksStubSettings
-            .defaultGrpcTransportProviderBuilder()
-            .setChannelConfigurator(
-                managedChannelBuilder -> managedChannelBuilder.proxyDetector(socketAddress -> null))
-            .build();
+    // gRPC doesn't like communication via the socks proxy (throws an error) and also doesn't
+    // support the
+    // socksNonProxyHosts settings, so this is to tell it to by-pass the configured proxy
+    if (useHttpClient) {
+      TranslationServiceSettings translationServiceSettings =
+          TranslationServiceSettings.newHttpJsonBuilder().build();
+      
+      logger.info("GoogleTranslationService initialised, projectId = {}", projectId);
+      this.client=TranslationServiceClient.create(translationServiceSettings);
+    } else {
+      TransportChannelProvider transportChannelProvider = CloudTasksStubSettings
+          .defaultGrpcTransportProviderBuilder()
+          .setChannelConfigurator(
+              managedChannelBuilder -> managedChannelBuilder.proxyDetector(socketAddress -> null))
+          .build();
 
-        TranslationServiceSettings tss;
-        tss = TranslationServiceSettings.newBuilder()
-            .setTransportChannelProvider(transportChannelProvider).build();
-        
-        logger.info("GoogleTranslationService initialised, projectId = {}", projectId);
-        this.client=TranslationServiceClient.create(tss);
-      }  
-      this.closed=false;
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot instantiate Google TranslationServiceClient!", e);
-    }    
+      TranslationServiceSettings tss;
+      tss = TranslationServiceSettings.newBuilder()
+          .setTransportChannelProvider(transportChannelProvider).build();
+      
+      logger.info("GoogleTranslationService initialised, projectId = {}", projectId);
+      this.client=TranslationServiceClient.create(tss);
+    }  
+    this.closed=false;
   }
 
   public TranslationServiceClient getClient() {
