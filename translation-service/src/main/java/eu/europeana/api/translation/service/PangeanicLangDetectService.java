@@ -58,8 +58,12 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     @Override
     public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
         try {
-            HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
-            return sendDetectRequestAndParse(post);
+          if(texts.isEmpty()) {
+            return new ArrayList<>();
+          }
+          
+          HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
+          return sendDetectRequestAndParse(post);
         } catch (JSONException | IOException e) {
             throw new LanguageDetectionException(e.getMessage());
         }

@@ -50,7 +50,7 @@ public class LangDetectionWebService {
       }
     }
     
-    return new LangDetectResponse(langs, langDetectRequest.getLang(), serviceId);
+    return new LangDetectResponse(langs, serviceId);
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)

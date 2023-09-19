@@ -1,0 +1,3 @@
+content: "eine Textzeile auf Deutsch"
+mime_type: "text/plain"
+parent: "projects/google-test/locations/global"
