@@ -8,13 +8,12 @@ import com.google.cloud.translate.v3.DetectLanguageRequest;
 import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
 import com.google.cloud.translate.v3.LocationName;
-import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class GoogleLangDetectService implements LanguageDetectionService {
    
   protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
-  private TranslationServiceClient client;
+  private GoogleTranslationServiceClientWrapper clientWrapper;
   private final String googleProjectId;
   private LocationName locationName;
   private String serviceId;
@@ -23,15 +22,15 @@ public class GoogleLangDetectService implements LanguageDetectionService {
    * used mainly for testing purposes. 
    * @param client
    */
-  public void init(TranslationServiceClient client) {
-    this.client = client;
+  public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
+    this.clientWrapper = clientWrapper;
     this.locationName = LocationName.of(googleProjectId, "global");
   }
   
-  public GoogleLangDetectService(String googleProjectId, TranslationServiceClient clientBean) {
+  public GoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
     this.googleProjectId=googleProjectId;
     this.locationName = LocationName.of(googleProjectId, "global");
-    this.client=clientBean;
+    this.clientWrapper=clientWrapperBean;
   }
 
   @Override
@@ -44,6 +43,10 @@ public class GoogleLangDetectService implements LanguageDetectionService {
     //docs: https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java  
     try {
       List<String> result = new ArrayList<>();
+      if(texts.isEmpty()) {
+        return result;
+      }
+      
       Builder googleLangDetectBuilder = DetectLanguageRequest.newBuilder();
       googleLangDetectBuilder.setParent(locationName.toString());
       googleLangDetectBuilder.setMimeType("text/plain");
@@ -52,7 +55,7 @@ public class GoogleLangDetectService implements LanguageDetectionService {
             .setContent(text)
             .build();        
 
-        DetectLanguageResponse response = client.detectLanguage(request);
+        DetectLanguageResponse response = clientWrapper.getClient().detectLanguage(request);
 
         //Display list of detected languages sorted by detection confidence. The most probable language is first.
         //The language detected: getLanguageCode()
@@ -66,12 +69,13 @@ public class GoogleLangDetectService implements LanguageDetectionService {
       }
       return result;
     } catch (Exception ex) {
-      throw new LanguageDetectionException(ex.getMessage());
+      throw new LanguageDetectionException("Exception occured during Google language detection!", ex);
     }
   }
   
   @Override
   public void close() {
+    clientWrapper.close();
   }
   
   @Override

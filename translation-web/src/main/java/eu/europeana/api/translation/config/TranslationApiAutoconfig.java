@@ -21,11 +21,11 @@ import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.service.GoogleLangDetectService;
 import eu.europeana.api.translation.service.GoogleTranslationService;
+import eu.europeana.api.translation.service.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
-import eu.europeana.api.translation.web.service.GoogleTranslationServiceClientWrapper;
 
 @Configuration()
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent>{
@@ -85,13 +85,13 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper.getClient());
+    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
   }
 
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper.getClient());
+    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)

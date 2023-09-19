@@ -1,7 +1,6 @@
-package eu.europeana.api.translation.web.service;
+package eu.europeana.api.translation.service;
 
 import java.io.IOException;
-import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -18,6 +17,7 @@ public class GoogleTranslationServiceClientWrapper {
    * the "close" method on the client to safely clean up any remaining background resources.
    */
   private TranslationServiceClient client;
+  private boolean closed;
   
   public GoogleTranslationServiceClientWrapper(String projectId, boolean useHttpClient) {
     initClient(projectId, useHttpClient);
@@ -53,7 +53,8 @@ public class GoogleTranslationServiceClientWrapper {
         
         logger.info("GoogleTranslationService initialised, projectId = {}", projectId);
         this.client=TranslationServiceClient.create(tss);
-      }      
+      }  
+      this.closed=false;
     } catch (IOException e) {
       throw new RuntimeException("Cannot instantiate Google TranslationServiceClient!", e);
     }    
@@ -63,14 +64,19 @@ public class GoogleTranslationServiceClientWrapper {
     return client;
   }
   
-  @PreDestroy
+  //only for the tests (mocked client)
+  public void setClient(TranslationServiceClient client) {
+    this.client=client;
+  }
+  
   public void close() {
-    if (this.client != null) {
+    if (!this.closed && this.client!=null) {
       if(logger.isDebugEnabled()) {
         logger.debug("Shutting down GoogleTranslationService client.");
       }
       try {
         this.client.close();
+        this.closed=true;
       } catch (RuntimeException e) {
         if(logger.isInfoEnabled()) {
           logger.info("Unexpected error occured when closing translation service.", e);
