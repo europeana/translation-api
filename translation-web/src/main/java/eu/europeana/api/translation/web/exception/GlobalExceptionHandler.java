@@ -77,8 +77,6 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
 	    if(ex.getCause() instanceof ResourceExhaustedException) {
 	      throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
 	    }
-	    else {
-	      throw ex;
-	    }
+	    throw ex;
 	  }
 }
