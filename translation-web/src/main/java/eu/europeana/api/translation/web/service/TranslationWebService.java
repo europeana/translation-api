@@ -14,6 +14,7 @@ import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.web.exception.GlobalExceptionHandler;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
@@ -21,6 +22,9 @@ public class TranslationWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
+  
+  @Autowired
+  private GlobalExceptionHandler globalExceptionHandler;
   
   private final Logger logger = LogManager.getLogger(getClass());
   
@@ -41,7 +45,7 @@ public class TranslationWebService {
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throw originalError;
+        globalExceptionHandler.throwOriginalError(originalError);
       }
       
       try {
@@ -52,7 +56,7 @@ public class TranslationWebService {
           logger.debug("Error when calling default service. ", e);
         }
         //return original exception
-        throw originalError;
+        globalExceptionHandler.throwOriginalError(originalError);
       }
     }
     TranslationResponse result = new TranslationResponse();
@@ -61,7 +65,7 @@ public class TranslationWebService {
     result.setService(serviceId);
     return result;
   }
-
+  
   private TranslationService selectTranslationService(TranslationRequest translationRequest, LanguagePair languagePair)
       throws ParamValidationException {
 

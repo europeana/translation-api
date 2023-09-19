@@ -14,6 +14,7 @@ import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.web.exception.GlobalExceptionHandler;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
@@ -22,9 +23,12 @@ public class LangDetectionWebService {
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
   
+  @Autowired
+  private GlobalExceptionHandler globalExceptionHandler;
+  
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws ParamValidationException, LanguageDetectionException {
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws Exception {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
@@ -36,7 +40,7 @@ public class LangDetectionWebService {
     catch (LanguageDetectionException originalError) {
       //check if fallback is available
       if(fallback == null) {
-        throw originalError;
+        globalExceptionHandler.throwOriginalError(originalError);
       } 
       try {
         langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
@@ -45,7 +49,7 @@ public class LangDetectionWebService {
         if(logger.isDebugEnabled()) {
           logger.debug("Error when calling default service. ", e);
         }
-        throw originalError;
+        globalExceptionHandler.throwOriginalError(originalError);
       }
     }
     

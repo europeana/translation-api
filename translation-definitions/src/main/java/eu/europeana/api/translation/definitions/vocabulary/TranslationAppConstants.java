@@ -36,6 +36,6 @@ public class TranslationAppConstants {
   public static final String MANDATORY_PARAM_EMPTY_MSG = "The parameter '%s' cannot be empty or null.";
   public static final String INVALID_PARAM_MSG = "An invalid value of the parameter '%s'='%s'.";
   public static final String UNSUPPORTED_LANG_MSG = "The language '%s' is not supported by the language detection service '%s'!";
-  
+  public static final String GOOGLE_QUOTA_LIMIT_MSG = "Google quota limit reached!";  
 
 }
