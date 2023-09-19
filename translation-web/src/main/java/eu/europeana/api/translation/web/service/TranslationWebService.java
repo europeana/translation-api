@@ -47,16 +47,17 @@ public class TranslationWebService {
       if (fallback == null) {
         globalExceptionHandler.throwOriginalError(originalError);
       }
-      
-      try {
-        translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
-        serviceId = fallback.getServiceId();
-      } catch(TranslationException e) {
-        if(logger.isDebugEnabled()) {
-          logger.debug("Error when calling default service. ", e);
+      else {
+        try {
+          translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+          serviceId = fallback.getServiceId();
+        } catch(TranslationException e) {
+          if(logger.isDebugEnabled()) {
+            logger.debug("Error when calling default service. ", e);
+          }
+          //return original exception
+          globalExceptionHandler.throwOriginalError(originalError);
         }
-        //return original exception
-        globalExceptionHandler.throwOriginalError(originalError);
       }
     }
     TranslationResponse result = new TranslationResponse();

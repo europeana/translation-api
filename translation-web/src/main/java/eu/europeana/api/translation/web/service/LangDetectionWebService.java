@@ -42,14 +42,16 @@ public class LangDetectionWebService {
       if(fallback == null) {
         globalExceptionHandler.throwOriginalError(originalError);
       } 
-      try {
-        langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
-        serviceId = fallback.getServiceId();
-      } catch (LanguageDetectionException e) {
-        if(logger.isDebugEnabled()) {
-          logger.debug("Error when calling default service. ", e);
+      else {
+        try {
+          langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+          serviceId = fallback.getServiceId();
+        } catch (LanguageDetectionException e) {
+          if(logger.isDebugEnabled()) {
+            logger.debug("Error when calling default service. ", e);
+          }
+          globalExceptionHandler.throwOriginalError(originalError);
         }
-        globalExceptionHandler.throwOriginalError(originalError);
       }
     }
     
