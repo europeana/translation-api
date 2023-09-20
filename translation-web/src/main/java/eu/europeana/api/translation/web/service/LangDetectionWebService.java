@@ -8,27 +8,24 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.web.exception.GlobalExceptionHandler;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
-public class LangDetectionWebService {
+public class LangDetectionWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-  
-  @Autowired
-  private GlobalExceptionHandler globalExceptionHandler;
-  
+    
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws Exception {
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws EuropeanaApiException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
@@ -40,7 +37,7 @@ public class LangDetectionWebService {
     catch (LanguageDetectionException originalError) {
       //check if fallback is available
       if(fallback == null) {
-        globalExceptionHandler.throwOriginalError(originalError);
+        throwOriginalLanguageDetectionException(originalError);
       } 
       else {
         try {
@@ -50,7 +47,7 @@ public class LangDetectionWebService {
           if(logger.isDebugEnabled()) {
             logger.debug("Error when calling default service. ", e);
           }
-          globalExceptionHandler.throwOriginalError(originalError);
+          throwOriginalLanguageDetectionException(originalError);
         }
       }
     }

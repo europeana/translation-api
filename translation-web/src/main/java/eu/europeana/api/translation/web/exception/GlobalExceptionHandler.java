@@ -10,13 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import com.google.api.gax.rpc.ResourceExhaustedException;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
 import eu.europeana.api.commons.web.exception.HttpException;
 import eu.europeana.api.translation.config.BeanNames;
-import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.web.service.RequestPathMethodService;
 
 @ControllerAdvice
@@ -73,10 +71,4 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
 	        .body(response);
 	  }
 	  
-	  public void throwOriginalError(Exception ex) throws Exception {
-	    if(ex.getCause() instanceof ResourceExhaustedException) {
-	      throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
-	    }
-	    throw ex;
-	  }
 }

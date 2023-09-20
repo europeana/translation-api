@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -14,21 +15,17 @@ import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
-import eu.europeana.api.translation.web.exception.GlobalExceptionHandler;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
-public class TranslationWebService {
+public class TranslationWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
   
-  @Autowired
-  private GlobalExceptionHandler globalExceptionHandler;
-  
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public TranslationResponse translate(TranslationRequest translationRequest) throws Exception {
+  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     TranslationService translationService = selectTranslationService(translationRequest, languagePair);
@@ -45,7 +42,7 @@ public class TranslationWebService {
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        globalExceptionHandler.throwOriginalError(originalError);
+        throwOriginalTranslationException(originalError);
       }
       else {
         try {
@@ -56,7 +53,7 @@ public class TranslationWebService {
             logger.debug("Error when calling default service. ", e);
           }
           //return original exception
-          globalExceptionHandler.throwOriginalError(originalError);
+          throwOriginalTranslationException(originalError);
         }
       }
     }
