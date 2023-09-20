@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.web;
 
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class TranslationController extends BaseRest {
 
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
-    if (isBlank(translationRequest.getText())) {
+    if (translationRequest.getText() == null) {
       throw new ParamValidationException(String.format(TranslationAppConstants.MANDATORY_PARAM_EMPTY_MSG, TranslationAppConstants.TEXT));
     }
 
@@ -62,14 +61,6 @@ public class TranslationController extends BaseRest {
     if(!translationService.isTranslationSupported(languagePair)) {
         throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()));
     }
-  }
-
-  private boolean isBlank(List<String> text) {
-    if (text == null || text.isEmpty()) {
-      return true;
-    }
-    //could verify if all entries are blank here
-    return false;
   }
 
 }

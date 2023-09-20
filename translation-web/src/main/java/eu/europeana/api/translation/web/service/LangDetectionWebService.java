@@ -52,7 +52,7 @@ public class LangDetectionWebService extends BaseWebService {
       }
     }
     
-    return new LangDetectResponse(langs, langDetectRequest.getLang(), serviceId);
+    return new LangDetectResponse(langs, serviceId);
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)

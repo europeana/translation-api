@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,10 @@ public class PangeanicTranslationService implements TranslationService {
   @Override
   public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage) throws TranslationException {
     try {
+      if(texts.isEmpty()) {
+        return new ArrayList<>();
+      }
+
       if (sourceLanguage == null) {
         // In this case source language is the hint. The texts passed will be sent for
         // lang-detection first and later will translated

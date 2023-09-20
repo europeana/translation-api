@@ -6,12 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
-@JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+@JsonInclude(value = JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LangDetectResponse {
 
   private List<String> langs;
-  private String lang;
   private String service;
 
   public LangDetectResponse() {
@@ -21,12 +20,10 @@ public class LangDetectResponse {
   /**
    * Constructor with object initialization
    * @param langs detected languages
-   * @param lang the language hint submitted with the request
    * @param service the service used to detect the languages
    */
-  public LangDetectResponse(List<String> langs, String lang, String service) {
+  public LangDetectResponse(List<String> langs, String service) {
     this.langs = langs;
-    this.lang = lang;
     this.service = service;
   }
   
@@ -38,15 +35,6 @@ public class LangDetectResponse {
 
   public void setLangs(List<String> langs) {
     this.langs = langs;
-  }
-
-  @JsonGetter(TranslationAppConstants.LANG)
-  public String getLang() {
-    return lang;
-  }
-
-  public void setLang(String lang) {
-    this.lang = lang;
   }
 
   @JsonGetter(TranslationAppConstants.SERVICE)

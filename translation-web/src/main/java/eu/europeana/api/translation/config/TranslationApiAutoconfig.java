@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.config;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +20,9 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.service.GoogleLangDetectService;
 import eu.europeana.api.translation.service.GoogleTranslationService;
+import eu.europeana.api.translation.service.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.PangeanicTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
@@ -58,6 +61,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     messageSource.setDefaultLocale(Locale.ENGLISH);
     return messageSource;
   }
+  
+  /**
+   * Creates a new client wrapper that can send translation requests to Google Cloud Translate. Note that
+   * the client needs to be closed when it's not used anymore
+   * @throws IOException 
+   */
+  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
+  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException {
+    return new GoogleTranslationServiceClientWrapper(translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
+  }
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
@@ -71,15 +84,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
         pangeanicLangDetectService);
   }
 
-  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
-  public GoogleTranslationService getGoogleTranslationService() {
-    final String projectId = translationConfig.getGoogleTranslateProjectId();
-    // allow service mocking
-    final boolean initClientConnection = !"google-test".equals(projectId);
-    return new GoogleTranslationService(projectId, initClientConnection,
-        translationConfig.useGoogleHttpClient());
+  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
+  public GoogleLangDetectService getGoogleLangDetectService(
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
   }
 
+  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
+  public GoogleTranslationService getGoogleTranslationService(
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
+  }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
   @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE,
@@ -133,6 +148,5 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     logger.debug("Instantiated beans:");
     logger.debug(StringUtils.join(beanNames, "\n"));
   }
-
 
 }
