@@ -1,10 +1,9 @@
 package eu.europeana.api.translation.web.exception;
 
-import org.springframework.http.HttpStatus;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 
 /** 
- * Exception thrown when something wrong happens in the call to the external translate/detect services
+ * Exception thrown when something wrong happens in the call to the external translate/detect services.
 */
 public class ExternalServiceCallException extends EuropeanaApiException {
 
@@ -14,8 +13,4 @@ public class ExternalServiceCallException extends EuropeanaApiException {
     super(msg);
   }
 
-  @Override
-  public HttpStatus getResponseStatus() {
-    return HttpStatus.INTERNAL_SERVER_ERROR;
-  }
 }
