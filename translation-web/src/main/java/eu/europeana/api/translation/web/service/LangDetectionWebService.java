@@ -37,7 +37,7 @@ public class LangDetectionWebService extends BaseWebService {
     catch (LanguageDetectionException originalError) {
       //check if fallback is available
       if(fallback == null) {
-        throwOriginalLanguageDetectionException(originalError);
+        throwApiException(originalError);
       } 
       else {
         try {
@@ -47,7 +47,7 @@ public class LangDetectionWebService extends BaseWebService {
           if(logger.isDebugEnabled()) {
             logger.debug("Error when calling default service. ", e);
           }
-          throwOriginalLanguageDetectionException(originalError);
+          throwApiException(originalError);
         }
       }
     }
