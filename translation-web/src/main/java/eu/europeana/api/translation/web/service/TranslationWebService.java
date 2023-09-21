@@ -6,8 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.web.exception.ParamValidationException;
-import eu.europeana.api.translation.config.I18nConstants;
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -16,16 +15,17 @@ import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
-public class TranslationWebService {
+public class TranslationWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
   
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public TranslationResponse translate(TranslationRequest translationRequest) throws Exception {
+  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     TranslationService translationService = selectTranslationService(translationRequest, languagePair);
@@ -42,18 +42,19 @@ public class TranslationWebService {
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throw originalError;
+        throwOriginalTranslationException(originalError);
       }
-      
-      try {
-        translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
-        serviceId = fallback.getServiceId();
-      } catch(TranslationException e) {
-        if(logger.isDebugEnabled()) {
-          logger.debug("Error when calling default service. ", e);
+      else {
+        try {
+          translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+          serviceId = fallback.getServiceId();
+        } catch(TranslationException e) {
+          if(logger.isDebugEnabled()) {
+            logger.debug("Error when calling default service. ", e);
+          }
+          //return original exception
+          throwOriginalTranslationException(originalError);
         }
-        //return original exception
-        throw originalError;
       }
     }
     TranslationResponse result = new TranslationResponse();
@@ -62,7 +63,7 @@ public class TranslationWebService {
     result.setService(serviceId);
     return result;
   }
-
+  
   private TranslationService selectTranslationService(TranslationRequest translationRequest, LanguagePair languagePair)
       throws ParamValidationException {
 
@@ -101,13 +102,12 @@ public class TranslationWebService {
         translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
-          new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
+      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"));
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
-          new String[] {TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
-              + TranslationAppConstants.TARGET_LANG, languagePair.toString()});
+      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, 
+          TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
+          + TranslationAppConstants.TARGET_LANG, languagePair.toString()));
     }
     return result;
   }

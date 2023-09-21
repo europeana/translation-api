@@ -34,7 +34,7 @@ public enum Language {
      * Validate if the provided string is a single 2-letter ISO-code language abbreviation
      * @param languageAbbrevation the string to check
      * @return Language that was found
-     * @throws InvalidParamValueException if the string did not match any supported language
+     * @throws InvalidLanguageException if the string did not match any supported language
      */
     public static Language validateSingle(String languageAbbrevation) throws InvalidLanguageException {
         if (StringUtils.isBlank(languageAbbrevation)) {
@@ -55,7 +55,7 @@ public enum Language {
      * @param languageAbbrevations String containing one or more two letter ISO-code abbreviation of a language, separated
      *                             by a comma (and optionally also a space)
      * @return a list of one or more found languages
-     * @throws InvalidParamValueException if one of the values is incorrect
+     * @throws InvalidLanguageException if one of the values is incorrect
      */
     public static List<Language> validateMultiple(String languageAbbrevations) throws InvalidLanguageException {
         if (StringUtils.isBlank(languageAbbrevations)) {

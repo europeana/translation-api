@@ -7,13 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import eu.europeana.api.commons.web.exception.ParamValidationException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
-import eu.europeana.api.translation.config.I18nConstants;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
+import eu.europeana.api.translation.web.exception.ParamValidationException;
 import eu.europeana.api.translation.web.service.LangDetectionWebService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -47,13 +46,11 @@ public class LangDetectionController extends BaseRest {
       throws ParamValidationException {
     // validate mandatory params
     if (langDetectRequest.getText() == null) {
-      throw new ParamValidationException(null, I18nConstants.EMPTY_PARAM_MANDATORY,
-          new String[] {TranslationAppConstants.TEXT});
+      throw new ParamValidationException(String.format(TranslationAppConstants.MANDATORY_PARAM_EMPTY_MSG, TranslationAppConstants.TEXT));
     }
     //validate language hint if provided
     if(langDetectRequest.getLang() != null && !langDetectionService.isLangDetectionSupported(langDetectRequest.getLang())) {
-      throw new ParamValidationException(null, I18nConstants.INVALID_SERVICE_PARAM,
-          new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
+      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, TranslationAppConstants.LANG, langDetectRequest.getLang()));
     }
   }
 
