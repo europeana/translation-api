@@ -42,7 +42,7 @@ public class TranslationWebService extends BaseWebService {
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throwOriginalTranslationException(originalError);
+        throwApiException(originalError);
       }
       else {
         try {
@@ -53,7 +53,7 @@ public class TranslationWebService extends BaseWebService {
             logger.debug("Error when calling default service. ", e);
           }
           //return original exception
-          throwOriginalTranslationException(originalError);
+          throwApiException(originalError);
         }
       }
     }

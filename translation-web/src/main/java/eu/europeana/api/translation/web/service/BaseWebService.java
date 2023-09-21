@@ -10,14 +10,14 @@ import eu.europeana.api.translation.web.exception.GoogleResourceExhaustedExcepti
 
 public class BaseWebService {
   
-  protected void throwOriginalLanguageDetectionException(LanguageDetectionException ex) throws EuropeanaApiException {
+  protected void throwApiException(LanguageDetectionException ex) throws EuropeanaApiException {
     if(ex.getCause() instanceof ResourceExhaustedException) {
       throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
     }
     throw new ExternalServiceCallException(TranslationAppConstants.LANG_DETECT_SERVICE_EXCEPTION_MSG);
   }
 
-  protected void throwOriginalTranslationException(TranslationException ex) throws EuropeanaApiException {
+  protected void throwApiException(TranslationException ex) throws EuropeanaApiException {
     if(ex.getCause() instanceof ResourceExhaustedException) {
       throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
     }
