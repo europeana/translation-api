@@ -3,6 +3,7 @@ package eu.europeana.api.translation.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -16,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {
@@ -26,7 +26,12 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   private final String externalServiceEndpoint;
   private String serviceId;
 
-    protected CloseableHttpClient detectClient;
+  private Set supportedLanguages = Set.of(
+      "sk", "ro", "bg", "pl", "hr", "sv", "fr", "it", "es", "cs",
+      "de", "lv", "nl", "el", "fi", "da", "sl", "hu", "pt", "et",
+      "lt", "ga", "en");
+  
+  protected CloseableHttpClient detectClient;
 
     public PangeanicLangDetectService(String endPoint) {
       this.externalServiceEndpoint = endPoint;
@@ -52,7 +57,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
 
     @Override
     public boolean isSupported(String srcLang) {
-       return PangeanicLanguages.isLanguageSupported(srcLang);
+       return supportedLanguages.contains(srcLang);
     }
 
     @Override
