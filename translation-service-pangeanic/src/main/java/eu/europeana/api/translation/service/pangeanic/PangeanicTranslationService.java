@@ -107,7 +107,7 @@ public class PangeanicTranslationService implements TranslationService {
       return PangeanicTranslationUtils.getResults(texts,
           sendTranslateRequestAndParse(post, sourceLanguage), false);
     } catch (JSONException | IOException e) {
-      throw new TranslationException(e.getMessage());
+      throw new TranslationException("Exception occured during Pangeanic translation!", e);
     }
   }
 

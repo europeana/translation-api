@@ -71,7 +71,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
           HttpPost post = PangeanicTranslationUtils.createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
           return sendDetectRequestAndParse(post);
         } catch (JSONException | IOException e) {
-            throw new LanguageDetectionException(e.getMessage());
+            throw new LanguageDetectionException("Exception occured during Pangeanic language detection!", e);
         }
     }
 

@@ -73,14 +73,6 @@ public class GoogleTranslationService implements TranslationService {
 
   @Override
   public boolean isSupported(String srcLang, String targetLanguage) {
-    if (srcLang == null) {
-      // automatic language detection
-      return isTargetSupported(targetLanguage);
-    }
-    return true;
-  }
-
-  private boolean isTargetSupported(String targetLanguage) {
     return true;
   }
 
