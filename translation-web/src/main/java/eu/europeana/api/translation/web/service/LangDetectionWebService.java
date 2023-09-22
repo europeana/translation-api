@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
+import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
+import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
-import eu.europeana.api.translation.service.LanguageDetectionService;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service

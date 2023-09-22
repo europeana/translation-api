@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.google;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,8 @@ import com.google.cloud.translate.v3.DetectLanguageRequest;
 import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
 import com.google.cloud.translate.v3.LocationName;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
+import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 
 public class GoogleLangDetectService implements LanguageDetectionService {
    

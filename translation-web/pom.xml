@@ -61,9 +61,15 @@
 		<!-- Europeana libraries -->
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
-			<artifactId>translation-service</artifactId>
+			<artifactId>translation-service-google</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>translation-service-pangeanic</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>		
 
 		<dependency>
 			<groupId>eu.europeana.api.commons</groupId>

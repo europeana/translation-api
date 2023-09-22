@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.google;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,8 @@ import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.definitions.service.TranslationService;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 
 /**
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available

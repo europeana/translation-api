@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.pangeanic;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

@@ -10,11 +10,11 @@ import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
+import eu.europeana.api.translation.definitions.service.TranslationService;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
-import eu.europeana.api.translation.service.TranslationService;
-import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service

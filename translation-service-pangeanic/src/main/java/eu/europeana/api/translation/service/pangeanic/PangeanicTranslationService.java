@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,8 +19,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.definitions.service.TranslationService;
+import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 
 /**
  * Service to send data to translate to Pangeanic Translate API V2
