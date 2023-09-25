@@ -49,17 +49,17 @@ public class TranslationController extends BaseRest {
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
     if (translationRequest.getText() == null) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.MANDATORY_PARAM_EMPTY_MSG, TranslationAppConstants.TEXT));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
     }
 
     if (StringUtils.isEmpty(translationRequest.getTarget())) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.MANDATORY_PARAM_EMPTY_MSG, TranslationAppConstants.TARGET_LANG));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TARGET_LANG});
     }
     
     //validate language pair
     final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     if(!translationService.isTranslationSupported(languagePair)) {
-        throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
   }
 

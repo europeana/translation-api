@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
-import eu.europeana.api.commons.web.exception.HttpException;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.web.service.RequestPathMethodService;
 
@@ -36,23 +36,22 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
 	}
 
 	  /**
-	   * Default handler for EuropeanaApiException types
+	   * Default handler for EuropeanaI18nApiException types
 	   *
 	   * @param e caught exception
 	   */
 	  @ExceptionHandler
 	  public ResponseEntity<EuropeanaApiErrorResponse> handleCommonHttpException(
-	      HttpException e, HttpServletRequest httpRequest) {
-	    // TODO: harmonize the use of HTTP Exceptions and EuropeanaAPIExceptions
+	      EuropeanaI18nApiException e, HttpServletRequest httpRequest) {
 	    EuropeanaApiErrorResponse response =
 	        new EuropeanaApiErrorResponse.Builder(httpRequest, e, stackTraceEnabled())
-	            .setStatus(e.getStatus().value())
-	            .setError(e.getStatus().getReasonPhrase())
-	            .setMessage(i18nService.getMessage(e.getI18nKey(), e.getI18nParams()))
-	            // code only included in JSON if a value is set in exception
-	            .setCode(e.getI18nKey())
+	            .setStatus(e.getResponseStatus().value())
+	            .setError(e.getResponseStatus().getReasonPhrase())
+	            .setMessage(e.doExposeMessage() ? i18nService.getMessage(e.getI18nKey(), e.getI18nParams()) : null)
+	            //code only included in JSON if a value is set in exception
+	            .setCode(e.getErrorCode())
 	            .build();
-	    return ResponseEntity.status(e.getStatus())
+	    return ResponseEntity.status(e.getResponseStatus())
 	        .headers(createHttpHeaders(httpRequest))
 	        .body(response);
 	  }

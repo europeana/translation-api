@@ -31,7 +31,7 @@ public class TranslationWebService extends BaseWebService {
     TranslationService translationService = selectTranslationService(translationRequest, languagePair);
     TranslationService fallback = null;
     if(translationRequest.getFallback() != null) {
-      fallback = getTranslationService(translationRequest.getFallback(), languagePair);
+      fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
     }
     
     List<String> translations = null;
@@ -102,12 +102,10 @@ public class TranslationWebService extends BaseWebService {
         translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, 
-          TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
-          + TranslationAppConstants.TARGET_LANG, languagePair.toString()));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
     return result;
   }
