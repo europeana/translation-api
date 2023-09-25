@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.SocketConfig;
@@ -106,7 +107,7 @@ public class PangeanicTranslationService implements TranslationService {
           texts, targetLanguage, sourceLanguage, "");
       return PangeanicTranslationUtils.getResults(texts,
           sendTranslateRequestAndParse(post, sourceLanguage), false);
-    } catch (JSONException | IOException e) {
+    } catch (JSONException e) {
       throw new TranslationException("Exception occured during Pangeanic translation!", e);
     }
   }
@@ -181,10 +182,12 @@ public class PangeanicTranslationService implements TranslationService {
   }
 
   private Map<String, String> sendTranslateRequestAndParse(HttpPost post, String sourceLanguage)
-      throws IOException, JSONException, TranslationException {
+      throws TranslationException {
     try (CloseableHttpResponse response = translateClient.execute(post)) {
-      if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-        throw new IOException(
+      if(response == null || response.getStatusLine() == null) {
+        throw new TranslationException("Invalid reponse received from Pangeanic service, no response or status line available!");
+      }else if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+        throw new TranslationException(
             "Error from Pangeanic Translation API: " + response.getStatusLine().getStatusCode()
                 + " - " + response.getStatusLine().getReasonPhrase());
       } else {
@@ -195,28 +198,38 @@ public class PangeanicTranslationService implements TranslationService {
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
           throw new TranslationException("Pangeanic Translation API returned empty response");
         }
-        JSONArray translations = obj.getJSONArray(PangeanicTranslationUtils.TRANSLATIONS);
-        for (int i = 0; i < translations.length(); i++) {
-          JSONObject object = (JSONObject) translations.get(i);
-          if (hasTranslations(object)) {
-            double score = object.getDouble(PangeanicTranslationUtils.TRANSLATE_SCORE);
-            // only if score returned by the translation service is greater the threshold value, we
-            // will accept the translations
-            if (score > PangeanicLanguages.getThresholdForLanguage(sourceLanguage)) {
-              results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE),
-                  object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
-            } else {
-              // for discarded thresholds add null as translations values
-              results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE), null);
-            }
-          }
-        }
+        extractTranslations(obj, sourceLanguage, results);
         // response should not be empty
         if (results.isEmpty()) {
           throw new TranslationException("Translation failed for source language - "
               + obj.get(PangeanicTranslationUtils.SOURCE_LANG));
         }
         return results;
+      }
+    } catch (ClientProtocolException e) {
+      throw new TranslationException("Remote service invocation error.", e);
+    }catch (JSONException | IOException e) {
+      throw new TranslationException("Cannot read pangeanic service response.", e);
+    }
+  }
+
+
+  private void extractTranslations(JSONObject obj, String sourceLanguage,
+      Map<String, String> results) throws JSONException {
+    JSONArray translations = obj.getJSONArray(PangeanicTranslationUtils.TRANSLATIONS);
+    for (int i = 0; i < translations.length(); i++) {
+      JSONObject object = (JSONObject) translations.get(i);
+      if (hasTranslations(object)) {
+        double score = object.getDouble(PangeanicTranslationUtils.TRANSLATE_SCORE);
+        // only if score returned by the translation service is greater the threshold value, we
+        // will accept the translations
+        if (score > PangeanicLanguages.getThresholdForLanguage(sourceLanguage)) {
+          results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE),
+              object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
+        } else {
+          // for discarded thresholds add null as translations values
+          results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE), null);
+        }
       }
     }
   }
