@@ -110,6 +110,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
             post(BASE_URL_DETECT)
               .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .param("profile", "debug")
               .content(requestJson))
         .andExpect(status().isBadRequest())
         .andReturn().getResponse().getContentAsString();
@@ -121,6 +122,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));
     Assertions.assertTrue(obj.has("path"));
+    Assertions.assertTrue(obj.has("trace"));
   }
 
   @Test
