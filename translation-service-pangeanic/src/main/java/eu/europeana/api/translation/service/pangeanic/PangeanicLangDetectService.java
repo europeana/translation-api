@@ -87,29 +87,29 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
         try (CloseableHttpResponse response = detectClient.execute(post)) {
             // Pageanic BUG - sometimes language detect sends 400 Bad request with proper response and error message
             if(response == null || response.getStatusLine() == null) {
-              throw new LanguageDetectionException("Invalid reponse received from Pangeanic service, no response or status line available!");
+              throw new LanguageDetectionException("Invalid reponse received from Pangeanic service, no response or status line available!", HttpStatus.SC_BAD_GATEWAY);
             } else if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK && response.getStatusLine().getStatusCode() != HttpStatus.SC_BAD_REQUEST) {
                 throw new LanguageDetectionException("Error from Pangeanic Language Detect API: " +
-                        response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
+                        response.getEntity(), response.getStatusLine().getStatusCode());
             } else {
                 String json = EntityUtils.toString(response.getEntity());
                 // sometimes language detect sends 200 ok status with empty response data
                 if (json.isEmpty()) {
-                    throw new LanguageDetectionException("Language detect returned an empty response");
+                    throw new LanguageDetectionException("Language detect returned an empty response", HttpStatus.SC_BAD_GATEWAY);
                 }
                 JSONObject obj = new JSONObject(json);
 
                 // if json doesn't have detected lanaguge throw a error
                 if (!obj.has(PangeanicTranslationUtils.DETECTED_LANGUAGE)) {
-                    throw new LanguageDetectionException("Language detect response doesn't have detected_langs tags");
+                    throw new LanguageDetectionException("Language detect response doesn't have detected_langs tags", HttpStatus.SC_BAD_GATEWAY);
                 }
 
                 return extractDetectedLanguages(obj);
             }
         }catch (ClientProtocolException e) {
-          throw new LanguageDetectionException("Remote service invocation error.", e);
+          throw new LanguageDetectionException("Remote service invocation error.", HttpStatus.SC_BAD_GATEWAY, e);
         }catch (JSONException | IOException e) {
-          throw new LanguageDetectionException("Cannot read pangeanic service response.", e);
+          throw new LanguageDetectionException("Cannot read pangeanic service response.", HttpStatus.SC_BAD_GATEWAY, e);
         }
     }
 

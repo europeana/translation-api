@@ -46,11 +46,11 @@ public class LangDetectionController extends BaseRest {
       throws ParamValidationException {
     // validate mandatory params
     if (langDetectRequest.getText() == null) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
+      throw new ParamValidationException(null, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
     }
     //validate language hint if provided
     if(langDetectRequest.getLang() != null && !langDetectionService.isLangDetectionSupported(langDetectRequest.getLang())) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
+      throw new ParamValidationException(null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
     }
   }
 

@@ -1,6 +1,6 @@
 package eu.europeana.api.translation.web.exception;
 
-import org.springframework.http.HttpStatus;
+import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 
 /** 
@@ -10,12 +10,8 @@ public class GoogleResourceExhaustedException extends EuropeanaI18nApiException 
 
   private static final long serialVersionUID = 3093354601849276359L;
 
-  public GoogleResourceExhaustedException(String msg, String errorCode, String i18nKey, String[] i18nParams) {
-    super(msg, errorCode, i18nKey, i18nParams);
+  public GoogleResourceExhaustedException(String msg, String errorCode, String i18nKey, String[] i18nParams, Throwable th) {
+    super(msg, errorCode, GATEWAY_TIMEOUT, i18nKey, i18nParams, th);
   }
-
-  @Override
-  public HttpStatus getResponseStatus() {
-    return HttpStatus.GATEWAY_TIMEOUT;
-  }
+  
 }
