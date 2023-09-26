@@ -6,11 +6,11 @@
         "services": [
             {
                 "id": "PANGEANIC"
-              , "classname": "eu.europeana.api.translation.service.PangeanicLangDetectService"
+              , "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService"
             },
             {
                 "id": "GOOGLE"
-              , "classname": "eu.europeana.api.translation.service.GoogleLangDetectService"
+              , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             }            
         ],
         "default": "PANGEANIC"
@@ -33,11 +33,11 @@
         "services": [
             {
                 "id": "GOOGLE", 
-                "classname": "eu.europeana.api.translation.service.GoogleTranslationService"
+                "classname": "eu.europeana.api.translation.service.google.GoogleTranslationService"
             },
             {
                 "id": "PANGEANIC", 
-                "classname": "eu.europeana.api.translation.service.PangeanicTranslationService"
+                "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService"
             }
         ],
 	 	"mappings": [
