@@ -70,8 +70,7 @@ public class GoogleLangDetectService implements LanguageDetectionService {
         }
       }
       return result;
-    } 
-    catch (ApiException ex) {
+    } catch (ApiException ex) {
       final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
       throw new LanguageDetectionException("Exception occured during Google language detection!", remoteStatusCode, ex);
     }

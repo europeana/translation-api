@@ -9,7 +9,6 @@ import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import eu.europeana.api.translation.definitions.service.TranslationService;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 
 /**
