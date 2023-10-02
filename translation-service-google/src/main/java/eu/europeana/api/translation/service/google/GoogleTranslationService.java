@@ -2,6 +2,7 @@ package eu.europeana.api.translation.service.google;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
@@ -65,10 +66,10 @@ public class GoogleTranslationService implements TranslationService {
         result.add(t.getTranslatedText());
       }
       return result;
-    }
-    catch (Exception ex) {
-      throw new TranslationException("Exception occured during Google translation!", ex);
-    }
+    } catch (ApiException ex) {
+      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
+      throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
+    } 
   }
 
   @Override

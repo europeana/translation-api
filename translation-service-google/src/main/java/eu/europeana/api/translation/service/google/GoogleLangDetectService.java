@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.DetectLanguageRequest;
 import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
@@ -69,8 +70,9 @@ public class GoogleLangDetectService implements LanguageDetectionService {
         }
       }
       return result;
-    } catch (Exception ex) {
-      throw new LanguageDetectionException("Exception occured during Google language detection!", ex);
+    } catch (ApiException ex) {
+      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
+      throw new LanguageDetectionException("Exception occured during Google language detection!", remoteStatusCode, ex);
     }
   }
   

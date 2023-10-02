@@ -1,5 +1,9 @@
 package eu.europeana.api.translation.web;
 
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_INVALID_PARAM_VALUE;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.LANG;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.TEXT;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -9,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
-import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.LangDetectRequest;
 import eu.europeana.api.translation.model.LangDetectResponse;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
@@ -27,7 +30,8 @@ public class LangDetectionController extends BaseRest {
   }
 
   @Tag(description = "Language detection", name = "detectLang")
-  @PostMapping(value = {"/detect"}, produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
+  @PostMapping(value = {"/detect"},
+      produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> detectLang(@RequestBody LangDetectRequest langDetectRequest,
       HttpServletRequest request) throws Exception {
 
@@ -46,13 +50,16 @@ public class LangDetectionController extends BaseRest {
       throws ParamValidationException {
     // validate mandatory params
     if (langDetectRequest.getText() == null) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
+      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY,
+          ERROR_MANDATORY_PARAM_EMPTY, new String[] {TEXT});
     }
-    //validate language hint if provided
-    if(langDetectRequest.getLang() != null && !langDetectionService.isLangDetectionSupported(langDetectRequest.getLang())) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {TranslationAppConstants.LANG, langDetectRequest.getLang()});
+    // validate language hint if provided
+    if (langDetectRequest.getLang() != null
+        && !langDetectionService.isLangDetectionSupported(langDetectRequest.getLang())) {
+      throw new ParamValidationException(null, ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE,
+          new String[] {LANG, langDetectRequest.getLang()});
     }
   }
 
-  
+
 }
