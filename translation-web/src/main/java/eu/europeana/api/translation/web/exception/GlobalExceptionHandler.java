@@ -26,15 +26,20 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
 
   I18nService i18nService;
 
-  protected I18nService getI18nService() {
-    return i18nService;
-  }
-
+  /**
+   * Constructor for the initialization of the Exception handler
+   * @param requestPathMethodService builtin service for path method mapping
+   * @param i18nService the internationalization service
+   */
   @Autowired
   public GlobalExceptionHandler(RequestPathMethodService requestPathMethodService,
       @Qualifier(BeanNames.BEAN_I18N_SERVICE) I18nService i18nService) {
     this.requestPathMethodService = requestPathMethodService;
     this.i18nService = i18nService;
+  }
+  
+  protected I18nService getI18nService() {
+    return i18nService;
   }
 
   
@@ -42,6 +47,7 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
    * Default handler for EuropeanaI18nApiException types
    *
    * @param e caught exception
+   * @param httpRequest the http request
    */
   @ExceptionHandler(EuropeanaI18nApiException.class)
   public ResponseEntity<EuropeanaApiErrorResponse> handleEuropeanaApiException(
@@ -76,6 +82,7 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
    * Default handler for EuropeanaI18nApiException types
    *
    * @param e caught exception
+   * @param httpRequest the http request
    */
   @ExceptionHandler(HttpException.class)
   public ResponseEntity<EuropeanaApiErrorResponse> handleCommonHttpException(
@@ -91,6 +98,12 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
         .body(response);
   }
 
+  /**
+   * mapping for resource not found errors
+   * @param e exception to handle
+   * @param httpRequest the http request
+   * @return
+   */
   @ExceptionHandler(NoHandlerFoundException.class)
   public ResponseEntity<EuropeanaApiErrorResponse> handleNoHandlerFoundException(
       NoHandlerFoundException e, HttpServletRequest httpRequest) {
