@@ -104,7 +104,6 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
    * mapping for resource not found errors
    * @param e exception to handle
    * @param httpRequest the http request
-   * @return api response entity
    */
   @ExceptionHandler(NoHandlerFoundException.class)
   public ResponseEntity<EuropeanaApiErrorResponse> handleNoHandlerFoundException(
