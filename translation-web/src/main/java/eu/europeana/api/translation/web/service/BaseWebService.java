@@ -3,7 +3,7 @@ package eu.europeana.api.translation.web.service;
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_GOOGLE_QUOTA_LIMIT;
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_LANG_DETECT_SERVICE_CALL;
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_TRANSLATION_SERVICE_CALL;
-import org.springframework.http.HttpStatus;
+import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
@@ -19,7 +19,8 @@ public class BaseWebService {
           ERROR_GOOGLE_QUOTA_LIMIT, null, ex);
     }
     throw new ExternalServiceCallException(ex.getMessage(), ERROR_LANG_DETECT_SERVICE_CALL,
-        HttpStatus.resolve(ex.getRemoteStatusCode()),
+        //the remote status code could be used here  ex.getRemoteStatusCode()),
+        GATEWAY_TIMEOUT,
         ERROR_LANG_DETECT_SERVICE_CALL, null, ex);
   }
 
@@ -29,7 +30,8 @@ public class BaseWebService {
           null, ERROR_GOOGLE_QUOTA_LIMIT, null, ex);
     }
     throw new ExternalServiceCallException(ex.getMessage(), ERROR_TRANSLATION_SERVICE_CALL,
-        HttpStatus.resolve(ex.getRemoteStatusCode()),
+        //the remote status code could be used here  ex.getRemoteStatusCode()),
+        GATEWAY_TIMEOUT,
         ERROR_TRANSLATION_SERVICE_CALL, null, ex);
   }
 

@@ -36,6 +36,17 @@ public class TranslationException extends Exception {
     super(msg);
     this.remoteStatusCode = remoteStatusCode;
   }
+  
+  /**
+   * Constructor for exception to indicate that an error occurred during invocation of the remote
+   * service when no response is received from the remote server 
+   * 
+   * @param msg the error message
+   * @param remoteStatusCode the status code from the remote service
+   */
+  public TranslationException(String msg) {
+    this(msg, -1);
+  }
 
   public int getRemoteStatusCode() {
     return remoteStatusCode;

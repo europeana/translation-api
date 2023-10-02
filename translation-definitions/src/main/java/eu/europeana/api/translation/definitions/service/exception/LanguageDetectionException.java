@@ -36,6 +36,17 @@ public class LanguageDetectionException extends Exception {
     this.remoteStatusCode = remoteStatusCode;
   }
 
+  /**
+   * Constructor for exception to indicate that an error occurred during invocation of the remote
+   * service, to be used when no response from the remote service has been received
+   * 
+   * @param msg the error message
+   * @param remoteStatusCode the status code from the remote service
+   */
+  public LanguageDetectionException(String msg) {
+    this(msg, -1);
+  }
+  
   public int getRemoteStatusCode() {
     return remoteStatusCode;
   }

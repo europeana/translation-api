@@ -183,32 +183,39 @@ public class PangeanicTranslationService implements TranslationService {
 
   private Map<String, String> sendTranslateRequestAndParse(HttpPost post, String sourceLanguage)
       throws TranslationException {
+    
+    //initialize with unknown 
+    int remoteStatusCode = -1;
     try (CloseableHttpResponse response = translateClient.execute(post)) {
       if(response == null || response.getStatusLine() == null) {
-        throw new TranslationException("Invalid reponse received from Pangeanic service, no response or status line available!", HttpStatus.SC_BAD_GATEWAY);
-      }else if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+        throw new TranslationException("Invalid reponse received from Pangeanic service, no response or status line available!");
+      }
+      
+      remoteStatusCode = response.getStatusLine().getStatusCode();
+      
+      if (remoteStatusCode != HttpStatus.SC_OK) {
         throw new TranslationException(
-            "Error from Pangeanic Translation API: " + response.getEntity(), response.getStatusLine().getStatusCode());
+            "Error from Pangeanic Translation API: " + response.getEntity(), remoteStatusCode);
       } else {
         String json = EntityUtils.toString(response.getEntity());
         JSONObject obj = new JSONObject(json);
         Map<String, String> results = new LinkedHashMap<>();
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
-          throw new TranslationException("Pangeanic Translation API returned empty response", HttpStatus.SC_BAD_GATEWAY);
+          throw new TranslationException("Pangeanic Translation API returned empty response", remoteStatusCode);
         }
         extractTranslations(obj, sourceLanguage, results);
         // response should not be empty
         if (results.isEmpty()) {
           throw new TranslationException("Translation failed for source language - "
-              + obj.get(PangeanicTranslationUtils.SOURCE_LANG), HttpStatus.SC_BAD_GATEWAY);
+              + obj.get(PangeanicTranslationUtils.SOURCE_LANG), remoteStatusCode);
         }
         return results;
       }
     } catch (ClientProtocolException e) {
-      throw new TranslationException("Remote service invocation error.", HttpStatus.SC_BAD_GATEWAY, e);
+      throw new TranslationException("Remote service invocation error.", remoteStatusCode, e);
     }catch (JSONException | IOException e) {
-      throw new TranslationException("Cannot read pangeanic service response.", HttpStatus.SC_BAD_GATEWAY, e);
+      throw new TranslationException("Cannot read pangeanic service response.", remoteStatusCode, e);
     }
   }
 
