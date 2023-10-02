@@ -23,6 +23,7 @@ import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
 import eu.europeana.api.translation.definitions.service.TranslationService;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationException;
+import eu.europeana.api.translation.definitions.util.LoggingUtils;
 
 /**
  * Service to send data to translate to Pangeanic Translate API V2
@@ -65,8 +66,10 @@ public class PangeanicTranslationService implements TranslationService {
     // SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build(); //We need to set
     // socket keep alive
     translateClient = HttpClients.custom().setConnectionManager(cm).build();
-    LOG.info("Pangeanic translation service is initialized with translate Endpoint - {}",
-        getExternalServiceEndPoint());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Pangeanic translation service is initialized with translate Endpoint - {}",
+          getExternalServiceEndPoint());
+    }
   }
 
   /**
@@ -155,14 +158,23 @@ public class PangeanicTranslationService implements TranslationService {
     // create lang-value map for translation
     Map<String, List<String>> detectedLangValueMap =
         PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
-    LOG.debug("Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
-        langHint, detectedLangValueMap.keySet());
-
+    
     Map<String, String> translations = new LinkedHashMap<>();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
+          LoggingUtils.sanitizeUserInput(langHint),
+          LoggingUtils.sanitizeUserInput(detectedLangValueMap.keySet().toString()));
+    }
+    
     for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
       if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
-        LOG.debug("NOT translating data for lang {} for detected values {} ", entry.getKey(),
-            entry.getValue());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("NOT translating data for lang {} for detected values {} ",
+              LoggingUtils.sanitizeUserInput(entry.getKey()),
+              LoggingUtils.sanitizeUserInput(entry.getValue().toString()));
+        }
+        //TODO translations.put ... original value, this code should be refactored
       } else {
         HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
             getExternalServiceEndPoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
