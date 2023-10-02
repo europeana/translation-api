@@ -9,7 +9,7 @@ public class LanguageDetectionException extends Exception {
   * 
   */
   private static final long serialVersionUID = -1787377732687111908L;
-  private int remoteStatusCode;
+  private final int remoteStatusCode;
 
   /**
    * Constructor for exception to indicate that an error occurred during invocation of the remote
@@ -49,9 +49,5 @@ public class LanguageDetectionException extends Exception {
   
   public int getRemoteStatusCode() {
     return remoteStatusCode;
-  }
-
-  public void setRemoteStatusCode(int remoteStatusCode) {
-    this.remoteStatusCode = remoteStatusCode;
   }
 }

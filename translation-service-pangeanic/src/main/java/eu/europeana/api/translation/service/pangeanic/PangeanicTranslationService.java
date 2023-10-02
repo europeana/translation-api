@@ -79,9 +79,9 @@ public class PangeanicTranslationService implements TranslationService {
    */
   @Override
   public boolean isSupported(String srcLang, String targetLanguage) {
-    if(srcLang == null) {
-      //automatic language detection
-      return isTargetSupported(targetLanguage);  
+    if (srcLang == null) {
+      // automatic language detection
+      return isTargetSupported(targetLanguage);
     }
     return PangeanicLanguages.isLanguagePairSupported(srcLang, targetLanguage);
   }
@@ -92,9 +92,10 @@ public class PangeanicTranslationService implements TranslationService {
 
 
   @Override
-  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage) throws TranslationException {
+  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage)
+      throws TranslationException {
     try {
-      if(texts.isEmpty()) {
+      if (texts.isEmpty()) {
         return new ArrayList<>();
       }
 
@@ -108,7 +109,8 @@ public class PangeanicTranslationService implements TranslationService {
       return PangeanicTranslationUtils.getResults(texts,
           sendTranslateRequestAndParse(post, sourceLanguage), false);
     } catch (JSONException e) {
-      throw new TranslationException("Exception occured during Pangeanic translation!", HttpStatus.SC_BAD_GATEWAY, e);
+      throw new TranslationException("Exception occured during Pangeanic translation!",
+          HttpStatus.SC_BAD_GATEWAY, e);
     }
   }
 
@@ -117,8 +119,8 @@ public class PangeanicTranslationService implements TranslationService {
       throws TranslationException {
     return translate(texts, targetLanguage, null);
   }
-  
-  
+
+
   /**
    * Translates the texts with no source language. First a lang detect request is sent to identify
    * the source language Later translations are performed
@@ -132,7 +134,8 @@ public class PangeanicTranslationService implements TranslationService {
       String langHint) throws TranslationException {
     try {
       if (langDetectService == null) {
-        throw new TranslationException("No langDetectService configured!", HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        throw new TranslationException("No langDetectService configured!",
+            HttpStatus.SC_INTERNAL_SERVER_ERROR);
       }
       List<String> detectedLanguages = detectLanguages(texts, langHint);
       Map<String, String> translations =
@@ -140,7 +143,8 @@ public class PangeanicTranslationService implements TranslationService {
       return PangeanicTranslationUtils.getResults(texts, translations,
           PangeanicTranslationUtils.nonTranslatedDataExists(detectedLanguages));
     } catch (JSONException | IOException e) {
-      throw new TranslationException("Exception occured during Pangeanic translation!", HttpStatus.SC_BAD_GATEWAY, e);
+      throw new TranslationException("Exception occured during Pangeanic translation!",
+          HttpStatus.SC_BAD_GATEWAY, e);
     }
   }
 
@@ -151,10 +155,9 @@ public class PangeanicTranslationService implements TranslationService {
     // create lang-value map for translation
     Map<String, List<String>> detectedLangValueMap =
         PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
-    LOG.debug(
-        "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
+    LOG.debug("Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
         langHint, detectedLangValueMap.keySet());
-    
+
     Map<String, String> translations = new LinkedHashMap<>();
     for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
       if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
@@ -176,24 +179,26 @@ public class PangeanicTranslationService implements TranslationService {
     try {
       detectedLanguages = langDetectService.detectLang(texts, langHint);
     } catch (LanguageDetectionException e) {
-      throw new TranslationException("Error when tryng to detect the language of the text input!", e.getRemoteStatusCode(), e);
+      throw new TranslationException("Error when tryng to detect the language of the text input!",
+          e.getRemoteStatusCode(), e);
     }
     return detectedLanguages;
   }
 
   private Map<String, String> sendTranslateRequestAndParse(HttpPost post, String sourceLanguage)
       throws TranslationException {
-    
-    //initialize with unknown 
+
+    // initialize with unknown
     int remoteStatusCode = -1;
     try (CloseableHttpResponse response = translateClient.execute(post)) {
-      if(response == null || response.getStatusLine() == null) {
-        throw new TranslationException("Invalid reponse received from Pangeanic service, no response or status line available!");
+      if (response == null || response.getStatusLine() == null) {
+        throw new TranslationException(
+            "Invalid reponse received from Pangeanic service, no response or status line available!");
       }
-      
+
       remoteStatusCode = response.getStatusLine().getStatusCode();
-      
-      if (remoteStatusCode != HttpStatus.SC_OK) {
+      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
+      if (failedRequest) {
         throw new TranslationException(
             "Error from Pangeanic Translation API: " + response.getEntity(), remoteStatusCode);
       } else {
@@ -202,7 +207,8 @@ public class PangeanicTranslationService implements TranslationService {
         Map<String, String> results = new LinkedHashMap<>();
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
-          throw new TranslationException("Pangeanic Translation API returned empty response", remoteStatusCode);
+          throw new TranslationException("Pangeanic Translation API returned empty response",
+              remoteStatusCode);
         }
         extractTranslations(obj, sourceLanguage, results);
         // response should not be empty
@@ -214,8 +220,9 @@ public class PangeanicTranslationService implements TranslationService {
       }
     } catch (ClientProtocolException e) {
       throw new TranslationException("Remote service invocation error.", remoteStatusCode, e);
-    }catch (JSONException | IOException e) {
-      throw new TranslationException("Cannot read pangeanic service response.", remoteStatusCode, e);
+    } catch (JSONException | IOException e) {
+      throw new TranslationException("Cannot read pangeanic service response.", remoteStatusCode,
+          e);
     }
   }
 
@@ -268,10 +275,10 @@ public class PangeanicTranslationService implements TranslationService {
   public String getServiceId() {
     return serviceId;
   }
-  
+
   @Override
   public void setServiceId(String serviceId) {
-    this.serviceId=serviceId;
-  }    
+    this.serviceId = serviceId;
+  }
 
 }

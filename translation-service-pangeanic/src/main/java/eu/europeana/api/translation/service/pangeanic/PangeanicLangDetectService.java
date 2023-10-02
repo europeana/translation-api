@@ -53,9 +53,11 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     cm.setDefaultSocketConfig(
         SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
     detectClient = HttpClients.custom().setConnectionManager(cm).build();
-    LOG.info(
-        "Pangeanic Language Detection service is initialized with detect language Endpoint - {}",
+    if(LOG.isInfoEnabled()) {
+      LOG.info(
+          "Pangeanic Language Detection service is initialized with detect language Endpoint - {}",
         getExternalServiceEndPoint());
+    }
   }
 
   @Override
@@ -98,8 +100,8 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
       } 
       
       remoteStatusCode = response.getStatusLine().getStatusCode(); 
-      
-      if ( remoteStatusCode != HttpStatus.SC_OK) {
+      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK; 
+      if ( failedRequest ) {
         throw new LanguageDetectionException(
             "Error from Pangeanic Language Detect API: " + response.getEntity(),
             remoteStatusCode);

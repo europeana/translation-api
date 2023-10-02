@@ -9,7 +9,7 @@ public class TranslationException extends Exception {
   * 
   */
   private static final long serialVersionUID = -1787377732687111908L;
-  private int remoteStatusCode;
+  private final int remoteStatusCode;
 
 
   /**
@@ -50,9 +50,5 @@ public class TranslationException extends Exception {
 
   public int getRemoteStatusCode() {
     return remoteStatusCode;
-  }
-
-  public void setRemoteStatusCode(int remoteStatusCode) {
-    this.remoteStatusCode = remoteStatusCode;
   }
 }
