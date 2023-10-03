@@ -80,7 +80,7 @@ public class TranslationServiceProvider {
       validateAndInitServices(); 
   }
   
-  private void readServiceConfigurations()
+  public void readServiceConfigurations()
       throws TranslationServiceConfigurationException {
     try(InputStream inputStream = getClass().getResourceAsStream(getServiceConfigFile())){
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
