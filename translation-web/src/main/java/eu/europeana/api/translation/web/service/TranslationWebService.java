@@ -6,15 +6,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
+import eu.europeana.api.translation.definitions.service.TranslationService;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
-import eu.europeana.api.translation.service.TranslationService;
-import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
@@ -25,13 +25,13 @@ public class TranslationWebService extends BaseWebService {
   
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaApiException {
+  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     TranslationService translationService = selectTranslationService(translationRequest, languagePair);
     TranslationService fallback = null;
     if(translationRequest.getFallback() != null) {
-      fallback = getTranslationService(translationRequest.getFallback(), languagePair);
+      fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
     }
     
     List<String> translations = null;
@@ -42,7 +42,7 @@ public class TranslationWebService extends BaseWebService {
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
-        throwOriginalTranslationException(originalError);
+        throwApiException(originalError);
       }
       else {
         try {
@@ -53,7 +53,7 @@ public class TranslationWebService extends BaseWebService {
             logger.debug("Error when calling default service. ", e);
           }
           //return original exception
-          throwOriginalTranslationException(originalError);
+          throwApiException(originalError);
         }
       }
     }
@@ -102,12 +102,10 @@ public class TranslationWebService extends BaseWebService {
         translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException(String.format(TranslationAppConstants.INVALID_PARAM_MSG, 
-          TranslationAppConstants.SOURCE_LANG + TranslationAppConstants.LANG_DELIMITER
-          + TranslationAppConstants.TARGET_LANG, languagePair.toString()));
+      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
     return result;
   }

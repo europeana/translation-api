@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.pangeanic;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class PangeanicTranslationUtils {
     }
 
 
-    public static HttpPost createDetectlanguageRequest(String detectEndpoint, List<String> texts, String hint, String apikey) throws JSONException {
+    public static HttpPost createDetectlanguageRequest(String detectEndpoint, List<String> texts, String hint, String apikey) {
         HttpPost post = new HttpPost(detectEndpoint);
         JSONObject body = PangeanicTranslationUtils.createDetectRequestBody(texts, hint, apikey);
         post.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
@@ -127,19 +127,25 @@ public class PangeanicTranslationUtils {
      * @return
      * @throws JSONException
      */
-    public static JSONObject createDetectRequestBody(List<String> texts, String hint, String apikey) throws JSONException {
+    public static JSONObject createDetectRequestBody(List<String> texts, String hint, String apikey){
         JSONObject body = new JSONObject();
         JSONArray textArray = new JSONArray();
         for (String text : texts) {
             textArray.put(text);
         }
-        // create post body
-        body.put("apikey" , apikey);
-        body.put(MODE, MODE_EUROPEANA);
-        body.put(TRANSLATE_SOURCE, textArray);
-        if (StringUtils.isNotEmpty(hint)) {
-            body.put(SOURCE_LANG, hint);
+        try {
+          // create post body
+          body.put("apikey" , apikey);
+          body.put(MODE, MODE_EUROPEANA);
+          body.put(TRANSLATE_SOURCE, textArray);
+          if (StringUtils.isNotEmpty(hint)) {
+              body.put(SOURCE_LANG, hint);
+          }
+        } catch (JSONException e) {
+          //according to the documentation of put method, this should not happen with the current code
+          LOG.warn("Error when building pangeanic detect request!", e);
         }
+         
         return body;
     }
 

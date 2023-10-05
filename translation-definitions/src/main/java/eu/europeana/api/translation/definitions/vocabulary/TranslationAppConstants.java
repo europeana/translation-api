@@ -32,12 +32,12 @@ public class TranslationAppConstants {
   public static final String APP_INFO = "app";
   public static final String CONFIG_INFO = "config";
     
-  //exceptions messages
-  public static final String MANDATORY_PARAM_EMPTY_MSG = "The parameter '%s' cannot be empty or null.";
-  public static final String INVALID_PARAM_MSG = "An invalid value of the parameter '%s'='%s'.";
-  public static final String UNSUPPORTED_LANG_MSG = "The language '%s' is not supported by the language detection service '%s'!";
-  public static final String GOOGLE_QUOTA_LIMIT_MSG = "Google quota limit reached!";
-  public static final String TRANSLATION_SERVICE_EXCEPTION_MSG = "Exception during the call to the translation service!";
-  public static final String LANG_DETECT_SERVICE_EXCEPTION_MSG = "Exception during the call to the language detection service!";
+  //error keys for the exceptions messages
+  public static final String ERROR_MANDATORY_PARAM_EMPTY = "error.mandatory_param_empty";
+  public static final String ERROR_INVALID_PARAM_VALUE = "error.invalid_param_value";
+  public static final String ERROR_UNSUPPORTED_LANG = "error.unsupported_language";
+  public static final String ERROR_GOOGLE_QUOTA_LIMIT = "error.google_quota_limit_reached";
+  public static final String ERROR_TRANSLATION_SERVICE_CALL = "error.translation.external_service_call";
+  public static final String ERROR_LANG_DETECT_SERVICE_CALL = "error.detection.external_service_call";
 
 }

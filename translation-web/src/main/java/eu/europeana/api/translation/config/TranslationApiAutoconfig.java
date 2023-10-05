@@ -20,13 +20,13 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.service.GoogleLangDetectService;
-import eu.europeana.api.translation.service.GoogleTranslationService;
-import eu.europeana.api.translation.service.GoogleTranslationServiceClientWrapper;
-import eu.europeana.api.translation.service.PangeanicLangDetectService;
-import eu.europeana.api.translation.service.PangeanicTranslationService;
-import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
-import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.google.GoogleLangDetectService;
+import eu.europeana.api.translation.service.google.GoogleTranslationService;
+import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
+import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 
 @Configuration()
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent>{
@@ -109,7 +109,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
-    // TODO Auto-generated method stub
     // log beans for debuging purposes
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(event.getApplicationContext());

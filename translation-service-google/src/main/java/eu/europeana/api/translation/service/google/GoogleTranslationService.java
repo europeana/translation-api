@@ -1,13 +1,15 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.service.google;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.definitions.service.TranslationService;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 
 /**
  * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
@@ -64,22 +66,14 @@ public class GoogleTranslationService implements TranslationService {
         result.add(t.getTranslatedText());
       }
       return result;
-    }
-    catch (Exception ex) {
-      throw new TranslationException("Exception occured during Google translation!", ex);
-    }
+    } catch (ApiException ex) {
+      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
+      throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
+    } 
   }
 
   @Override
   public boolean isSupported(String srcLang, String targetLanguage) {
-    if (srcLang == null) {
-      // automatic language detection
-      return isTargetSupported(targetLanguage);
-    }
-    return true;
-  }
-
-  private boolean isTargetSupported(String targetLanguage) {
     return true;
   }
 

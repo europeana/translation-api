@@ -22,8 +22,8 @@ import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
-import eu.europeana.api.translation.service.GoogleLangDetectService;
-import eu.europeana.api.translation.service.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.google.GoogleLangDetectService;
+import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
 import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
@@ -110,6 +110,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
             post(BASE_URL_DETECT)
               .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .param("profile", "debug")
               .content(requestJson))
         .andExpect(status().isBadRequest())
         .andReturn().getResponse().getContentAsString();
@@ -121,6 +122,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));
     Assertions.assertTrue(obj.has("path"));
+    Assertions.assertTrue(obj.has("trace"));
   }
 
   @Test

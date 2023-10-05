@@ -1,27 +1,38 @@
 package eu.europeana.api.translation.web.service;
 
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_GOOGLE_QUOTA_LIMIT;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_LANG_DETECT_SERVICE_CALL;
+import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_TRANSLATION_SERVICE_CALL;
+import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import com.google.api.gax.rpc.ResourceExhaustedException;
-import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
+import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ExternalServiceCallException;
 import eu.europeana.api.translation.web.exception.GoogleResourceExhaustedException;
 
 public class BaseWebService {
-  
-  protected void throwOriginalLanguageDetectionException(LanguageDetectionException ex) throws EuropeanaApiException {
-    if(ex.getCause() instanceof ResourceExhaustedException) {
-      throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
+
+  protected void throwApiException(LanguageDetectionException ex) throws EuropeanaI18nApiException {
+    if (ex.getCause() instanceof ResourceExhaustedException) {
+      throw new GoogleResourceExhaustedException(ex.getMessage(), ERROR_GOOGLE_QUOTA_LIMIT,
+          ERROR_GOOGLE_QUOTA_LIMIT, null, ex);
     }
-    throw new ExternalServiceCallException(TranslationAppConstants.LANG_DETECT_SERVICE_EXCEPTION_MSG);
+    throw new ExternalServiceCallException(ex.getMessage(), ERROR_LANG_DETECT_SERVICE_CALL,
+        //the remote status code could be used here  ex.getRemoteStatusCode()),
+        GATEWAY_TIMEOUT,
+        ERROR_LANG_DETECT_SERVICE_CALL, null, ex);
   }
 
-  protected void throwOriginalTranslationException(TranslationException ex) throws EuropeanaApiException {
-    if(ex.getCause() instanceof ResourceExhaustedException) {
-      throw new GoogleResourceExhaustedException(TranslationAppConstants.GOOGLE_QUOTA_LIMIT_MSG);
+  protected void throwApiException(TranslationException ex) throws EuropeanaI18nApiException {
+    if (ex.getCause() instanceof ResourceExhaustedException) {
+      throw new GoogleResourceExhaustedException(ERROR_GOOGLE_QUOTA_LIMIT,
+          null, ERROR_GOOGLE_QUOTA_LIMIT, null, ex);
     }
-    throw new ExternalServiceCallException(TranslationAppConstants.TRANSLATION_SERVICE_EXCEPTION_MSG);
+    throw new ExternalServiceCallException(ex.getMessage(), ERROR_TRANSLATION_SERVICE_CALL,
+        //the remote status code could be used here  ex.getRemoteStatusCode()),
+        GATEWAY_TIMEOUT,
+        ERROR_TRANSLATION_SERVICE_CALL, null, ex);
   }
 
 }

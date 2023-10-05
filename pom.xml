@@ -17,9 +17,10 @@
 
 	<modules>
 		<module>translation-definitions</module>
-		<module>translation-service</module>
 		<module>translation-web</module>
 		<module>translation-tests</module>
+		<module>translation-service-google</module>
+		<module>translation-service-pangeanic</module>
 	</modules>
 	
 	<repositories>

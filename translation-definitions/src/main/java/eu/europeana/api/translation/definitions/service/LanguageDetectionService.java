@@ -1,7 +1,7 @@
-package eu.europeana.api.translation.service;
+package eu.europeana.api.translation.definitions.service;
 
 import java.util.List;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 
 public interface LanguageDetectionService {
 
