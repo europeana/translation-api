@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -25,7 +25,7 @@ public class TranslationWebService extends BaseWebService {
   
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaApiException {
+  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     TranslationService translationService = selectTranslationService(translationRequest, languagePair);
