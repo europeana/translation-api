@@ -109,7 +109,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
-    // TODO Auto-generated method stub
     // log beans for debuging purposes
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(event.getApplicationContext());
