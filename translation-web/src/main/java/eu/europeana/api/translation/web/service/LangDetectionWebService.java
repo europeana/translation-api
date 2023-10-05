@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
@@ -25,7 +25,7 @@ public class LangDetectionWebService extends BaseWebService {
     
   private final Logger logger = LogManager.getLogger(getClass());
   
-  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws EuropeanaApiException {
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws EuropeanaI18nApiException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
     List<String> langs = null;
