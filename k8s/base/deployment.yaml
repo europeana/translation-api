@@ -15,7 +15,9 @@ spec:
           - name: SPRING_CONFIG_ADDITIONAL_LOCATION
             value: "/opt/app/config/translation.user.properties"
           - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: "/opt/app/config/google-auth.json"  
+            value: "/opt/app/config/google-auth.json"
+          - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
+            value_: "INFO"  
           ports:
             - containerPort: 8080
           livenessProbe:
