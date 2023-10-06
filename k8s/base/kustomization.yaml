@@ -12,4 +12,9 @@ secretGenerator:
   - name: google-auth-secret
     files:
       - google-auth.json
-      
+
+#generate config mapping for log4j2.xml file
+configMapGenerator:
+  - name: log4j2-properties
+    files:
+      - log4j2.xml
