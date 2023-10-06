@@ -48,7 +48,7 @@ spec:
             - name: log4j-config
               mountPath: "/opt/app/config/log4j2-spring.xml"
               readOnly: true
-              subPath: log4j2.xml
+              subPath: log4j2-spring.xml
       volumes:
         - name: secret
           secret:
