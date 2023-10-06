@@ -18,6 +18,8 @@
 
     <Logger name="eu.europeana.api.translation" level="INFO"/>
     <Logger name="org.mongodb.driver.connection" level="WARN"/>
+    <Logger name="org.springframework" level="INFO"/>
+    
   
   </Loggers>
 </Configuration>

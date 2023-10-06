@@ -46,7 +46,7 @@ spec:
               readOnly: true
               subPath: google-auth.json
             - name: log4j-config
-              mountPath: "/opt/app/config/log4j2.xml"
+              mountPath: "/opt/app/config/log4j2-spring.xml"
               readOnly: true
               subPath: log4j2.xml
       volumes:
