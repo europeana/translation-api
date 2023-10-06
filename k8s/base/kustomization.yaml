@@ -17,4 +17,4 @@ secretGenerator:
 configMapGenerator:
   - name: log4j2-properties
     files:
-      - log4j2.xml
+      - log4j2-spring.xml
