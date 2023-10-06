@@ -16,8 +16,6 @@ spec:
             value: "/opt/app/config/translation.user.properties"
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: "/opt/app/config/google-auth.json"
-          - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
-            value: "INFO"  
           ports:
             - containerPort: 8080
           livenessProbe:
