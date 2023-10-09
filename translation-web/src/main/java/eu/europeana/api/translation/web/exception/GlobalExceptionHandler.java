@@ -65,7 +65,9 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
             .setError(e.getResponseStatus().getReasonPhrase())
             .setMessage(e.doExposeMessage() ? buildResponseMessage(e, i18nKey, i18NParams) : null)
             // code only included in JSON if a value is set in exception
-            .setCode(e.getErrorCode()).build();
+            .setCode(e.getErrorCode())
+            .setSeeAlso(getSeeAlso())
+            .build();
     return ResponseEntity.status(e.getResponseStatus()).headers(createHttpHeaders(httpRequest))
         .body(response);
   }
@@ -95,7 +97,9 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
             .setError(e.getStatus().getReasonPhrase())
             .setMessage( i18nService.getMessage(e.getI18nKey(), e.getI18nParams()))
             // code only included in JSON if a value is set in exception
-            .setCode(e.getI18nKey()).build();
+            .setCode(e.getI18nKey())
+            .setSeeAlso(getSeeAlso())
+            .build();
     return ResponseEntity.status(e.getStatus()).headers(createHttpHeaders(httpRequest))
         .body(response);
   }
@@ -111,7 +115,10 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
     EuropeanaApiErrorResponse response =
         new EuropeanaApiErrorResponse.Builder(httpRequest, e, stackTraceEnabled())
             .setStatus(HttpStatus.NOT_FOUND.value())
-            .setError(HttpStatus.NOT_FOUND.getReasonPhrase()).setMessage(e.getMessage()).build();
+            .setError(HttpStatus.NOT_FOUND.getReasonPhrase())
+            .setMessage(e.getMessage())
+            .setSeeAlso(getSeeAlso())
+            .build();
     return ResponseEntity.status(HttpStatus.NOT_FOUND.value())
         .contentType(MediaType.APPLICATION_JSON).body(response);
   }
