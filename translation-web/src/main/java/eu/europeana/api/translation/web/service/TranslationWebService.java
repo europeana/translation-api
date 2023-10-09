@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.web.service;
 
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.*;
 import java.util.List;
 import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
@@ -102,10 +103,10 @@ public class TranslationWebService extends BaseWebService {
         translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
+      throw new ParamValidationException(null, null, ERROR_INVALID_PARAM_VALUE, new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
+      throw new ParamValidationException(null, null, ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
     return result;
   }

@@ -1,8 +1,8 @@
 package eu.europeana.api.translation.web.service;
 
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_GOOGLE_QUOTA_LIMIT;
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_LANG_DETECT_SERVICE_CALL;
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_TRANSLATION_SERVICE_CALL;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_GOOGLE_QUOTA_LIMIT;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_LANG_DETECT_SERVICE_CALL;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_TRANSLATION_SERVICE_CALL;
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
