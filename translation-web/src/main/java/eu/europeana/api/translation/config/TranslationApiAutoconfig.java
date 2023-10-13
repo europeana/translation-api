@@ -166,9 +166,9 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   /**
    * Method for initialization of service provider using the service configurations
-   * @param ctx
-   * @throws TranslationServiceConfigurationException
-   * @throws LangDetectionServiceConfigurationException
+   * @param ctx the application context holding the initialized beans 
+   * @throws TranslationServiceConfigurationException if translations services cannot be correctly instantiated
+   * @throws LangDetectionServiceConfigurationException if language detection services cannot be correctly instantiated
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
