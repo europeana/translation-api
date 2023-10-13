@@ -86,7 +86,11 @@ public class TranslationServiceProvider {
     validateAndInitServices();
   }
 
-  public void readServiceConfigurations() throws TranslationServiceConfigurationException {
+  /**
+   * Method for reading and parsing service configurations 
+   * @throws TranslationServiceConfigurationException
+   */
+  void readServiceConfigurations() throws TranslationServiceConfigurationException {
     try (InputStream inputStream = getClass().getResourceAsStream(getServiceConfigFile())) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
       String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
@@ -298,7 +302,6 @@ public class TranslationServiceProvider {
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }
   }
-
 
 
   public String getServiceConfigFile() {

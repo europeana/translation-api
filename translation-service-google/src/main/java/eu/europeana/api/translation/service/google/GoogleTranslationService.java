@@ -12,8 +12,11 @@ import eu.europeana.api.translation.definitions.service.TranslationService;
 import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 
 /**
- * Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
+ * Translation service implementing remote invocation of google language detection service
+ *  Note that this requires the GOOGLE_APPLICATION_CREDENTIALS environment variable to be available
  * as well as a projectId (defined in the application properties).
+ * @author GordeaS
+ *
  */
 public class GoogleTranslationService implements TranslationService {
 

@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.config;
 
-import static eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper.MOCK_CLIENT_PROJ_ID;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -111,8 +110,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   public GoogleLangDetectService getGoogleLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
     if (useDummyServices) {
-      return new DummyGLangDetectService(MOCK_CLIENT_PROJ_ID,
-          googleTranslationServiceClientWrapper);
+      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
@@ -123,7 +121,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   public GoogleTranslationService getGoogleTranslationService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
     if (useDummyServices) {
-      return new DummyGTranslateService(MOCK_CLIENT_PROJ_ID, googleTranslationServiceClientWrapper);
+      return new DummyGTranslateService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
@@ -135,10 +133,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
   public TranslationServiceProvider getTranslationServiceProvider() {
     this.translationServiceConfigProvider = new TranslationServiceProvider();
-    // failing as the service beans are not initialized yet, would need to think of another way to
-    // call this initialization
-    // translationServiceConfigProvider#initTranslationServicesConfiguration;
-    return translationServiceConfigProvider;
+    return this.translationServiceConfigProvider;
   }
 
   @Override
@@ -169,6 +164,12 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
+  /**
+   * Method for initialization of service provider using the service configurations
+   * @param ctx
+   * @throws TranslationServiceConfigurationException
+   * @throws LangDetectionServiceConfigurationException
+   */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
     TranslationServiceProvider translationServiceProvider =
@@ -176,9 +177,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     translationServiceProvider.initTranslationServicesConfiguration();
   }
 
+  /**
+   * Method to verify required properties in translation config
+   * @param ctx the application context holding references to instantiated beans
+   */
   public void verifyMandatoryProperties(ApplicationContext ctx) {
-    TranslationConfig translationConfig =
-        (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
     translationConfig.verifyRequiredProperties();
   }
 

@@ -5,8 +5,16 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 
+/**
+ * Dummy implementation preventing invocation of remote pangeanic service
+ * @author GordeaS
+ *
+ */
 public class DummyPangLangDetectService extends PangeanicLangDetectService {
 
+  /**
+   * Constructor using null as endpoint
+   */
   public DummyPangLangDetectService() {
     super(null);
   }
