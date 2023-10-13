@@ -1,9 +1,9 @@
 package eu.europeana.api.translation.service.pangeanic;
 
-public class DummyPangTranslationService extends PangeanicLangDetectService{
+public class DummyPangTranslationService extends PangeanicTranslationService{
 
-  public DummyPangTranslationService(String endPoint) {
-    super(null);
+  public DummyPangTranslationService() {
+    super(null, null);
   }
 
 }

@@ -22,8 +22,6 @@ import eu.europeana.api.translation.definitions.service.LanguageDetectionService
 import eu.europeana.api.translation.definitions.service.TranslationService;
 import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
-import eu.europeana.api.translation.web.service.DummyLangDetectService;
-import eu.europeana.api.translation.web.service.DummyTranslationService;
 
 /**
  * Class used to read the traslation service configurations, validate them, initialize mapping for
@@ -76,18 +74,16 @@ public class TranslationServiceProvider {
   /**
    * Initialization of language detection and translation services
    * 
-   * @param useDummyServices boolean flag if the mock implementation for the services needs to be
-   *        used
    * @throws TranslationServiceConfigurationException if translations services are not properly
    *         configured
    * @throws LangDetectionServiceConfigurationException if language detection services are not
    *         properly configured
    */
-  public void initTranslationServicesConfiguration(boolean useDummyServices)
+  public void initTranslationServicesConfiguration()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
     // init translation services
     readServiceConfigurations();
-    validateAndInitServices(useDummyServices);
+    validateAndInitServices();
   }
 
   public void readServiceConfigurations() throws TranslationServiceConfigurationException {
@@ -101,20 +97,10 @@ public class TranslationServiceProvider {
     }
   }
 
-  private void validateAndInitServices(boolean useDummyServices)
+  private void validateAndInitServices()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    if (useDummyServices) {
-      
-      TranslationService dummyTranslationService = new DummyTranslationService();
-      getTranslationServices().put(dummyTranslationService.getServiceId(), dummyTranslationService);
-
-      LanguageDetectionService dummyLangDetectService = new DummyLangDetectService();
-      getLangDetectServices().put(dummyLangDetectService.getServiceId(), dummyLangDetectService);
-
-    } else {
       validateDetectServiceCfg();
       validateTranslationServiceCfg();
-    }
   }
 
   private void validateTranslationServiceCfg() throws TranslationServiceConfigurationException {
