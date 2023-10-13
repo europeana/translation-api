@@ -15,7 +15,8 @@ spec:
           - name: SPRING_CONFIG_ADDITIONAL_LOCATION
             value: "/opt/app/config/translation.user.properties"
           - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: "/opt/app/config/google-auth.json"  
+            value: "/opt/app/config/google-auth.json"
+            
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -45,6 +46,10 @@ spec:
               mountPath: "/opt/app/config/google-auth.json"
               readOnly: true
               subPath: google-auth.json
+            - name: log4j-config
+              mountPath: "/opt/app/config/log4j2-spring.xml"
+              readOnly: true
+              subPath: log4j2-spring.xml
       volumes:
         - name: secret
           secret:
@@ -52,3 +57,6 @@ spec:
         - name: google-secret
           secret:
             secretName: google-auth-secret
+        - name: log4j-config
+          configMap:
+            name: log4j2-properties

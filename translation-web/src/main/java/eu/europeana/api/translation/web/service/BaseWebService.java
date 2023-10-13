@@ -1,11 +1,11 @@
 package eu.europeana.api.translation.web.service;
 
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_GOOGLE_QUOTA_LIMIT;
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_LANG_DETECT_SERVICE_CALL;
-import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.ERROR_TRANSLATION_SERVICE_CALL;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_GOOGLE_QUOTA_LIMIT;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_LANG_DETECT_SERVICE_CALL;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_TRANSLATION_SERVICE_CALL;
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import com.google.api.gax.rpc.ResourceExhaustedException;
-import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ExternalServiceCallException;
@@ -13,7 +13,7 @@ import eu.europeana.api.translation.web.exception.GoogleResourceExhaustedExcepti
 
 public class BaseWebService {
 
-  protected void throwApiException(LanguageDetectionException ex) throws EuropeanaApiException {
+  protected void throwApiException(LanguageDetectionException ex) throws EuropeanaI18nApiException {
     if (ex.getCause() instanceof ResourceExhaustedException) {
       throw new GoogleResourceExhaustedException(ex.getMessage(), ERROR_GOOGLE_QUOTA_LIMIT,
           ERROR_GOOGLE_QUOTA_LIMIT, null, ex);
@@ -24,7 +24,7 @@ public class BaseWebService {
         ERROR_LANG_DETECT_SERVICE_CALL, null, ex);
   }
 
-  protected void throwApiException(TranslationException ex) throws EuropeanaApiException {
+  protected void throwApiException(TranslationException ex) throws EuropeanaI18nApiException {
     if (ex.getCause() instanceof ResourceExhaustedException) {
       throw new GoogleResourceExhaustedException(ERROR_GOOGLE_QUOTA_LIMIT,
           null, ERROR_GOOGLE_QUOTA_LIMIT, null, ex);

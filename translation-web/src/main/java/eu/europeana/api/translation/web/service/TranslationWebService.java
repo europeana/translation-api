@@ -1,12 +1,13 @@
 package eu.europeana.api.translation.web.service;
 
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.*;
 import java.util.List;
 import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -22,37 +23,40 @@ public class TranslationWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-  
+
   private final Logger logger = LogManager.getLogger(getClass());
-  
-  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaApiException {
+
+  public TranslationResponse translate(TranslationRequest translationRequest)
+      throws EuropeanaI18nApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
-    TranslationService translationService = selectTranslationService(translationRequest, languagePair);
+    TranslationService translationService =
+        selectTranslationService(translationRequest, languagePair);
     TranslationService fallback = null;
-    if(translationRequest.getFallback() != null) {
+    if (translationRequest.getFallback() != null) {
       fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
     }
-    
+
     List<String> translations = null;
     String serviceId = null;
     try {
-      translations = translationService.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+      translations = translationService.translate(translationRequest.getText(),
+          translationRequest.getTarget(), translationRequest.getSource());
       serviceId = translationService.getServiceId();
     } catch (TranslationException originalError) {
       // call the fallback service in case of failed translation
       if (fallback == null) {
         throwApiException(originalError);
-      }
-      else {
+      } else {
         try {
-          translations = fallback.translate(translationRequest.getText(), translationRequest.getTarget(), translationRequest.getSource());
+          translations = fallback.translate(translationRequest.getText(),
+              translationRequest.getTarget(), translationRequest.getSource());
           serviceId = fallback.getServiceId();
-        } catch(TranslationException e) {
-          if(logger.isDebugEnabled()) {
+        } catch (TranslationException e) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Error when calling default service. ", e);
           }
-          //return original exception
+          // return original exception
           throwApiException(originalError);
         }
       }
@@ -63,9 +67,9 @@ public class TranslationWebService extends BaseWebService {
     result.setService(serviceId);
     return result;
   }
-  
-  private TranslationService selectTranslationService(TranslationRequest translationRequest, LanguagePair languagePair)
-      throws ParamValidationException {
+
+  private TranslationService selectTranslationService(TranslationRequest translationRequest,
+      LanguagePair languagePair) throws ParamValidationException {
 
 
     final String serviceId = translationRequest.getService();
@@ -87,25 +91,34 @@ public class TranslationWebService extends BaseWebService {
     return getTranslationService(defaultServiceId, languagePair);
   }
 
-  private TranslationService selectFromLanguageMappings(LanguagePair languagePair){
-    final String key = LanguagePair.generateKey(languagePair.getSrcLang(), languagePair.getTargetLang());
-    return translationServiceProvider.getLangMappings4TranslateServices().getOrDefault(key, null);  
+  private TranslationService selectFromLanguageMappings(LanguagePair languagePair) {
+    final String key =
+        LanguagePair.generateKey(languagePair.getSrcLang(), languagePair.getTargetLang());
+    return translationServiceProvider.getLangMappings4TranslateServices().getOrDefault(key, null);
   }
 
   private TranslationService getTranslationService(final String serviceId,
-      LanguagePair languagePair) throws ParamValidationException{
+      LanguagePair languagePair) throws ParamValidationException {
     return getTranslationService(serviceId, languagePair, false);
   }
+
   private TranslationService getTranslationService(final String serviceId,
       LanguagePair languagePair, boolean fallback) throws ParamValidationException {
-    TranslationService result =
-        translationServiceProvider.getTranslationServices().get(serviceId);
+    TranslationService result = translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {param, serviceId + " (available services: " + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"});
+      throw new ParamValidationException("Requested service id is invalid" + serviceId,
+          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE,
+          new String[] {param,
+              serviceId + " (available services: "
+                  + String.join(", ", translationServiceProvider.getTranslationServices().keySet())
+                  + ")"});
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException(null, null, TranslationAppConstants.ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
+      throw new ParamValidationException("Language pair not supported:" + languagePair,
+          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE,
+          new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
+              TranslationAppConstants.TARGET_LANG), languagePair.toString()});
     }
     return result;
   }
@@ -140,12 +153,13 @@ public class TranslationWebService extends BaseWebService {
     }
     return false;
   }
-  
+
   @PreDestroy
   public void close() {
-    //call close method of all translation services
-    for (TranslationService service : translationServiceProvider.getTranslationServices().values()) {
-      service.close(); 
+    // call close method of all translation services
+    for (TranslationService service : translationServiceProvider.getTranslationServices()
+        .values()) {
+      service.close();
     }
   }
 }

@@ -31,13 +31,5 @@ public class TranslationAppConstants {
   public static final String BUILD_INFO = "build";
   public static final String APP_INFO = "app";
   public static final String CONFIG_INFO = "config";
-    
-  //error keys for the exceptions messages
-  public static final String ERROR_MANDATORY_PARAM_EMPTY = "error.mandatory_param_empty";
-  public static final String ERROR_INVALID_PARAM_VALUE = "error.invalid_param_value";
-  public static final String ERROR_UNSUPPORTED_LANG = "error.unsupported_language";
-  public static final String ERROR_GOOGLE_QUOTA_LIMIT = "error.google_quota_limit_reached";
-  public static final String ERROR_TRANSLATION_SERVICE_CALL = "error.translation.external_service_call";
-  public static final String ERROR_LANG_DETECT_SERVICE_CALL = "error.detection.external_service_call";
 
 }

@@ -16,7 +16,11 @@
       <appender-ref ref="Console"/>
     </Root>
 
-    <Logger name="eu.europeana.api.translation" level="INFO">
-  </Logger>
+    <Logger name="eu.europeana.api.translation" level="INFO"/>
+    <Logger name="org.mongodb.driver.connection" level="WARN"/>
+    <Logger name="org.springframework" level="INFO"/>
+    <Logger name="org.springframework.web" level="INFO"/>
+    <Logger name="org.springframework.core.log" level="INFO"/>
+    
   </Loggers>
 </Configuration>
