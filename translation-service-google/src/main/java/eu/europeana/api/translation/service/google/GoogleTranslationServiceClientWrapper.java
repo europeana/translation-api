@@ -10,7 +10,7 @@ import com.google.cloud.translate.v3.TranslationServiceSettings;
 
 public class GoogleTranslationServiceClientWrapper {
 
-  private static final String MOCK_CLIENT_PROJ_ID = "google-test";
+  public static final String MOCK_CLIENT_PROJ_ID = "google-test";
 
   private final Logger logger = LogManager.getLogger(getClass());
   
@@ -27,8 +27,8 @@ public class GoogleTranslationServiceClientWrapper {
   
   private void initClient(String projectId, boolean useHttpClient) throws IOException {
     // allow service mocking
-    final boolean initClientConnection = isMockService(projectId);
-    if(! initClientConnection) {
+    final boolean skipInitialization = isMockService(projectId);
+    if(skipInitialization) {
       return;
     }
     
@@ -59,7 +59,7 @@ public class GoogleTranslationServiceClientWrapper {
   }
 
   private boolean isMockService(String projectId) {
-    return !MOCK_CLIENT_PROJ_ID.equals(projectId);
+    return MOCK_CLIENT_PROJ_ID.equals(projectId);
   }
 
   public TranslationServiceClient getClient() {

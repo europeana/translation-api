@@ -40,9 +40,9 @@ public class GoogleTranslationService implements TranslationService {
   }
 
   @Override
-  public List<String> translate(List<String> texts, String targetLanguage)
+  public List<String> translate(List<String> text, String targetLanguage)
       throws TranslationException {
-    return translate(texts, targetLanguage, null);
+    return translate(text, targetLanguage, null);
   }
 
   @Override

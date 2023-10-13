@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.config;
 
+import static eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper.MOCK_CLIENT_PROJ_ID;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -8,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
@@ -16,25 +18,35 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.google.DummyGLangDetectService;
+import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService;
+import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 
 @Configuration()
-public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent>{
+@PropertySource("classpath:translation.properties")
+@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
+public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
+
+  @Value("${translation.dummy.services:false}")
+  private boolean useDummyServices;
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
-  
+
 
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
@@ -61,39 +73,61 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     messageSource.setDefaultLocale(Locale.ENGLISH);
     return messageSource;
   }
-  
+
   /**
-   * Creates a new client wrapper that can send translation requests to Google Cloud Translate. Note that
-   * the client needs to be closed when it's not used anymore
-   * @throws IOException 
+   * Creates a new client wrapper that can send translation requests to Google Cloud Translate. Note
+   * that the client needs to be closed when it's not used anymore
+   * 
+   * @throws IOException
    */
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
-  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException {
-    return new GoogleTranslationServiceClientWrapper(translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
+  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper()
+      throws IOException {
+    return new GoogleTranslationServiceClientWrapper(
+        translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
   }
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
-    return new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint());
+    if (useDummyServices) {
+      return new DummyPangLangDetectService();
+    } else {
+      return new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint());
+    }
   }
 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
   public PangeanicTranslationService getPangeanicTranslationService(
       @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService) {
-    return new PangeanicTranslationService(translationConfig.getPangeanicTranslateEndpoint(),
-        pangeanicLangDetectService);
+    if (useDummyServices) {
+      return new DummyPangTranslationService();
+    } else {
+      return new PangeanicTranslationService(translationConfig.getPangeanicTranslateEndpoint(),
+          pangeanicLangDetectService);
+    }
   }
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
+    if (useDummyServices) {
+      return new DummyGLangDetectService(MOCK_CLIENT_PROJ_ID,
+          googleTranslationServiceClientWrapper);
+    } else {
+      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+          googleTranslationServiceClientWrapper);
+    }
   }
 
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
+    if (useDummyServices) {
+      return new DummyGTranslateService(MOCK_CLIENT_PROJ_ID, googleTranslationServiceClientWrapper);
+    } else {
+      return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(),
+          googleTranslationServiceClientWrapper);
+    }
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
@@ -113,34 +147,41 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     if (logger.isDebugEnabled()) {
       printRegisteredBeans(event.getApplicationContext());
     }
-    
+
+    // load either normal or dummy services (used for stress testing)
+    loadServices(event);
+  }
+
+  private void loadServices(ApplicationStartedEvent event) {
     try {
       // verify required configurations for initialization of translation services
       verifyMandatoryProperties(event.getApplicationContext());
-      
+
       // init translation services
       initTranslationServices(event.getApplicationContext());
-     } catch (Exception e) {
-       // gracefully stop the application in case of configuration problems (code 1 means exception
-       // occured at startup)
-       logger.fatal(
-           "Stopping application. Translation Service initialization failed due to configuration errors!",
-           e);
-       System.exit(SpringApplication.exit(event.getApplicationContext(), () -> 1));
-     }
+    } catch (Exception e) {
+      // gracefully stop the application in case of configuration problems (code 1 means exception
+      // occured at startup)
+      logger.fatal(
+          "Stopping application. Translation Service initialization failed due to configuration errors!",
+          e);
+      System.exit(SpringApplication.exit(event.getApplicationContext(), () -> 1));
+    }
   }
-  
-  public void initTranslationServices(ApplicationContext ctx) throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-      TranslationServiceProvider translationServiceProvider =
-          (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
-      translationServiceProvider.initTranslationServicesConfiguration();
+
+  public void initTranslationServices(ApplicationContext ctx)
+      throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
+    TranslationServiceProvider translationServiceProvider =
+        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
+    translationServiceProvider.initTranslationServicesConfiguration();
   }
 
   public void verifyMandatoryProperties(ApplicationContext ctx) {
-      TranslationConfig translationConfig = (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
-      translationConfig.verifyRequiredProperties();
+    TranslationConfig translationConfig =
+        (TranslationConfig) ctx.getBean(BeanNames.BEAN_TRANSLATION_CONFIG);
+    translationConfig.verifyRequiredProperties();
   }
-  
+
   private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
     Arrays.sort(beanNames);
