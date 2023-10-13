@@ -24,58 +24,61 @@ public class LangDetectionWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-    
+
   private final Logger logger = LogManager.getLogger(getClass());
-  
-  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws EuropeanaI18nApiException {
+
+  public LangDetectResponse detectLang(LangDetectRequest langDetectRequest)
+      throws EuropeanaI18nApiException {
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
-    LanguageDetectionService fallback = getFallbackService(langDetectRequest); 
+    LanguageDetectionService fallback = getFallbackService(langDetectRequest);
     List<String> langs = null;
     String serviceId = null;
     try {
-      langs = langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+      langs =
+          langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
       serviceId = langDetectService.getServiceId();
-    }
-    catch (LanguageDetectionException originalError) {
-      //check if fallback is available
-      if(fallback == null) {
+    } catch (LanguageDetectionException originalError) {
+      // check if fallback is available
+      if (fallback == null) {
         throwApiException(originalError);
-      } 
-      else {
+      } else {
         try {
           langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
           serviceId = fallback.getServiceId();
         } catch (LanguageDetectionException e) {
-          if(logger.isDebugEnabled()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Error when calling default service. ", e);
           }
           throwApiException(originalError);
         }
       }
     }
-    
+
     return new LangDetectResponse(langs, serviceId);
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
       throws ParamValidationException {
-    //only if indicated in request
-    if(langDetectRequest.getFallback() == null) {
+    // only if indicated in request
+    if (langDetectRequest.getFallback() == null) {
       return null;
     }
-    //call the fallback service in case of failed lang detection (non 200 response by remote service)
+    // call the fallback service in case of failed lang detection (non 200 response by remote
+    // service)
     return getServiceInstance(langDetectRequest.getFallback(), langDetectRequest.getLang(), true);
-  }  
+  }
 
-  private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest) throws ParamValidationException {
+  private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest)
+      throws ParamValidationException {
     final String requestedServiceId = langDetectRequest.getService();
     final String languageHint = langDetectRequest.getLang();
-    
-    if(requestedServiceId != null) {
+
+    if (requestedServiceId != null) {
       return getServiceInstance(requestedServiceId, languageHint);
-    }else {
-      final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig().getDefaultServiceId();
-      return getServiceInstance(defaultServiceId, languageHint); 
+    } else {
+      final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig()
+          .getLangDetectConfig().getDefaultServiceId();
+      return getServiceInstance(defaultServiceId, languageHint);
     }
   }
 
@@ -86,15 +89,22 @@ public class LangDetectionWebService extends BaseWebService {
 
   private LanguageDetectionService getServiceInstance(final String requestedServiceId,
       final String languageHint, boolean isFallbackService) throws ParamValidationException {
-    LanguageDetectionService detectService = translationServiceProvider.getLangDetectServices().get(requestedServiceId);
-    if(detectService==null) {
-      final String paramName = isFallbackService? TranslationAppConstants.FALLBACK: TranslationAppConstants.SERVICE;
-      final String availableServices = translationServiceProvider.getLangDetectServices().keySet().toString();
-      throw new ParamValidationException(null, null, ERROR_INVALID_PARAM_VALUE, new String[] {paramName, requestedServiceId + " (available services: " + availableServices + ")"});
+    LanguageDetectionService detectService =
+        translationServiceProvider.getLangDetectServices().get(requestedServiceId);
+    if (detectService == null) {
+      final String paramName =
+          isFallbackService ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
+      final String availableServices =
+          translationServiceProvider.getLangDetectServices().keySet().toString();
+      throw new ParamValidationException("Requested service is invalid:" + requestedServiceId,
+          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE, new String[] {paramName,
+              requestedServiceId + " (available services: " + availableServices + ")"});
     }
-    //check if the "lang" is supported
-    if(languageHint!=null && !detectService.isSupported(languageHint)) {
-      throw new ParamValidationException(null, null, ERROR_UNSUPPORTED_LANG, new String[] {TranslationAppConstants.LANG, requestedServiceId});
+    // check if the "lang" is supported
+    if (languageHint != null && !detectService.isSupported(languageHint)) {
+      throw new ParamValidationException("Language hint not supported:" + languageHint,
+          ERROR_INVALID_PARAM_VALUE, ERROR_UNSUPPORTED_LANG,
+          new String[] {TranslationAppConstants.LANG, requestedServiceId});
     }
     return detectService;
   }
@@ -103,13 +113,14 @@ public class LangDetectionWebService extends BaseWebService {
     return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig()
         .getSupported().contains(lang.toLowerCase(Locale.ENGLISH));
   }
-  
+
   @PreDestroy
   public void close() {
-    //call close method of all detection services
-    for (LanguageDetectionService service : translationServiceProvider.getLangDetectServices().values()) {
-      service.close(); 
+    // call close method of all detection services
+    for (LanguageDetectionService service : translationServiceProvider.getLangDetectServices()
+        .values()) {
+      service.close();
     }
   }
-  
+
 }
