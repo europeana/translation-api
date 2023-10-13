@@ -27,6 +27,7 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
     this.i18nService = i18nService;
   }
 
+  @Override
   public I18nService getI18nService() {
     return i18nService;
   }
