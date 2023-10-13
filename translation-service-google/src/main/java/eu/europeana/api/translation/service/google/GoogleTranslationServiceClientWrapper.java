@@ -8,6 +8,11 @@ import com.google.cloud.tasks.v2.stub.CloudTasksStubSettings;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import com.google.cloud.translate.v3.TranslationServiceSettings;
 
+/**
+ * Wrapper for google client to handle the proper behavior for different configurations
+ * @author GordeaS
+ *
+ */
 public class GoogleTranslationServiceClientWrapper {
 
   public static final String MOCK_CLIENT_PROJ_ID = "google-test";

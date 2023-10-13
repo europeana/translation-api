@@ -12,6 +12,11 @@ import com.google.cloud.translate.v3.LocationName;
 import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 
+/**
+ * Translation service implementing remote invocation of google language detection service
+ * @author GordeaS
+ *
+ */
 public class GoogleLangDetectService implements LanguageDetectionService {
    
   protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);

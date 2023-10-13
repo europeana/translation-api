@@ -5,11 +5,19 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
 
+/**
+ * Dummy implementation preventing invocation of remote google service
+ * @author GordeaS
+ *
+ */
 public class DummyGLangDetectService extends GoogleLangDetectService {
 
-  public DummyGLangDetectService(String googleProjectId,
-      GoogleTranslationServiceClientWrapper clientWrapperBean) {
-    super(googleProjectId, clientWrapperBean);
+  /**
+   * Constructor using dummy project id
+   * @param clientWrapperBean the client wrapper implemnetation
+   */
+  public DummyGLangDetectService(GoogleTranslationServiceClientWrapper clientWrapperBean) {
+    super(GoogleTranslationServiceClientWrapper.MOCK_CLIENT_PROJ_ID, clientWrapperBean);
   }
   
   @Override
