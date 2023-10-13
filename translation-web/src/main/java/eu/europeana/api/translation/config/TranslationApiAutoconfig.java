@@ -40,7 +40,7 @@ import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationServic
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
-  @Value("${use.dummy.services:false}")
+  @Value("${translation.dummy.services:false}")
   private boolean useDummyServices;
 
   private final TranslationConfig translationConfig;
