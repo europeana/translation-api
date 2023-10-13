@@ -25,8 +25,8 @@ public class GoogleTranslationServiceClientWrapper {
   
   private void initClient(String projectId, boolean useHttpClient) throws IOException {
     // allow service mocking
-    final boolean initClientConnection = !"google-test".equals(projectId);
-    if(! initClientConnection) {
+    boolean skipInitialization = "google-test".equals(projectId); 
+    if(skipInitialization) {
       return;
     }
     
