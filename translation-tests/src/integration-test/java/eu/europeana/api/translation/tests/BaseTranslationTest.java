@@ -123,7 +123,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
           return pangeanicMockTranslate;
         });
 
-    registry.add("translation.google.projectId", () -> "google-test");
+    registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
   }
 

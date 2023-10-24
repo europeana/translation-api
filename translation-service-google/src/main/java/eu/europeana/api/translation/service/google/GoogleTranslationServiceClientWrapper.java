@@ -15,7 +15,7 @@ import com.google.cloud.translate.v3.TranslationServiceSettings;
  */
 public class GoogleTranslationServiceClientWrapper {
 
-  public static final String MOCK_CLIENT_PROJ_ID = "google-test";
+  public static final String MOCK_CLIENT_PROJ_ID = "project-id-test";
 
   private final Logger logger = LogManager.getLogger(getClass());
   
