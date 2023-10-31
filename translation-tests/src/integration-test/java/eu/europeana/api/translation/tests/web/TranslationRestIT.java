@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +30,8 @@ import eu.europeana.api.translation.service.google.GoogleTranslationServiceClien
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
 import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
+import eu.europeana.api.translation.web.service.RedisCacheService;
+import redis.embedded.RedisServer;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,6 +40,9 @@ public class TranslationRestIT extends BaseTranslationTest {
   @Autowired TranslationConfig translationConfig;
   
   @Autowired GoogleTranslationService googleTranslationService;  
+  
+  @Autowired
+  RedisCacheService redisCacheService;
   
   @Autowired 
   @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
@@ -92,6 +99,53 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(serviceFieldValue);
   }
   
+  @Test
+  void translationWithCaching() throws Exception {
+    RedisServer redisServer = new RedisServer(redisPort);
+    redisServer.start();
+
+    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_CACHING);
+    JSONObject reqJsonObj = new JSONObject(requestJson);
+    JSONArray inputTexts = (JSONArray) reqJsonObj.get(TranslationAppConstants.TEXT);
+    List<String> inputTextsList = new ArrayList<String>();
+    for(int i=0;i<inputTexts.length();i++) {
+      inputTextsList.add((String) inputTexts.get(i));
+    }    
+    String sourceLang=reqJsonObj.getString(TranslationAppConstants.SOURCE_LANG);
+    String targetLang=reqJsonObj.getString(TranslationAppConstants.TARGET_LANG);
+    
+    mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk());
+    
+    //check that there are data in the cache
+    List<String> redisContent = redisCacheService.getRedisCache(sourceLang, targetLang, inputTextsList);
+    assertTrue(redisContent.size()==2 && Collections.frequency(redisContent, null)==0);
+    
+    String cachedResult = mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(cachedResult);
+    JSONObject json = new JSONObject(cachedResult);
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
+    assertNotNull(langFieldValue);    
+    JSONArray translations = json.getJSONArray(TranslationAppConstants.TRANSLATIONS);
+    assertTrue(translations.length()>0);
+    
+    redisCacheService.deleteAll();
+    redisServer.stop();
+  }
+
   @Test
   void translationWithServiceParam() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);

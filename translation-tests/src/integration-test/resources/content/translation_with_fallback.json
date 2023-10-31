@@ -7,5 +7,6 @@
     "eine zweite Textzeile auf Deutsch"
   ],
   "service":"GOOGLE",
-  "fallback":"PANGEANIC"
+  "fallback":"PANGEANIC",
+  "caching": false
 }

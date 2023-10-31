@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,9 +16,19 @@ public class TranslationRequest {
   private String service;
   private String fallback;
   private List<String> text;
+  private Boolean caching;
 
   public TranslationRequest() {
     super();
+  }
+
+  public TranslationRequest(TranslationRequest copy) {
+    this.source=copy.getSource();
+    this.target=copy.getTarget();
+    this.service=copy.getService();
+    this.fallback=copy.getFallback();
+    this.caching=copy.getCaching();
+    this.text=new ArrayList<String>(copy.getText());
   }
 
   public String getSource() {
@@ -63,6 +74,24 @@ public class TranslationRequest {
   @JsonSetter(TranslationAppConstants.TEXT)
   public void setText(List<String> text) {
     this.text = text;
+  }
+
+  public boolean isCaching() {
+    if(caching==null || caching.booleanValue()) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+  
+  public Boolean getCaching() {
+    return caching;
+  }
+
+  @JsonSetter(TranslationAppConstants.CACHING)
+  public void setCaching(boolean caching) {
+    this.caching = caching;
   }
 
 }

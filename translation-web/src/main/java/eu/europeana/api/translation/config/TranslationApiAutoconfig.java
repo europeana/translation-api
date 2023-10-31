@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
@@ -134,6 +136,18 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   public TranslationServiceProvider getTranslationServiceProvider() {
     this.translationServiceConfigProvider = new TranslationServiceProvider();
     return this.translationServiceConfigProvider;
+  }
+  
+  /*
+   * For windows use this link for help: https://www.baeldung.com/spring-data-redis-properties
+   * I.e. install the docker image for Redis (it can be without the password), and put the properties (e.g. spring.redis.host) 
+   * in the translation.(user.)properties file
+   */
+  @Bean
+  public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory connectionFactory) {
+    RedisTemplate<?, ?> template = new RedisTemplate<>();
+    template.setConnectionFactory(connectionFactory);
+    return template;
   }
 
   @Override
