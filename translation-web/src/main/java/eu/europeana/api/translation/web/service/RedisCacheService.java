@@ -34,12 +34,11 @@ public class RedisCacheService {
       keys.add(key.hashCode());
     });
             
-    List<String> redisResp = redisTemplate.opsForValue().multiGet(keys);
-    return redisResp;
+    return redisTemplate.opsForValue().multiGet(keys);
   }
   
   public void saveRedisCache(String sourceLang, String targetLang, List<String> inputText, List<String> translations) {
-    Map<Integer, String> valueMap = new HashMap<>();
+    Map<Integer, String> valueMap = new HashMap<>(inputText.size());
     for(int i=0;i<inputText.size();i++) {
       String key = inputText.get(i) + sourceLang + targetLang;
       valueMap.put(key.hashCode(), translations.get(i));
@@ -49,7 +48,9 @@ public class RedisCacheService {
   }
   
   public void deleteAll() {
-    redisTemplate.getConnectionFactory().getConnection().flushAll();
+    if(redisTemplate.getConnectionFactory()!=null) {
+      redisTemplate.getConnectionFactory().getConnection().flushAll();
+    }
   }
 
 }

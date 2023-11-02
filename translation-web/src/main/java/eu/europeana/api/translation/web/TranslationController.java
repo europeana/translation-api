@@ -83,9 +83,11 @@ public class TranslationController extends BaseRest {
     if(Collections.frequency(redisResp, null)>0) {
       TranslationRequest newTranslReq = new TranslationRequest(translRequest);
       List<String> newText = new ArrayList<String>();
-      for(int i=0;i<redisResp.size();i++) {
-        if(redisResp.get(i)==null) {
-          newText.add(translRequest.getText().get(i));
+      int counter=0;
+      for(String redisRespElem : redisResp) {
+        if(redisRespElem==null) {
+          newText.add(translRequest.getText().get(counter));
+          counter++;
         }
       }
       newTranslReq.setText(newText);
