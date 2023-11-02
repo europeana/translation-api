@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +49,9 @@ public class RedisCacheService {
   }
   
   public void deleteAll() {
-    if(redisTemplate.getConnectionFactory()!=null) {
-      redisTemplate.getConnectionFactory().getConnection().flushAll();
+    RedisConnectionFactory connFact=redisTemplate.getConnectionFactory();
+    if(connFact!=null) {
+      connFact.getConnection().flushAll();
     }
   }
 
