@@ -9,8 +9,8 @@ import com.google.cloud.translate.v3.DetectLanguageRequest;
 import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
 import com.google.cloud.translate.v3.LocationName;
-import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
  * Translation service implementing remote invocation of google language detection service

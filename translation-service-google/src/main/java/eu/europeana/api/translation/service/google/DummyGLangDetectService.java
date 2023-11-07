@@ -3,7 +3,7 @@ package eu.europeana.api.translation.service.google;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
  * Dummy implementation preventing invocation of remote google service

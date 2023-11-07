@@ -17,7 +17,7 @@
   	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
-			<artifactId>translation-definitions</artifactId>
+			<artifactId>translation-service-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
@@ -37,11 +37,6 @@
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-translate</artifactId>
 			<version>2.19.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
 		</dependency>
 
 	</dependencies>

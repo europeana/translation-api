@@ -2,6 +2,7 @@ package eu.europeana.api.translation.web;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,18 +50,18 @@ public class TranslationController extends BaseRest {
 
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
-    if (translationRequest.getText() == null) {
-      throw new ParamValidationException(null, null, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
+    if (translationRequest.getText() == null || containsNullValues(translationRequest.getText())) {
+      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
     }
 
     if (StringUtils.isEmpty(translationRequest.getTarget())) {
-      throw new ParamValidationException(null, null, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TARGET_LANG});
+      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TARGET_LANG});
     }
     
     //validate language pair
     final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     if(!translationService.isTranslationSupported(languagePair)) {
-      throw new ParamValidationException(null, null, ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
+      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
   }
 
