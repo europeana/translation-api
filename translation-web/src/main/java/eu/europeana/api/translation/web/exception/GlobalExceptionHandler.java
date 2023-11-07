@@ -33,19 +33,13 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
     this.i18nService = i18nService;
   }
 
-  @Override
-  public I18nService getI18nService() {
-    return i18nService;
-  }
-
-  
   /**
-   * HttpMessageNotReadableException thrown when a required parameter is not included in a request.
+   * HttpMessageNotReadableException thrown when the request body is not parsable to the declared input of the handler method
    * @param e the exception indicating the request message parsing error
    * @param httpRequest the request object
    */
   @ExceptionHandler
-  public ResponseEntity<EuropeanaApiErrorResponse> handleInputValidationError(HttpMessageNotReadableException e, HttpServletRequest httpRequest) {
+  public ResponseEntity<EuropeanaApiErrorResponse> handleRequestBodyNotParsableError(HttpMessageNotReadableException e, HttpServletRequest httpRequest) {
       HttpStatus responseStatus = HttpStatus.BAD_REQUEST;
       EuropeanaApiErrorResponse response = (new EuropeanaApiErrorResponse.Builder(httpRequest, e, stackTraceEnabled()))
               .setStatus(responseStatus.value())
@@ -58,5 +52,10 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
               .status(responseStatus)
               .headers(createHttpHeaders(httpRequest))
               .body(response);
+  }
+  
+  @Override
+  public I18nService getI18nService() {
+    return i18nService;
   }
 }
