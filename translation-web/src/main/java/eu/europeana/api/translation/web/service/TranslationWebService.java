@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.web.service;
 
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.*;
+import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
@@ -23,11 +25,22 @@ public class TranslationWebService extends BaseWebService {
 
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
-
+  
+  @Autowired
+  private RedisCacheService redisCacheService;
+  
   private final Logger logger = LogManager.getLogger(getClass());
 
-  public TranslationResponse translate(TranslationRequest translationRequest)
-      throws EuropeanaI18nApiException {
+  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
+    if(translationRequest.useCaching()) {
+      return getCombinedCachedAndTranslatedResults(translationRequest);
+    }
+    else {
+      return getTranslatedResults(translationRequest);
+    }
+  }
+  
+  private TranslationResponse getTranslatedResults(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     TranslationService translationService =
@@ -67,11 +80,58 @@ public class TranslationWebService extends BaseWebService {
     result.setService(serviceId);
     return result;
   }
+  
+  private TranslationResponse getCombinedCachedAndTranslatedResults(TranslationRequest translRequest) throws EuropeanaI18nApiException {
+    TranslationResponse result=null;
+    List<String> redisResp = redisCacheService.getRedisCache(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
+    if(Collections.frequency(redisResp, null)>0) {
+      
+      TranslationRequest newTranslReq = new TranslationRequest();
+      newTranslReq.setSource(translRequest.getSource());
+      newTranslReq.setTarget(translRequest.getTarget());
+      newTranslReq.setService(translRequest.getService());
+      newTranslReq.setFallback(translRequest.getFallback());
+      newTranslReq.setCaching(translRequest.getCaching());
+      newTranslReq.setText(new ArrayList<String>(translRequest.getText()));
+
+      List<String> newText = new ArrayList<String>();
+      int counter=0;
+      for(String redisRespElem : redisResp) {
+        if(redisRespElem==null) {
+          newText.add(translRequest.getText().get(counter));
+          counter++;
+        }
+      }
+      newTranslReq.setText(newText);
+      result = getTranslatedResults(newTranslReq);
+      
+      //save the translations to the cache
+      redisCacheService.saveRedisCache(newTranslReq.getSource(), newTranslReq.getTarget(), newTranslReq.getText(), result.getTranslations());
+      
+      //aggregate the redis and translation responses
+      List<String> finalText=new ArrayList<String>(redisResp);
+      int counterTranslated = 0;
+      for(int i=0;i<finalText.size();i++) {
+        if(finalText.get(i)==null) {
+          finalText.set(i, result.getTranslations().get(counterTranslated));
+          counterTranslated++;
+        }
+      }
+      result.setService(null);
+      result.setTranslations(finalText);       
+    }
+    else {
+      result=new TranslationResponse();
+      result.setLang(translRequest.getTarget());
+      result.setTranslations(redisResp);
+    }
+
+    return result;
+  }
+
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest,
       LanguagePair languagePair) throws ParamValidationException {
-
-
     final String serviceId = translationRequest.getService();
     if (serviceId != null) {
       // get the translation service by id

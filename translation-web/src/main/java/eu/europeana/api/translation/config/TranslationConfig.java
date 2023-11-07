@@ -54,6 +54,8 @@ public class TranslationConfig{
   @Value("${translation.google.usehttpclient: false}")
   private boolean useGoogleHttpClient;
   
+  @Value("${redis.connection.url}")
+  private String redisConnectionUrl;
   
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
@@ -120,6 +122,10 @@ public class TranslationConfig{
 
   public boolean useGoogleHttpClient() {
     return useGoogleHttpClient;
+  }
+
+  public String getRedisConnectionUrl() {
+    return redisConnectionUrl;
   }
   
 }

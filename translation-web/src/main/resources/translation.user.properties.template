@@ -35,3 +35,5 @@ europeana.apikey.serviceurl=
 
 # For using dummy services
 #translation.dummy.services=false
+
+redis.connection.url=

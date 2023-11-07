@@ -2,9 +2,6 @@ package eu.europeana.api.translation.web;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -21,7 +17,6 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
-import eu.europeana.api.translation.web.service.RedisCacheService;
 import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
@@ -29,12 +24,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class TranslationController extends BaseRest {
 
   private final TranslationWebService translationService;
-  private final RedisCacheService redisCacheService;
 
   @Autowired
-  public TranslationController(TranslationWebService translationService, RedisCacheService redisCacheService) {
+  public TranslationController(TranslationWebService translationService) {
     this.translationService = translationService;
-    this.redisCacheService = redisCacheService;
   }
 
   @Tag(description = "Translation", name = "translate")
@@ -47,13 +40,7 @@ public class TranslationController extends BaseRest {
 
     validateRequest(translRequest);
     
-    TranslationResponse result = null;
-    if(translRequest.isCaching()) {
-      result = getCombinedCachedAndTranslatedResults(translRequest);
-    }
-    else {
-      result = translationService.translate(translRequest);
-    }
+    TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);
 
@@ -77,44 +64,5 @@ public class TranslationController extends BaseRest {
     }
   }
   
-  private TranslationResponse getCombinedCachedAndTranslatedResults(TranslationRequest translRequest) throws EuropeanaI18nApiException {
-    TranslationResponse result=null;
-    List<String> redisResp = redisCacheService.getRedisCache(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
-    if(Collections.frequency(redisResp, null)>0) {
-      TranslationRequest newTranslReq = new TranslationRequest(translRequest);
-      List<String> newText = new ArrayList<String>();
-      int counter=0;
-      for(String redisRespElem : redisResp) {
-        if(redisRespElem==null) {
-          newText.add(translRequest.getText().get(counter));
-          counter++;
-        }
-      }
-      newTranslReq.setText(newText);
-      result = translationService.translate(newTranslReq);
-      
-      //save the translations to the cache
-      redisCacheService.saveRedisCache(newTranslReq.getSource(), newTranslReq.getTarget(), newTranslReq.getText(), result.getTranslations());
-      
-      //aggregate the redis and translation responses
-      List<String> finalText=new ArrayList<String>(redisResp);
-      int counterTranslated = 0;
-      for(int i=0;i<finalText.size();i++) {
-        if(finalText.get(i)==null) {
-          finalText.set(i, result.getTranslations().get(counterTranslated));
-          counterTranslated++;
-        }
-      }
-      result.setService(null);
-      result.setTranslations(finalText);       
-    }
-    else {
-      result=new TranslationResponse();
-      result.setLang(translRequest.getTarget());
-      result.setTranslations(redisResp);
-    }
-
-    return result;
-  }
   
 }

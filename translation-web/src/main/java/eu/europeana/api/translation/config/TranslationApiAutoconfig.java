@@ -19,13 +19,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.model.RedisCacheTranslation;
+import eu.europeana.api.translation.serialization.JsonRedisSerializer;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
@@ -139,15 +142,22 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
   
   /*
-   * For windows use this link for help: https://www.baeldung.com/spring-data-redis-properties
-   * I.e. install the docker image for Redis (it can be without the password), and put the properties (e.g. spring.redis.host) 
-   * in the translation.(user.)properties file
-   */
-  @Bean
-  public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory connectionFactory) {
-    RedisTemplate<?, ?> template = new RedisTemplate<>();
-    template.setConnectionFactory(connectionFactory);
-    return template;
+   * Help, see connect to a standalone redis server: https://medium.com/turkcell/making-first-connection-to-redis-with-java-application-spring-boot-4fc58e6fa173
+   * A separate connection factory bean is needed here because of the proper initialization, where some methods (e.g. afterPropertiesSet()) are 
+   * called by spring after the bean creation. Otherwise all these methods would need to be called manually which is not the best solution.
+   */  
+  @Bean(BeanNames.BEAN_REDIS_CACHE_LETTUCE_CONNECTION_FACTORY)
+  public LettuceConnectionFactory redisStandAloneConnectionFactory() {
+       return new LettuceConnectionFactory(LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl()));
+  }
+  @Bean(BeanNames.BEAN_REDIS_CACHE_TEMPLATE)
+  public RedisTemplate<String, RedisCacheTranslation> redisTemplateStandAlone(@Qualifier(BeanNames.BEAN_REDIS_CACHE_LETTUCE_CONNECTION_FACTORY)LettuceConnectionFactory redisConnectionFactory) {            
+      RedisTemplate<String, RedisCacheTranslation> redisTemplate = new RedisTemplate<>();
+      redisTemplate.setConnectionFactory(redisConnectionFactory);
+      redisTemplate.setKeySerializer(new StringRedisSerializer());
+      redisTemplate.setValueSerializer(new JsonRedisSerializer());         
+      redisTemplate.afterPropertiesSet();
+      return redisTemplate;
   }
 
   @Override
