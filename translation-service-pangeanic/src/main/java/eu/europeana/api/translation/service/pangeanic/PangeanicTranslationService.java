@@ -22,7 +22,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
 import eu.europeana.api.translation.service.AbstractTranslationService;
-import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.util.LoggingUtils;
@@ -33,7 +32,7 @@ import eu.europeana.api.translation.service.util.LoggingUtils;
  * @author Srishti Singh
  */
 // TODO get api key, for now passed empty
-public class PangeanicTranslationService extends AbstractTranslationService implements TranslationService {
+public class PangeanicTranslationService extends AbstractTranslationService {
 
   private PangeanicLangDetectService langDetectService;
 

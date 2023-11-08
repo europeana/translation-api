@@ -37,6 +37,7 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
    * HttpMessageNotReadableException thrown when the request body is not parsable to the declared input of the handler method
    * @param e the exception indicating the request message parsing error
    * @param httpRequest the request object
+   * @return the api response
    */
   @ExceptionHandler
   public ResponseEntity<EuropeanaApiErrorResponse> handleRequestBodyNotParsableError(HttpMessageNotReadableException e, HttpServletRequest httpRequest) {

@@ -9,7 +9,6 @@ import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
 import eu.europeana.api.translation.service.AbstractTranslationService;
-import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -19,7 +18,7 @@ import eu.europeana.api.translation.service.exception.TranslationException;
  * @author GordeaS
  *
  */
-public class GoogleTranslationService extends AbstractTranslationService implements TranslationService {
+public class GoogleTranslationService extends AbstractTranslationService {
 
   private static final String MIME_TYPE_TEXT = "text/plain";
   private final String googleProjectId;

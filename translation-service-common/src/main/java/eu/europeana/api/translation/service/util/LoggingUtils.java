@@ -8,12 +8,12 @@ package eu.europeana.api.translation.service.util;
 public class LoggingUtils {
 
   //hide default contructor
-  private LoggingUtils() {};
+  private LoggingUtils() {}
   
   /**
    * Sanitize user input to prevent malicious code
-   * @param input
-   * @return
+   * @param input user input
+   * @return input in which newlines are replaces by underscore
    */
   public static String sanitizeUserInput(String input) {
     return input.replaceAll("[\n\r]", "_");

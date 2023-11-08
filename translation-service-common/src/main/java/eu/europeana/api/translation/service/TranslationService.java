@@ -57,7 +57,7 @@ public interface TranslationService {
   /**
    * The external endpoint invoked by the service
    * 
-   * @return
+   * @return the external endpoint
    */
   String getExternalServiceEndPoint();
 
