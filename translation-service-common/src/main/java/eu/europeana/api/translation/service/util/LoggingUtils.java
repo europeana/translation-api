@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.util;
+package eu.europeana.api.translation.service.util;
 
 /**
  * Utilities for logging 

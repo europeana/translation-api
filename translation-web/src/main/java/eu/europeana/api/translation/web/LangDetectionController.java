@@ -49,7 +49,7 @@ public class LangDetectionController extends BaseRest {
   private void validateRequest(LangDetectRequest langDetectRequest)
       throws ParamValidationException {
     // validate mandatory params
-    if (langDetectRequest.getText() == null) {
+    if (langDetectRequest.getText() == null || containsNullValues(langDetectRequest.getText())) {
       throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY,
           ERROR_MANDATORY_PARAM_EMPTY, new String[] {TEXT});
     }

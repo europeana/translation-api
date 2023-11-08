@@ -172,8 +172,8 @@ public class PangeanicTranslationUtils {
 
     /**
      * Returns the translations.
-     * If nonTranslatedDataExists is true then add non-translated values as it is
-     *
+     * SG: outdated documentation from record translations
+     * 
      * LOGIC :
      * if there is a size mismatch then the order the translation according to text sequence is performed.
      * As if multiple language were detected the order of translation result will vary.
@@ -185,37 +185,26 @@ public class PangeanicTranslationUtils {
      *
      * @param texts original values sent for translations
      * @param translateResult
-     * @param nonTranslatedDataExists if language zxx or na was detected
      * @return
      */
-    public static List<String> getResults(List<String> texts, Map<String, String> translateResult, boolean nonTranslatedDataExists) {
+    public static List<String> getResults(List<String> texts, Map<String, String> translateResult) {
         List<String> translations = new ArrayList<>();
-        if (texts.size() != translateResult.size()) {
-            for (String text : texts) {
-                if (translateResult.containsKey(text)) {
-                    translations.add(translateResult.get(text));
-                } else if (nonTranslatedDataExists) {
-                    // add non-translated values as it is. Only if "zxx" or no-lang detected responses were present.
-                    translations.add(text);
-                }
-            }
-        } else {
+//        if (texts.size() != translateResult.size()) {
+//            for (String text : texts) {
+//                if (translateResult.containsKey(text)) {
+//                    translations.add(translateResult.get(text));
+//                } else {
+//                    //if (nonTranslatedDataExists) {
+//                    // add non-translated values as it is. Only if "zxx" or no-lang detected responses were present.
+//                    translations.add(text);
+//                }
+//            }
+//        } else {
             for (Map.Entry<String, String> entry : translateResult.entrySet()) {
                 translations.add(entry.getValue());
             }
-        }
+//        }
         return translations;
-    }
-
-    public static boolean noTranslationRequired(String lang) {
-        return ( lang == null || StringUtils.equals(lang, Language.NO_LINGUISTIC_CONTENT)
-                || StringUtils.equals(lang, Language.ENGLISH));
-    }
-
-    public static boolean nonTranslatedDataExists(List<String> detectedLanguages) {
-        return (detectedLanguages.contains(Language.NO_LINGUISTIC_CONTENT)
-                || detectedLanguages.contains(null)
-                || detectedLanguages.contains(Language.ENGLISH));
     }
 }
 

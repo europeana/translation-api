@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.service.exception;
+package eu.europeana.api.translation.service.exception;
 
 /**
  * Exception that is thrown when there is an error using the translation service

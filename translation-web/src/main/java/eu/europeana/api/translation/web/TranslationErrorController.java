@@ -26,4 +26,5 @@ public class TranslationErrorController extends AbstractErrorController {
     public Map<String, Object> error(final HttpServletRequest request) {
         return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
     }
+    
 }

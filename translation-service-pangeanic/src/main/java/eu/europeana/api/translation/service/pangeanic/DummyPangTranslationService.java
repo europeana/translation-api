@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
  * Dummy implementation preventing invocation of remote pangeanic service
