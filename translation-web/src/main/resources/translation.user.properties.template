@@ -37,3 +37,8 @@ europeana.apikey.serviceurl=
 #translation.dummy.services=false
 
 redis.connection.url=
+
+truststore.path=
+truststore.password=
+
+translation.runtime=application

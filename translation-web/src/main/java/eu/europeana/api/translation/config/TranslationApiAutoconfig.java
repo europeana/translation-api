@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -31,6 +30,7 @@ import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.RedisCacheTranslation;
 import eu.europeana.api.translation.serialization.JsonRedisSerializer;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -47,7 +47,7 @@ import io.lettuce.core.SslOptions;
 
 @Configuration()
 @PropertySource("classpath:translation.properties")
-@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "classpath:translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   @Value("${translation.dummy.services:false}")
@@ -56,12 +56,9 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
-  private ResourceLoader resourceLoader;
 
-
-  public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig, @Autowired ResourceLoader resourceLoader) {
+  public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
-    this.resourceLoader=resourceLoader;
   }
 
   @Bean(BeanNames.BEAN_CLIENT_DETAILS_SERVICE)
@@ -156,32 +153,34 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    */  
   @Bean(BeanNames.BEAN_REDIS_CACHE_LETTUCE_CONNECTION_FACTORY)
   public LettuceConnectionFactory redisStandAloneConnectionFactory() throws IOException {
-    LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder = LettuceClientConfiguration.builder();
-    boolean sslEnabled=true;
-    if (sslEnabled){
-      SslOptions sslOptions = SslOptions.builder()
-          .jdkSslProvider()
-          .truststore(new File("C:\\opt\\app\\config\\myTrustStore.jks"), "truststorepass")
-          .build();
-      
-//      SslOptions sslOptions = SslOptions.builder()
-//          .trustManager(resourceLoader.getResource("file:/opt/app/config/redis-certificate.pem").getFile())
-//          .build();
-
-      ClientOptions clientOptions = ClientOptions
-          .builder()
-          .sslOptions(sslOptions)
-          .build();
-
-      lettuceClientConfigurationBuilder
-          .clientOptions(clientOptions)
-          .useSsl();
+    //in case of integration tests, we do not need the SSL certificate
+    if(TranslationAppConstants.RUNTIME_ENV_TEST.equals(translationConfig.getRuntimeEnv())) {
+      return new LettuceConnectionFactory(LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl()));
     }
-
-    LettuceClientConfiguration lettuceClientConfiguration = lettuceClientConfigurationBuilder.build();
-
-    RedisConfiguration redisConf = LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl());
-    return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
+    else {
+      LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder = LettuceClientConfiguration.builder();
+      boolean sslEnabled=true;
+      if (sslEnabled){
+        SslOptions sslOptions = SslOptions.builder()
+            .jdkSslProvider()
+            .truststore(new File(translationConfig.getTruststorePath()), translationConfig.getTruststorePass())
+            .build();
+  
+        ClientOptions clientOptions = ClientOptions
+            .builder()
+            .sslOptions(sslOptions)
+            .build();
+  
+        lettuceClientConfigurationBuilder
+            .clientOptions(clientOptions)
+            .useSsl();
+      }
+  
+      LettuceClientConfiguration lettuceClientConfiguration = lettuceClientConfigurationBuilder.build();
+  
+      RedisConfiguration redisConf = LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl());
+      return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
+    }
   }
   
   @Bean(BeanNames.BEAN_REDIS_CACHE_TEMPLATE)

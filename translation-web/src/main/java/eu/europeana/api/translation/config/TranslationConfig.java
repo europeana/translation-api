@@ -56,7 +56,16 @@ public class TranslationConfig{
   
   @Value("${redis.connection.url}")
   private String redisConnectionUrl;
-  
+
+  @Value("${truststore.path}")
+  private String truststorePath;
+
+  @Value("${truststore.password}")
+  private String truststorePass;
+
+  @Value("${translation.runtime}")
+  private String runtimeEnv;
+
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
   }
@@ -113,7 +122,6 @@ public class TranslationConfig{
       missingProps.add("europeana.apikey.serviceurl");
     }
 
-
     if (!missingProps.isEmpty()) {
       throw new IllegalStateException(String.format(
           "The following config properties are not set: %s", String.join("\n", missingProps)));
@@ -126,6 +134,18 @@ public class TranslationConfig{
 
   public String getRedisConnectionUrl() {
     return redisConnectionUrl;
+  }
+
+  public String getTruststorePath() {
+    return truststorePath;
+  }
+
+  public String getTruststorePass() {
+    return truststorePass;
+  }
+
+  public String getRuntimeEnv() {
+    return runtimeEnv;
   }
   
 }

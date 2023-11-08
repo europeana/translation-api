@@ -26,6 +26,7 @@ import eu.europeana.api.translation.TranslationApp;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -127,6 +128,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
     registry.add("redis.connection.url", () -> "redis://localhost:" + redisPort + "/");
+    registry.add("translation.runtime", () -> TranslationAppConstants.RUNTIME_ENV_TEST);
   }
 
   /**
