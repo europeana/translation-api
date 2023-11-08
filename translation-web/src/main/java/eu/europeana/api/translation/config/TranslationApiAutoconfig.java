@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -19,6 +20,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.redis.connection.RedisConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -38,6 +42,8 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SslOptions;
 
 @Configuration()
 @PropertySource("classpath:translation.properties")
@@ -50,10 +56,12 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
+  private ResourceLoader resourceLoader;
 
 
-  public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
+  public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig, @Autowired ResourceLoader resourceLoader) {
     this.translationConfig = translationConfig;
+    this.resourceLoader=resourceLoader;
   }
 
   @Bean(BeanNames.BEAN_CLIENT_DETAILS_SERVICE)
@@ -147,9 +155,35 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * called by spring after the bean creation. Otherwise all these methods would need to be called manually which is not the best solution.
    */  
   @Bean(BeanNames.BEAN_REDIS_CACHE_LETTUCE_CONNECTION_FACTORY)
-  public LettuceConnectionFactory redisStandAloneConnectionFactory() {
-       return new LettuceConnectionFactory(LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl()));
+  public LettuceConnectionFactory redisStandAloneConnectionFactory() throws IOException {
+    LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder = LettuceClientConfiguration.builder();
+    boolean sslEnabled=true;
+    if (sslEnabled){
+      SslOptions sslOptions = SslOptions.builder()
+          .jdkSslProvider()
+          .truststore(new File("C:\\opt\\app\\config\\myTrustStore.jks"), "truststorepass")
+          .build();
+      
+//      SslOptions sslOptions = SslOptions.builder()
+//          .trustManager(resourceLoader.getResource("file:/opt/app/config/redis-certificate.pem").getFile())
+//          .build();
+
+      ClientOptions clientOptions = ClientOptions
+          .builder()
+          .sslOptions(sslOptions)
+          .build();
+
+      lettuceClientConfigurationBuilder
+          .clientOptions(clientOptions)
+          .useSsl();
+    }
+
+    LettuceClientConfiguration lettuceClientConfiguration = lettuceClientConfigurationBuilder.build();
+
+    RedisConfiguration redisConf = LettuceConnectionFactory.createRedisConfiguration(translationConfig.getRedisConnectionUrl());
+    return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
   }
+  
   @Bean(BeanNames.BEAN_REDIS_CACHE_TEMPLATE)
   public RedisTemplate<String, RedisCacheTranslation> redisTemplateStandAlone(@Qualifier(BeanNames.BEAN_REDIS_CACHE_LETTUCE_CONNECTION_FACTORY)LettuceConnectionFactory redisConnectionFactory) {            
       RedisTemplate<String, RedisCacheTranslation> redisTemplate = new RedisTemplate<>();
