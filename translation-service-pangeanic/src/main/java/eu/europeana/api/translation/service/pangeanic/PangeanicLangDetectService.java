@@ -19,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {
 

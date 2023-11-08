@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
@@ -104,4 +105,15 @@ public abstract class BaseRest extends BaseRestController {
     }
     return null;
   }
+  
+
+  protected boolean containsNullValues(List<String> texts) {
+    for (String text : texts) {
+      if(text == null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

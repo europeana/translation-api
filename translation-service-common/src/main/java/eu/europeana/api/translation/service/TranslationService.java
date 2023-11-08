@@ -1,7 +1,7 @@
-package eu.europeana.api.translation.definitions.service;
+package eu.europeana.api.translation.service;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
  * Generic translation service interface
@@ -57,7 +57,7 @@ public interface TranslationService {
   /**
    * The external endpoint invoked by the service
    * 
-   * @return
+   * @return the external endpoint
    */
   String getExternalServiceEndPoint();
 

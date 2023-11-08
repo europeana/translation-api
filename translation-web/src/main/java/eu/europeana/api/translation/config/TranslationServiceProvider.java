@@ -18,10 +18,10 @@ import eu.europeana.api.translation.config.services.TranslationMappingCfg;
 import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServicesConfiguration;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
-import eu.europeana.api.translation.definitions.service.LanguageDetectionService;
-import eu.europeana.api.translation.definitions.service.TranslationService;
-import eu.europeana.api.translation.definitions.service.exception.LangDetectionServiceConfigurationException;
-import eu.europeana.api.translation.definitions.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.TranslationService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 /**
  * Class used to read the traslation service configurations, validate them, initialize mapping for

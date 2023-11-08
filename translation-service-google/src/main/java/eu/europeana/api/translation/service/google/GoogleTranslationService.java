@@ -8,8 +8,8 @@ import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
-import eu.europeana.api.translation.definitions.service.TranslationService;
-import eu.europeana.api.translation.definitions.service.exception.TranslationException;
+import eu.europeana.api.translation.service.AbstractTranslationService;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
  * Translation service implementing remote invocation of google language detection service
@@ -18,7 +18,7 @@ import eu.europeana.api.translation.definitions.service.exception.TranslationExc
  * @author GordeaS
  *
  */
-public class GoogleTranslationService implements TranslationService {
+public class GoogleTranslationService extends AbstractTranslationService {
 
   private static final String MIME_TYPE_TEXT = "text/plain";
   private final String googleProjectId;

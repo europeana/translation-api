@@ -21,10 +21,10 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
-import eu.europeana.api.translation.definitions.service.TranslationService;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.definitions.service.exception.TranslationException;
-import eu.europeana.api.translation.definitions.util.LoggingUtils;
+import eu.europeana.api.translation.service.AbstractTranslationService;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.service.util.LoggingUtils;
 
 /**
  * Service to send data to translate to Pangeanic Translate API V2
@@ -32,7 +32,7 @@ import eu.europeana.api.translation.definitions.util.LoggingUtils;
  * @author Srishti Singh
  */
 // TODO get api key, for now passed empty
-public class PangeanicTranslationService implements TranslationService {
+public class PangeanicTranslationService extends AbstractTranslationService {
 
   private PangeanicLangDetectService langDetectService;
 
@@ -112,10 +112,12 @@ public class PangeanicTranslationService implements TranslationService {
         // lang-detection first and later will translated
         return translateWithLangDetect(texts, targetLanguage, sourceLanguage);
       }
+      
+      //regular invocation of external translation service 
       HttpPost post = PangeanicTranslationUtils.createTranslateRequest(getExternalServiceEndPoint(),
           texts, targetLanguage, sourceLanguage, "");
       return PangeanicTranslationUtils.getResults(texts,
-          sendTranslateRequestAndParse(post, sourceLanguage), false);
+          sendTranslateRequestAndParse(post, sourceLanguage));
     } catch (JSONException e) {
       throw new TranslationException("Exception occured during Pangeanic translation!",
           HttpStatus.SC_BAD_GATEWAY, e);
@@ -148,8 +150,7 @@ public class PangeanicTranslationService implements TranslationService {
       List<String> detectedLanguages = detectLanguages(texts, langHint);
       Map<String, String> translations =
           computeTranslations(texts, targetLanguage, detectedLanguages, langHint);
-      return PangeanicTranslationUtils.getResults(texts, translations,
-          PangeanicTranslationUtils.nonTranslatedDataExists(detectedLanguages));
+      return PangeanicTranslationUtils.getResults(texts, translations);
     } catch (JSONException | IOException e) {
       throw new TranslationException("Exception occured during Pangeanic translation!",
           HttpStatus.SC_BAD_GATEWAY, e);
@@ -173,18 +174,9 @@ public class PangeanicTranslationService implements TranslationService {
     }
     
     for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
-      if (PangeanicTranslationUtils.noTranslationRequired(entry.getKey())) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("NOT translating data for lang {} for detected values {} ",
-              LoggingUtils.sanitizeUserInput(entry.getKey()),
-              LoggingUtils.sanitizeUserInput(entry.getValue().toString()));
-        }
-        //TODO translations.put ... original value, this code should be refactored
-      } else {
         HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
             getExternalServiceEndPoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
-        translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));
-      }
+        translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));   
     }
     return translations;
   }

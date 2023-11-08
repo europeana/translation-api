@@ -6,8 +6,8 @@ import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_TRANSL
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
 import com.google.api.gax.rpc.ResourceExhaustedException;
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
-import eu.europeana.api.translation.definitions.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.definitions.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ExternalServiceCallException;
 import eu.europeana.api.translation.web.exception.GoogleResourceExhaustedException;
 
