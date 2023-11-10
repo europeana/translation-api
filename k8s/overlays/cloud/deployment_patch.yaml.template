@@ -35,7 +35,7 @@ spec:
               readOnly: true
               subPath: translation-redis-truststore.jks
       volumes:
-        - name: translation-redis-truststore.jks
+        - name: redis-certificate
           secret:
             secretName: redis-secret        
        
