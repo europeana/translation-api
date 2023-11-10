@@ -194,6 +194,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @ConditionalOnProperty(name = "redis.connection.url")
   public RedisCacheService getRedisCacheService() throws IOException {
     LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
+    redisConnectionFactory.afterPropertiesSet();
     RedisTemplate<String, RedisCacheTranslation> redisTemplate =
         getRedisTemplate(redisConnectionFactory);
 

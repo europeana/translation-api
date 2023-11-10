@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -44,16 +45,32 @@ public class TranslationRestIT extends BaseTranslationTest {
   @Autowired
   RedisCacheService redisCacheService;
   
+  private static RedisServer redisServer = startRedisService();
+  
   @Autowired 
   @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
   GoogleTranslationServiceClientWrapper clientWrapper;
   
   @BeforeAll
-  void mockGoogleTranslate() throws IOException {
+  void startMockServers() throws IOException {
     TranslationServiceClient googleClient = new MockGClient(new MockGServiceStub());
     clientWrapper.setClient(googleClient);
     googleTranslationService.init(clientWrapper);
   }
+
+  static RedisServer startRedisService() {
+    //start redis server
+    RedisServer redisServer = new RedisServer(redisPort);
+    redisServer.start();
+    return redisServer;
+  }
+  
+  @AfterAll void stopRedis() {
+    if(redisServer != null) {
+      redisServer.stop();
+    }
+  }
+  
   
   @Test
   void translationGoogle() throws Exception {
@@ -101,8 +118,6 @@ public class TranslationRestIT extends BaseTranslationTest {
   
   @Test
   void translationWithCaching() throws Exception {
-    RedisServer redisServer = new RedisServer(redisPort);
-    redisServer.start();
 
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_CACHING);
     JSONObject reqJsonObj = new JSONObject(requestJson);
@@ -143,7 +158,6 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertTrue(translations.length()>0);
     
     redisCacheService.deleteAll();
-    redisServer.stop();
   }
 
   @Test
