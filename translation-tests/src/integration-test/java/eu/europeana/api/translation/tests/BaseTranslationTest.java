@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import eu.europeana.api.translation.TranslationApp;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
-import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import okhttp3.mockwebserver.Dispatcher;
@@ -128,7 +127,6 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
     registry.add("redis.connection.url", () -> "redis://localhost:" + redisPort + "/");
-    registry.add("translation.runtime", () -> TranslationAppConstants.RUNTIME_ENV_TEST);
   }
 
   /**
