@@ -54,17 +54,14 @@ public class TranslationConfig{
   @Value("${translation.google.usehttpclient: false}")
   private boolean useGoogleHttpClient;
   
-  @Value("${redis.connection.url}")
+  @Value("${redis.connection.url:}")
   private String redisConnectionUrl;
 
-  @Value("${truststore.path}")
+  @Value("${truststore.path:}")
   private String truststorePath;
 
-  @Value("${truststore.password}")
+  @Value("${truststore.password:}")
   private String truststorePass;
-
-  @Value("${translation.runtime}")
-  private String runtimeEnv;
 
   public TranslationConfig() {
     LOG.info("Initializing TranslConfigProperties bean.");
@@ -142,10 +139,6 @@ public class TranslationConfig{
 
   public String getTruststorePass() {
     return truststorePass;
-  }
-
-  public String getRuntimeEnv() {
-    return runtimeEnv;
   }
   
 }

@@ -15,7 +15,8 @@ public class TranslationRequest {
   private String service;
   private String fallback;
   private List<String> text;
-  private Boolean caching;
+  //caching enabled by default
+  private Boolean caching = Boolean.TRUE;
 
   public TranslationRequest() {
     super();
@@ -67,12 +68,7 @@ public class TranslationRequest {
   }
 
   public boolean useCaching() {
-    if(caching==null || caching.booleanValue()) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return caching;
   }
   
   public Boolean getCaching() {

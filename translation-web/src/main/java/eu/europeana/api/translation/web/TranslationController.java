@@ -39,7 +39,7 @@ public class TranslationController extends BaseRest {
     verifyWriteAccess(Operations.CREATE, request);
 
     validateRequest(translRequest);
-    
+        
     TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);

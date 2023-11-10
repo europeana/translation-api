@@ -26,13 +26,14 @@ public class TranslationWebService extends BaseWebService {
   @Autowired
   private TranslationServiceProvider translationServiceProvider;
   
-  @Autowired
+  @Autowired(required = false)
   private RedisCacheService redisCacheService;
   
   private final Logger logger = LogManager.getLogger(getClass());
 
   public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
-    if(translationRequest.useCaching()) {
+    if(translationRequest.useCaching() && isCachingEnabled()) {
+      //only if the request requires caching and the caching service is enabled
       return getCombinedCachedAndTranslatedResults(translationRequest);
     }
     else {
@@ -40,6 +41,10 @@ public class TranslationWebService extends BaseWebService {
     }
   }
   
+  private boolean isCachingEnabled() {
+    return redisCacheService != null;
+  }
+
   private TranslationResponse getTranslatedResults(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());

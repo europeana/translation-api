@@ -5,6 +5,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.mongo.MongoMetrics
 import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
@@ -24,7 +25,9 @@ import org.springframework.boot.autoconfigure.web.embedded.EmbeddedWebServerFact
     MongoMetricsAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class,
     SolrAutoConfiguration.class,
     // DataSources are manually configured (for EM and batch DBs)
-    DataSourceAutoConfiguration.class})
+    DataSourceAutoConfiguration.class,
+    //redis configured by application to allow disabling it
+    RedisAutoConfiguration.class})
 public class TranslationApp{
 
   /**

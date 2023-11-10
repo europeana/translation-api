@@ -29,3 +29,13 @@ spec:
             limits:
               memory: "${MEMORY_LIMIT}M"
               cpu: "${CPU_LIMIT}m"
+          volumeMounts:
+            - name: redis-certificate
+              mountPath: "/opt/app/config/translation-redis-truststore.jks"
+              readOnly: true
+              subPath: translation-redis-truststore.jks
+      volumes:
+        - name: translation-redis-truststore.jks
+          secret:
+            secretName: redis-secret        
+       

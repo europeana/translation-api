@@ -9,3 +9,10 @@ patchesStrategicMerge:
 
 commonLabels:
   app: translation-api
+  
+  
+# expects files to be in the same directory
+secretGenerator:
+  - name: redis-secret
+    files:
+      - translation-redis-truststore.jks

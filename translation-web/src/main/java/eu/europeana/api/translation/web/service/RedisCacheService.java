@@ -5,20 +5,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.model.RedisCacheTranslation;
 
-@Service
 public class RedisCacheService {
 
-  @Autowired
-  @Qualifier(BeanNames.BEAN_REDIS_CACHE_TEMPLATE)
-  private RedisTemplate<String, RedisCacheTranslation> redisTemplate;
+  private final RedisTemplate<String, RedisCacheTranslation> redisTemplate;
+  
+  
+  public RedisCacheService(RedisTemplate<String, RedisCacheTranslation> redisTemplate) {
+    this.redisTemplate = redisTemplate;
+  }
   
   /**
    * Returns a list of Objects (strings) that exist in the cache. If no cache is found for the given key,
