@@ -39,8 +39,7 @@ public class TranslationWebService extends BaseWebService {
     if(translationRequest.useCaching() && isCachingEnabled()) {
       //only if the request requires caching and the caching service is enabled
       return getCombinedCachedAndTranslatedResults(translationRequest);
-    }
-    else {
+    } else {
       return getTranslatedResults(translationRequest);
     }
   }
