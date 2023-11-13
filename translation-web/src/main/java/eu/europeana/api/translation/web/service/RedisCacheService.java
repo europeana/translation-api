@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,10 @@ public class RedisCacheService {
 
   private final RedisTemplate<String, RedisCacheTranslation> redisTemplate;
   
-  
+  /**
+   * Service for remote invocation of redis caching system
+   * @param redisTemplate the template for communicating with redis system
+   */
   public RedisCacheService(RedisTemplate<String, RedisCacheTranslation> redisTemplate) {
     this.redisTemplate = redisTemplate;
   }
@@ -21,13 +23,13 @@ public class RedisCacheService {
   /**
    * Returns a list of Objects (strings) that exist in the cache. If no cache is found for the given key,
    * the corresponding element in the return list will be null.
-   * @param sourceLang
-   * @param targetLang
-   * @param texts
-   * @return
+   * @param sourceLang the language of the input texts
+   * @param targetLang the language of the translations
+   * @param texts original texts for which the translation is required
+   * @return the translation of the input text in the targetLanguage
    */
-  public List<String> getRedisCache(String sourceLang, String targetLang, List<String> texts) {
-    Collection<String> keys = new ArrayList<>();
+  public List<String> getCachedTranslations(String sourceLang, String targetLang, List<String> texts) {
+    List<String> keys = new ArrayList<>();
     texts.stream().forEach(text -> {
       keys.add(generateRedisKey(text, sourceLang, targetLang));
     });
@@ -45,6 +47,13 @@ public class RedisCacheService {
     return resp;
   }
   
+  /**
+   * This method saves the provided translations corresponding to the input texts into the redis cache 
+   * @param sourceLang language of the inputText
+   * @param targetLang the language of the translation
+   * @param inputText the original text that was translated
+   * @param translations the translations of the input text in the targetLang
+   */
   public void saveRedisCache(String sourceLang, String targetLang, List<String> inputText, List<String> translations) {
     Map<String, RedisCacheTranslation> valueMap = new HashMap<>(inputText.size());
     for(int i=0;i<inputText.size();i++) {
@@ -58,6 +67,9 @@ public class RedisCacheService {
     redisTemplate.opsForValue().multiSet(valueMap);
   }
   
+  /**
+   * evict redis cache
+   */
   public void deleteAll() {
     RedisConnectionFactory connFact=redisTemplate.getConnectionFactory();
     if(connFact!=null) {
@@ -65,6 +77,13 @@ public class RedisCacheService {
     }
   }
   
+  /**
+   * generate redis keys
+   * @param inputText the original text
+   * @param sourceLang language of the original text
+   * @param targetLang language of the translation
+   * @return generated redis key 
+   */
   private String generateRedisKey(String inputText, String sourceLang, String targetLang) {
     String key=inputText + sourceLang + targetLang;
     return String.valueOf(key.hashCode());

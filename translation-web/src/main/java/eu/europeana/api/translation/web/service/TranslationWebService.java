@@ -88,7 +88,7 @@ public class TranslationWebService extends BaseWebService {
   
   private TranslationResponse getCombinedCachedAndTranslatedResults(TranslationRequest translRequest) throws EuropeanaI18nApiException {
     TranslationResponse result=null;
-    List<String> redisResp = redisCacheService.getRedisCache(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
+    List<String> redisResp = redisCacheService.getCachedTranslations(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
     if(Collections.frequency(redisResp, null)>0) {
       
       TranslationRequest newTranslReq = new TranslationRequest();

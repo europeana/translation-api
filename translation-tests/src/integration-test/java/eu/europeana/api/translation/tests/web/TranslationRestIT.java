@@ -138,7 +138,7 @@ public class TranslationRestIT extends BaseTranslationTest {
         .andExpect(status().isOk());
     
     //check that there are data in the cache
-    List<String> redisContent = redisCacheService.getRedisCache(sourceLang, targetLang, inputTextsList);
+    List<String> redisContent = redisCacheService.getCachedTranslations(sourceLang, targetLang, inputTextsList);
     assertTrue(redisContent.size()==2 && Collections.frequency(redisContent, null)==0);
     
     String cachedResult = mockMvc
