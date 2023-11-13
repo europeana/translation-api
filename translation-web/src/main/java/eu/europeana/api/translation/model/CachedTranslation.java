@@ -1,6 +1,11 @@
 package eu.europeana.api.translation.model;
 
-public class RedisCacheTranslation {
+/**
+ * object model for the cached translations 
+ * @author GordeaS
+ *
+ */
+public class CachedTranslation {
   private String original;
   private String translation;
   public String getOriginal() {

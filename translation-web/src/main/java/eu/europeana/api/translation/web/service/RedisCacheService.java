@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import eu.europeana.api.translation.model.RedisCacheTranslation;
+import eu.europeana.api.translation.model.CachedTranslation;
 
 public class RedisCacheService {
 
-  private final RedisTemplate<String, RedisCacheTranslation> redisTemplate;
+  private final RedisTemplate<String, CachedTranslation> redisTemplate;
   
   /**
    * Service for remote invocation of redis caching system
    * @param redisTemplate the template for communicating with redis system
    */
-  public RedisCacheService(RedisTemplate<String, RedisCacheTranslation> redisTemplate) {
+  public RedisCacheService(RedisTemplate<String, CachedTranslation> redisTemplate) {
     this.redisTemplate = redisTemplate;
   }
   
@@ -30,13 +30,13 @@ public class RedisCacheService {
    */
   public List<String> getCachedTranslations(String sourceLang, String targetLang, List<String> texts) {
     List<String> keys = new ArrayList<>();
-    texts.stream().forEach(text -> {
+    for(String text : texts){ 
       keys.add(generateRedisKey(text, sourceLang, targetLang));
-    });
+    }
             
-    List<RedisCacheTranslation> redisResponse = redisTemplate.opsForValue().multiGet(keys);
-    List<String> resp = new ArrayList<String>();
-    for(RedisCacheTranslation respElem : redisResponse) {
+    List<CachedTranslation> redisResponse = redisTemplate.opsForValue().multiGet(keys);
+    List<String> resp = new ArrayList<>();
+    for(CachedTranslation respElem : redisResponse) {
       if(respElem!=null) {
         resp.add(respElem.getTranslation());
       }
@@ -55,10 +55,10 @@ public class RedisCacheService {
    * @param translations the translations of the input text in the targetLang
    */
   public void saveRedisCache(String sourceLang, String targetLang, List<String> inputText, List<String> translations) {
-    Map<String, RedisCacheTranslation> valueMap = new HashMap<>(inputText.size());
+    Map<String, CachedTranslation> valueMap = new HashMap<>(inputText.size());
     for(int i=0;i<inputText.size();i++) {
       String key = generateRedisKey(inputText.get(i), sourceLang, targetLang);
-      RedisCacheTranslation value = new RedisCacheTranslation();
+      CachedTranslation value = new CachedTranslation();
       value.setOriginal(inputText.get(i));
       value.setTranslation(translations.get(i));
       valueMap.put(key, value);

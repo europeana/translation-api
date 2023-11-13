@@ -8,6 +8,11 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * The representation of translation request body 
+ * @author GordeaS
+ *
+ */
 public class TranslationRequest {
 
   private String source;
@@ -67,6 +72,10 @@ public class TranslationRequest {
     this.text = text;
   }
 
+  /**
+   * Utility method indicating if the caching service should be used for this request 
+   * @return true if request should be served with the caching service, caching is true by default
+   */
   public boolean useCaching() {
     return caching;
   }

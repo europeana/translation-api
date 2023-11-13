@@ -24,13 +24,17 @@ import eu.europeana.api.translation.web.exception.ParamValidationException;
 public class TranslationWebService extends BaseWebService {
 
   @Autowired
-  private TranslationServiceProvider translationServiceProvider;
+  private final TranslationServiceProvider translationServiceProvider;
   
-  @Autowired(required = false)
   private RedisCacheService redisCacheService;
   
   private final Logger logger = LogManager.getLogger(getClass());
 
+  @Autowired
+  public TranslationWebService(TranslationServiceProvider translationServiceProvider) {
+   this.translationServiceProvider = translationServiceProvider;
+  }
+  
   public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
     if(translationRequest.useCaching() && isCachingEnabled()) {
       //only if the request requires caching and the caching service is enabled
@@ -42,7 +46,7 @@ public class TranslationWebService extends BaseWebService {
   }
   
   private boolean isCachingEnabled() {
-    return redisCacheService != null;
+    return getRedisCacheService() != null;
   }
 
   private TranslationResponse getTranslatedResults(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
@@ -88,7 +92,7 @@ public class TranslationWebService extends BaseWebService {
   
   private TranslationResponse getCombinedCachedAndTranslatedResults(TranslationRequest translRequest) throws EuropeanaI18nApiException {
     TranslationResponse result=null;
-    List<String> redisResp = redisCacheService.getCachedTranslations(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
+    List<String> redisResp = getRedisCacheService().getCachedTranslations(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
     if(Collections.frequency(redisResp, null)>0) {
       
       TranslationRequest newTranslReq = new TranslationRequest();
@@ -97,9 +101,9 @@ public class TranslationWebService extends BaseWebService {
       newTranslReq.setService(translRequest.getService());
       newTranslReq.setFallback(translRequest.getFallback());
       newTranslReq.setCaching(translRequest.getCaching());
-      newTranslReq.setText(new ArrayList<String>(translRequest.getText()));
+      newTranslReq.setText(new ArrayList<>(translRequest.getText()));
 
-      List<String> newText = new ArrayList<String>();
+      List<String> newText = new ArrayList<>();
       int counter=0;
       for(String redisRespElem : redisResp) {
         if(redisRespElem==null) {
@@ -111,10 +115,10 @@ public class TranslationWebService extends BaseWebService {
       result = getTranslatedResults(newTranslReq);
       
       //save the translations to the cache
-      redisCacheService.saveRedisCache(newTranslReq.getSource(), newTranslReq.getTarget(), newTranslReq.getText(), result.getTranslations());
+      getRedisCacheService().saveRedisCache(newTranslReq.getSource(), newTranslReq.getTarget(), newTranslReq.getText(), result.getTranslations());
       
       //aggregate the redis and translation responses
-      List<String> finalText=new ArrayList<String>(redisResp);
+      List<String> finalText=new ArrayList<>(redisResp);
       int counterTranslated = 0;
       for(int i=0;i<finalText.size();i++) {
         if(finalText.get(i)==null) {
@@ -226,5 +230,14 @@ public class TranslationWebService extends BaseWebService {
         .values()) {
       service.close();
     }
+  }
+
+  public RedisCacheService getRedisCacheService() {
+    return redisCacheService;
+  }
+
+  @Autowired(required = false)
+  public void setRedisCacheService(RedisCacheService redisCacheService) {
+    this.redisCacheService = redisCacheService;
   }
 }
