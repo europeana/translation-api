@@ -8,6 +8,11 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
+/**
+ * The representation of translation request body 
+ * @author GordeaS
+ *
+ */
 public class TranslationRequest {
 
   private String source;
@@ -15,6 +20,8 @@ public class TranslationRequest {
   private String service;
   private String fallback;
   private List<String> text;
+  //caching enabled by default
+  private Boolean caching = Boolean.TRUE;
 
   public TranslationRequest() {
     super();
@@ -63,6 +70,23 @@ public class TranslationRequest {
   @JsonSetter(TranslationAppConstants.TEXT)
   public void setText(List<String> text) {
     this.text = text;
+  }
+
+  /**
+   * Utility method indicating if the caching service should be used for this request 
+   * @return true if request should be served with the caching service, caching is true by default
+   */
+  public boolean useCaching() {
+    return caching;
+  }
+  
+  public Boolean getCaching() {
+    return caching;
+  }
+
+  @JsonSetter(TranslationAppConstants.CACHING)
+  public void setCaching(boolean caching) {
+    this.caching = caching;
   }
 
 }

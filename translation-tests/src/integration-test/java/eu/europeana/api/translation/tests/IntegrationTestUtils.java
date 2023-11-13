@@ -33,6 +33,7 @@ public abstract class IntegrationTestUtils {
   public static final String TRANSLATION_PANGEANIC_REQUEST_2 = "/content/pangeanic/translate/translate_pangeanic_request_2.json";
   public static final String TRANSLATION_PANGEANIC_RESPONSE_2 = "/content/pangeanic/translate/translate_pangeanic_response_2.json";
   
+  public static final String TRANSLATION_REQUEST_CACHING = "/content/translation_request_caching.json";
   
   public static final String TRANSLATION_WITH_FALLBACK = "/content/translation_with_fallback.json";
   public static final String TRANSLATION_BAD_REQUEST_1 = "/content/translation_bad_request_1.json";

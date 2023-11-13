@@ -1,8 +1,10 @@
 package eu.europeana.api.translation.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -19,9 +22,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.redis.connection.RedisConfiguration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.model.CachedTranslation;
+import eu.europeana.api.translation.serialization.JsonRedisSerializer;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -33,6 +44,9 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.web.service.RedisCacheService;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SslOptions;
 
 @Configuration()
 @PropertySource("classpath:translation.properties")
@@ -45,7 +59,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
-
 
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
@@ -136,6 +149,61 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return this.translationServiceConfigProvider;
   }
 
+  /*
+   * Help, see connect to a standalone redis server:
+   * https://medium.com/turkcell/making-first-connection-to-redis-with-java-application-spring-boot-
+   * 4fc58e6fa173 A separate connection factory bean is needed here because of the proper
+   * initialization, where some methods (e.g. afterPropertiesSet()) are called by spring after the
+   * bean creation. Otherwise all these methods would need to be called manually which is not the
+   * best solution.
+   */
+  private LettuceConnectionFactory getRedisConnectionFactory() {
+    // in case of integration tests, we do not need the SSL certificate
+    LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
+        LettuceClientConfiguration.builder();
+    // if redis secure protocol is used (rediss vs. redis)
+    boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
+    if (sslEnabled) {
+      final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
+      SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
+          .truststore(truststore,
+              translationConfig.getTruststorePass())
+          .build();
+
+      ClientOptions clientOptions = ClientOptions.builder().sslOptions(sslOptions).build();
+
+      lettuceClientConfigurationBuilder.clientOptions(clientOptions).useSsl();
+    }
+
+    LettuceClientConfiguration lettuceClientConfiguration =
+        lettuceClientConfigurationBuilder.build();
+
+    RedisConfiguration redisConf = LettuceConnectionFactory
+        .createRedisConfiguration(translationConfig.getRedisConnectionUrl());
+    return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
+  }
+
+  private RedisTemplate<String, CachedTranslation> getRedisTemplate(
+      RedisConnectionFactory redisConnectionFactory) {
+    RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(redisConnectionFactory);
+    redisTemplate.setKeySerializer(new StringRedisSerializer());
+    redisTemplate.setValueSerializer(new JsonRedisSerializer());
+    redisTemplate.afterPropertiesSet();
+    return redisTemplate;
+  }
+
+  @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
+  @ConditionalOnProperty(name = "redis.connection.url")
+  public RedisCacheService getRedisCacheService() {
+    LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
+    redisConnectionFactory.afterPropertiesSet();
+    RedisTemplate<String, CachedTranslation> redisTemplate =
+        getRedisTemplate(redisConnectionFactory);
+
+    return new RedisCacheService(redisTemplate);
+  }
+
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
     // log beans for debuging purposes
@@ -166,9 +234,12 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   /**
    * Method for initialization of service provider using the service configurations
-   * @param ctx the application context holding the initialized beans 
-   * @throws TranslationServiceConfigurationException if translations services cannot be correctly instantiated
-   * @throws LangDetectionServiceConfigurationException if language detection services cannot be correctly instantiated
+   * 
+   * @param ctx the application context holding the initialized beans
+   * @throws TranslationServiceConfigurationException if translations services cannot be correctly
+   *         instantiated
+   * @throws LangDetectionServiceConfigurationException if language detection services cannot be
+   *         correctly instantiated
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
@@ -179,6 +250,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   /**
    * Method to verify required properties in translation config
+   * 
    * @param ctx the application context holding references to instantiated beans
    */
   public void verifyMandatoryProperties(ApplicationContext ctx) {

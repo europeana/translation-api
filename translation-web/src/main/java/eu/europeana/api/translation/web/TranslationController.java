@@ -39,7 +39,7 @@ public class TranslationController extends BaseRest {
     verifyWriteAccess(Operations.CREATE, request);
 
     validateRequest(translRequest);
-
+        
     TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);
@@ -63,5 +63,6 @@ public class TranslationController extends BaseRest {
       throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
     }
   }
-
+  
+  
 }

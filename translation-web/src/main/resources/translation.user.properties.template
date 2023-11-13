@@ -35,3 +35,10 @@ europeana.apikey.serviceurl=
 
 # For using dummy services
 #translation.dummy.services=false
+
+redis.connection.url=
+
+truststore.path=
+truststore.password=
+
+translation.runtime=application

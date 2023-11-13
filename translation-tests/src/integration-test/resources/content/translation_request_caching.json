@@ -7,5 +7,5 @@
     "eine zweite Textzeile auf Deutsch"
   ],
   "service": "PANGEANIC",
-  "caching": false
+  "caching": true
 }

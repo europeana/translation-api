@@ -38,6 +38,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   protected MockMvc mockMvc;
+  protected final static int redisPort=6370;
   protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
   
   @Autowired
@@ -92,7 +93,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
       this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
     }
   }
-
+  
   @AfterAll
   private void stopServices() {
     //cannot stop the mock server here as all test classes are run by the same runner and the server is static variable
@@ -125,6 +126,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
+    registry.add("redis.connection.url", () -> "redis://localhost:" + redisPort + "/");
   }
 
   /**
