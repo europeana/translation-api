@@ -117,16 +117,6 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
   }
 
-  @Deprecated
-  /**
-   * Use the method translate(List<TranslationObj> translationObjs).
-   */
-  @Override
-  public List<String> translate(List<String> texts, String targetLanguage)
-      throws TranslationException {
-    return translate(texts, targetLanguage, null);
-  }
-
   private void computeTranslations(List<TranslationObj> translationObjs) throws JSONException, TranslationException {
     List<String> analyzedLangs = new ArrayList<String>();
     for(int i=0;i<translationObjs.size();i++) {
@@ -281,13 +271,6 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   @Override
   public void setServiceId(String serviceId) {
     this.serviceId = serviceId;
-  }
-
-
-  @Override
-  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage)
-      throws TranslationException {
-    return null;
   }
 
 }

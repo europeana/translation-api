@@ -41,11 +41,6 @@ public class CachedTranslationService extends AbstractTranslationService {
   }
   
   @Override
-  public List<String> translate(List<String> texts, String targetLanguage) throws TranslationException {
-    return null;
-  }
-  
-  @Override
   public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {
     //first detect languages for the texts that do not have it using the pangeanic lang detect
     translationServicePangeanic.detectLanguages(translationObjs);
@@ -60,11 +55,6 @@ public class CachedTranslationService extends AbstractTranslationService {
     translationService.translate(translationObjs, false);
     //and save those that do not exist in cache to the cache
     redisCacheService.saveRedisCache(translationObjs);
-  }
-
-  @Override
-  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage) throws TranslationException {
-    return null;
   }
 
   @Override

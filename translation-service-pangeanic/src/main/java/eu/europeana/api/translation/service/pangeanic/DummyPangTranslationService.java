@@ -17,18 +17,6 @@ public class DummyPangTranslationService extends PangeanicTranslationService{
   public DummyPangTranslationService() {
     super(null, null);
   }
-
-  @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage)
-      throws TranslationException {
-    return translate(text, null);
-  }
-  
-  @Override
-  public List<String> translate(List<String> text, String targetLanguage)
-      throws TranslationException {
-    return text;
-  }
   
   @Override
   public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {

@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.service.google;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,16 +42,6 @@ public class GoogleTranslationService extends AbstractTranslationService {
   public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
     this.clientWrapper = clientWrapper;
     this.locationName = LocationName.of(getGoogleProjectId(), "global");
-  }
-
-  @Deprecated
-  /**
-   * Use the method translate(List<TranslationObj> translationObjs).
-   */
-  @Override
-  public List<String> translate(List<String> text, String targetLanguage)
-      throws TranslationException {
-    return translate(text, targetLanguage, null);
   }
 
   @Override
@@ -103,37 +92,6 @@ public class GoogleTranslationService extends AbstractTranslationService {
       throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
     } 
     
-  }
-
-  @Deprecated
-  /**
-   * Use the method translate(List<TranslationObj> translationObjs).
-   */
-  @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) throws TranslationException {
-    try {
-      List<String> result = new ArrayList<>();
-      if(text.isEmpty()) {
-        return result;
-      }
-      
-      Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
-          .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
-      if (sourceLanguage != null) {
-        requestBuilder.setSourceLanguageCode(sourceLanguage);
-      }
-      TranslateTextRequest request = requestBuilder.build();
-  
-      TranslateTextResponse response = this.clientWrapper.getClient().translateText(request);
-
-      for (Translation t : response.getTranslationsList()) {
-        result.add(t.getTranslatedText());
-      }
-      return result;
-    } catch (ApiException ex) {
-      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
-      throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
-    } 
   }
 
   @Override
