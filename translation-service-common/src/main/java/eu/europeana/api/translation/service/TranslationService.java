@@ -46,7 +46,7 @@ public interface TranslationService {
    */
   void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException;
   
-  void detectLanguages(List<TranslationObj> translationObjs, List<Integer> validIndexes) throws TranslationException;
+  void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException;
   
   @Deprecated
   /**

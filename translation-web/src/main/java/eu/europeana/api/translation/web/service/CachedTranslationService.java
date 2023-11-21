@@ -2,7 +2,6 @@ package eu.europeana.api.translation.web.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.TranslationService;
@@ -49,18 +48,11 @@ public class CachedTranslationService extends AbstractTranslationService {
   @Override
   public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {
     //first detect languages for the texts that do not have it using the pangeanic lang detect
-    List<Integer> indexesWithoutSourceLang = IntStream.range(0, translationObjs.size())
-        .filter(i -> translationObjs.get(i).getSourceLang()==null)
-        .boxed()
-        .collect(Collectors.toList());
-    if(!indexesWithoutSourceLang.isEmpty()) {
-      translationServicePangeanic.detectLanguages(translationObjs, indexesWithoutSourceLang);
-    }
-    
+    translationServicePangeanic.detectLanguages(translationObjs);
     //then check if the translations exist in cache
     redisCacheService.getCachedTranslations(translationObjs);
     boolean anyCachedTransl = translationObjs.stream().filter(el -> el.getIsCached()).collect(Collectors.toList()).size()>0;
-    //if there is any translation in the cache set the serviceId to null, because we do not know which service translated
+    //if there is any translation in the cache set the serviceId to null, because we do not know which service translated that
     if(anyCachedTransl) {
       setServiceId(null);
     }
@@ -85,7 +77,7 @@ public class CachedTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void detectLanguages(List<TranslationObj> translationObjs, List<Integer> validIndexes)
+  public void detectLanguages(List<TranslationObj> translationObjs)
       throws TranslationException {
   }
 

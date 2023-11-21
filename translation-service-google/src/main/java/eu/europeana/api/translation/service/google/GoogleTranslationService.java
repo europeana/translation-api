@@ -166,7 +166,7 @@ public class GoogleTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void detectLanguages(List<TranslationObj> translationObjs, List<Integer> validIndexes)
+  public void detectLanguages(List<TranslationObj> translationObjs)
       throws TranslationException {
   }
 }
