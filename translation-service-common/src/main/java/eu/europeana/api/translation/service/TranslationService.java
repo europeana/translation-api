@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -26,7 +27,9 @@ public interface TranslationService {
    */
   boolean isSupported(String srcLang, String trgLang);
 
+  @Deprecated
   /**
+   * Use the method translate(List<TranslationObj> translationObjs).
    * Translate multiple texts
    * 
    * @param texts to translate
@@ -37,7 +40,18 @@ public interface TranslationService {
   List<String> translate(List<String> texts, String targetLanguage) throws TranslationException;
 
   /**
-   * Translate multiple texts
+   * Translates a list of texts from a list of TranslationObj and saves the results back to the objects.
+   * @param translationObjs
+   * @throws TranslationException
+   */
+  void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException;
+  
+  void detectLanguages(List<TranslationObj> translationObjs, List<Integer> validIndexes) throws TranslationException;
+  
+  @Deprecated
+  /**
+   * Use the method translate(List<TranslationObj> translationObjs).
+   * Translate multiple texts.
    * 
    * @param texts to translate
    * @param targetLanguage language into which the texts are translated

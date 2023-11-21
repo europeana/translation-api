@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -25,6 +26,7 @@ import org.springframework.http.MediaType;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
@@ -122,12 +124,17 @@ public class TranslationRestIT extends BaseTranslationTest {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_CACHING);
     JSONObject reqJsonObj = new JSONObject(requestJson);
     JSONArray inputTexts = (JSONArray) reqJsonObj.get(TranslationAppConstants.TEXT);
-    List<String> inputTextsList = new ArrayList<String>();
-    for(int i=0;i<inputTexts.length();i++) {
-      inputTextsList.add((String) inputTexts.get(i));
-    }    
     String sourceLang=reqJsonObj.getString(TranslationAppConstants.SOURCE_LANG);
     String targetLang=reqJsonObj.getString(TranslationAppConstants.TARGET_LANG);
+
+    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
+    for(int i=0;i<inputTexts.length();i++) {
+      TranslationObj newTranslObj = new TranslationObj();
+      newTranslObj.setSourceLang(sourceLang);
+      newTranslObj.setTargetLang(targetLang);
+      newTranslObj.setText((String) inputTexts.get(i));
+      translObjs.add(newTranslObj);
+    }    
     
     mockMvc
         .perform(
@@ -138,8 +145,8 @@ public class TranslationRestIT extends BaseTranslationTest {
         .andExpect(status().isOk());
     
     //check that there are data in the cache
-    List<String> redisContent = redisCacheService.getCachedTranslations(sourceLang, targetLang, inputTextsList);
-    assertTrue(redisContent.size()==2 && Collections.frequency(redisContent, null)==0);
+    redisCacheService.getCachedTranslations(translObjs);
+    assertTrue(translObjs.stream().filter(el -> el.getIsCached()).collect(Collectors.toList()).size()==2);
     
     String cachedResult = mockMvc
         .perform(

@@ -2,8 +2,8 @@ package eu.europeana.api.translation.web.service;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +13,7 @@ import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.model.TranslationRequest;
 import eu.europeana.api.translation.model.TranslationResponse;
@@ -36,107 +37,75 @@ public class TranslationWebService extends BaseWebService {
   }
   
   public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
-    if(translationRequest.useCaching() && isCachingEnabled()) {
-      //only if the request requires caching and the caching service is enabled
-      return getCombinedCachedAndTranslatedResults(translationRequest);
-    } else {
-      return getTranslatedResults(translationRequest);
+    //create a list of objects to be translated
+    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
+    for(String inputText : translationRequest.getText()) {
+      TranslationObj newTranslObj = new TranslationObj();
+      newTranslObj.setSourceLang(translationRequest.getSource());
+      newTranslObj.setTargetLang(translationRequest.getTarget());
+      newTranslObj.setText(inputText);
+      translObjs.add(newTranslObj);
     }
+    
+    //get the configured translation services
+    LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
+    TranslationService translationService = selectTranslationService(translationRequest, languagePair);
+    TranslationService fallback = null;
+    if (translationRequest.getFallback() != null) {
+      fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
+    }
+    TranslationService translationServicePangeanic = getTranslationService("PANGEANIC", languagePair);
+
+    //create the architecture with/without caching services
+    List<TranslationService> translServicesToCall = new ArrayList<TranslationService>();
+    if(translationRequest.useCaching() && isCachingEnabled()) {
+      CachedTranslationService cachedTranslServ1 = new CachedTranslationService(redisCacheService, translationService, translationServicePangeanic);
+      translServicesToCall.add(cachedTranslServ1);
+      if(fallback!=null) {
+        CachedTranslationService cachedTranslServ2 = new CachedTranslationService(redisCacheService, fallback, translationServicePangeanic);
+        translServicesToCall.add(cachedTranslServ2);
+      }
+    } else {
+      translServicesToCall.add(translationService);
+      if(fallback!=null) {
+        translServicesToCall.add(fallback);
+      }
+    }
+    
+    //calling the translation services and creating the results
+    TranslationException translError=null;
+    String serviceId=null;
+    for(TranslationService translServ : translServicesToCall) {
+      try {
+        translServ.translate(translObjs, true);
+        //call this method after the translate() method, because the serviceId changes depending if there is sth in the cache
+        serviceId = translServ.getServiceId();
+        break;
+      }
+      catch (TranslationException ex) {
+        if(translError==null) {
+          translError=ex;
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("Error when calling translation service: " + serviceId, ex);
+        }
+      }
+    }
+    if(translError!=null) {
+      throwApiException(translError);
+    }
+    
+    TranslationResponse result = new TranslationResponse();
+    result.setTranslations(translObjs.stream().map(el -> el.getTranslation()).collect(Collectors.toList()));
+    result.setLang(translationRequest.getTarget());
+    result.setService(serviceId);
+    return result;
+
   }
   
   private boolean isCachingEnabled() {
     return getRedisCacheService() != null;
   }
-
-  private TranslationResponse getTranslatedResults(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
-    LanguagePair languagePair =
-        new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
-    TranslationService translationService =
-        selectTranslationService(translationRequest, languagePair);
-    TranslationService fallback = null;
-    if (translationRequest.getFallback() != null) {
-      fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
-    }
-
-    List<String> translations = null;
-    String serviceId = null;
-    try {
-      translations = translationService.translate(translationRequest.getText(),
-          translationRequest.getTarget(), translationRequest.getSource());
-      serviceId = translationService.getServiceId();
-    } catch (TranslationException originalError) {
-      // call the fallback service in case of failed translation
-      if (fallback == null) {
-        throwApiException(originalError);
-      } else {
-        try {
-          translations = fallback.translate(translationRequest.getText(),
-              translationRequest.getTarget(), translationRequest.getSource());
-          serviceId = fallback.getServiceId();
-        } catch (TranslationException e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Error when calling default service. ", e);
-          }
-          // return original exception
-          throwApiException(originalError);
-        }
-      }
-    }
-    TranslationResponse result = new TranslationResponse();
-    result.setTranslations(translations);
-    result.setLang(translationRequest.getTarget());
-    result.setService(serviceId);
-    return result;
-  }
-  
-  private TranslationResponse getCombinedCachedAndTranslatedResults(TranslationRequest translRequest) throws EuropeanaI18nApiException {
-    TranslationResponse result=null;
-    List<String> redisResp = getRedisCacheService().getCachedTranslations(translRequest.getSource(), translRequest.getTarget(), translRequest.getText());
-    if(Collections.frequency(redisResp, null)>0) {
-      
-      TranslationRequest newTranslReq = new TranslationRequest();
-      newTranslReq.setSource(translRequest.getSource());
-      newTranslReq.setTarget(translRequest.getTarget());
-      newTranslReq.setService(translRequest.getService());
-      newTranslReq.setFallback(translRequest.getFallback());
-      newTranslReq.setCaching(translRequest.getCaching());
-      newTranslReq.setText(new ArrayList<>(translRequest.getText()));
-
-      List<String> newText = new ArrayList<>();
-      int counter=0;
-      for(String redisRespElem : redisResp) {
-        if(redisRespElem==null) {
-          newText.add(translRequest.getText().get(counter));
-          counter++;
-        }
-      }
-      newTranslReq.setText(newText);
-      result = getTranslatedResults(newTranslReq);
-      
-      //save the translations to the cache
-      getRedisCacheService().saveRedisCache(newTranslReq.getSource(), newTranslReq.getTarget(), newTranslReq.getText(), result.getTranslations());
-      
-      //aggregate the redis and translation responses
-      List<String> finalText=new ArrayList<>(redisResp);
-      int counterTranslated = 0;
-      for(int i=0;i<finalText.size();i++) {
-        if(finalText.get(i)==null) {
-          finalText.set(i, result.getTranslations().get(counterTranslated));
-          counterTranslated++;
-        }
-      }
-      result.setService(null);
-      result.setTranslations(finalText);       
-    }
-    else {
-      result=new TranslationResponse();
-      result.setLang(translRequest.getTarget());
-      result.setTranslations(redisResp);
-    }
-
-    return result;
-  }
-
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest,
       LanguagePair languagePair) throws ParamValidationException {
