@@ -100,13 +100,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     try {
       if(translationObjs.isEmpty()) return;
       
-      if(detectLanguages) {
-        detectLanguages(translationObjs);
-      }
+      detectLanguages(translationObjs);
       
       computeTranslations(translationObjs);
       
@@ -149,9 +147,8 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       }        
     }
   }
-
-  @Override
-  public void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException {
+  
+  private void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException {
     List<Integer> indexesWithoutSourceAndTranslation = IntStream.range(0, translationObjs.size())
         .filter(i -> translationObjs.get(i).getSourceLang()==null && translationObjs.get(i).getTranslation()==null)
         .boxed()

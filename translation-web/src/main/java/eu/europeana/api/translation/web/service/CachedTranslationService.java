@@ -10,18 +10,16 @@ import eu.europeana.api.translation.service.exception.TranslationException;
 public class CachedTranslationService extends AbstractTranslationService {
   private RedisCacheService redisCacheService;
   private TranslationService translationService;
-  private TranslationService translationServicePangeanic;
   private String serviceId;
   
   /*
    * The pangeanic translation service is used to detect the source languages of the input texts,
    * before the lookup to the cache is made.
    */
-  public CachedTranslationService(RedisCacheService redisCacheService, TranslationService translationService, TranslationService translationServicePangeanic) {
+  public CachedTranslationService(RedisCacheService redisCacheService, TranslationService translationService) {
     super();
     this.redisCacheService = redisCacheService;
     this.translationService = translationService;
-    this.translationServicePangeanic = translationServicePangeanic;
     this.serviceId = translationService.getServiceId();
   }
 
@@ -41,19 +39,14 @@ public class CachedTranslationService extends AbstractTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {
-    //first detect languages for the texts that do not have it using the pangeanic lang detect
-    translationServicePangeanic.detectLanguages(translationObjs);
-    //then check if the translations exist in cache
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     redisCacheService.getCachedTranslations(translationObjs);
     boolean anyCachedTransl = translationObjs.stream().filter(el -> el.getIsCached()).collect(Collectors.toList()).size()>0;
     //if there is any translation in the cache set the serviceId to null, because we do not know which service translated that
     if(anyCachedTransl) {
       setServiceId(null);
     }
-    //then translate those that do not exist
-    translationService.translate(translationObjs, false);
-    //and save those that do not exist in cache to the cache
+    translationService.translate(translationObjs);
     redisCacheService.saveRedisCache(translationObjs);
   }
 
@@ -64,11 +57,6 @@ public class CachedTranslationService extends AbstractTranslationService {
   @Override
   public String getExternalServiceEndPoint() {
     return null;
-  }
-
-  @Override
-  public void detectLanguages(List<TranslationObj> translationObjs)
-      throws TranslationException {
   }
 
 }

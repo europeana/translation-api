@@ -45,7 +45,7 @@ public class GoogleTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     try {
       if(translationObjs.isEmpty()) {
         return;
@@ -62,25 +62,16 @@ public class GoogleTranslationService extends AbstractTranslationService {
           .map(el -> translationObjs.get(el).getText())
           .collect(Collectors.toList());
       
-      List<String> sourceLangs = validIndexes.stream()
-          .filter(el -> translationObjs.get(el).getSourceLang()!=null)
-          .map(el -> translationObjs.get(el).getSourceLang())
-          .collect(Collectors.toList());
-      boolean sameSourceLang = sourceLangs.size()==validIndexes.size() && sourceLangs.stream().distinct().count()==1;
       String targetLang = translationObjs.get(validIndexes.get(0)).getTargetLang();      
       Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
           .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
-      //only set the source language if it is the same for all texts
-      if (sameSourceLang) {
-        requestBuilder.setSourceLanguageCode(sourceLangs.get(0));
-      }
       TranslateTextRequest request = requestBuilder.build();
   
       TranslateTextResponse response = this.clientWrapper.getClient().translateText(request);
 
       int counter=0;
       for (Translation t : response.getTranslationsList()) {
-        if(! sameSourceLang) {
+        if(translationObjs.get(validIndexes.get(counter)).getSourceLang()==null) {
           translationObjs.get(validIndexes.get(counter)).setSourceLang(t.getDetectedLanguageCode());
         }
         translationObjs.get(validIndexes.get(counter)).setTranslation(t.getTranslatedText());
@@ -123,8 +114,4 @@ public class GoogleTranslationService extends AbstractTranslationService {
     this.clientWrapper.close();
   }
 
-  @Override
-  public void detectLanguages(List<TranslationObj> translationObjs)
-      throws TranslationException {
-  }
 }

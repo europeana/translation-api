@@ -54,15 +54,14 @@ public class TranslationWebService extends BaseWebService {
     if (translationRequest.getFallback() != null) {
       fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
     }
-    TranslationService translationServicePangeanic = getTranslationService("PANGEANIC", languagePair);
 
     //create the architecture with/without caching services
     List<TranslationService> translServicesToCall = new ArrayList<TranslationService>();
     if(translationRequest.useCaching() && isCachingEnabled()) {
-      CachedTranslationService cachedTranslServ1 = new CachedTranslationService(redisCacheService, translationService, translationServicePangeanic);
+      CachedTranslationService cachedTranslServ1 = new CachedTranslationService(redisCacheService, translationService);
       translServicesToCall.add(cachedTranslServ1);
       if(fallback!=null) {
-        CachedTranslationService cachedTranslServ2 = new CachedTranslationService(redisCacheService, fallback, translationServicePangeanic);
+        CachedTranslationService cachedTranslServ2 = new CachedTranslationService(redisCacheService, fallback);
         translServicesToCall.add(cachedTranslServ2);
       }
     } else {
@@ -77,7 +76,7 @@ public class TranslationWebService extends BaseWebService {
     String serviceId=null;
     for(TranslationService translServ : translServicesToCall) {
       try {
-        translServ.translate(translObjs, true);
+        translServ.translate(translObjs);
         //call this method after the translate() method, because the serviceId changes depending if there is sth in the cache
         serviceId = translServ.getServiceId();
         break;

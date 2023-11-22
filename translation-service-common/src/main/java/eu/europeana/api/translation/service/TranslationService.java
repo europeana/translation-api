@@ -32,10 +32,8 @@ public interface TranslationService {
    * @param translationObjs
    * @throws TranslationException
    */
-  void translate(List<TranslationObj> translationObjs, boolean detectLanguages) throws TranslationException;
-  
-  void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException;
-  
+  void translate(List<TranslationObj> translationObjs) throws TranslationException;
+    
   /**
    * to close the engine
    */
