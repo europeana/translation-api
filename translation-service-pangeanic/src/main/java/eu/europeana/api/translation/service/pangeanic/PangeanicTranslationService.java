@@ -120,16 +120,16 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private void computeTranslations(List<TranslationObj> translationObjs) throws JSONException, TranslationException {
     List<String> analyzedLangs = new ArrayList<String>();
     for(int i=0;i<translationObjs.size();i++) {
-      if(translationObjs.get(i).getTranslation()==null) {
+      String sourceLang = translationObjs.get(i).getSourceLang();
+      if(!analyzedLangs.contains(sourceLang) && translationObjs.get(i).getTranslation()==null) {
         //take the same lang values and send a translation request with a list of texts belonging to that same lang
-        String sourceLang = translationObjs.get(i).getSourceLang();
         List<Integer> translIndexes = new ArrayList<Integer>(); 
         translIndexes.add(i);
         List<String> translTexts = new ArrayList<String>();
         translTexts.add(translationObjs.get(i).getText()); 
         String targetLang = translationObjs.get(i).getTargetLang();
   
-        if(sourceLang!=null && !analyzedLangs.contains(sourceLang)) {
+        if(sourceLang!=null) {
           for(int j=i+1;j<translationObjs.size();j++) {
             if(translationObjs.get(j).getTranslation()==null) {
               String nextSourceLang = translationObjs.get(j).getSourceLang();
