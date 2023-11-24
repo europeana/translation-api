@@ -26,84 +26,114 @@ public class TranslationWebService extends BaseWebService {
 
   @Autowired
   private final TranslationServiceProvider translationServiceProvider;
-  
+
   private RedisCacheService redisCacheService;
-  
+
   private final Logger logger = LogManager.getLogger(getClass());
 
   @Autowired
   public TranslationWebService(TranslationServiceProvider translationServiceProvider) {
-   this.translationServiceProvider = translationServiceProvider;
+    this.translationServiceProvider = translationServiceProvider;
   }
-  
-  public TranslationResponse translate(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
-    //create a list of objects to be translated
-    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
-    for(String inputText : translationRequest.getText()) {
-      TranslationObj newTranslObj = new TranslationObj();
-      newTranslObj.setSourceLang(translationRequest.getSource());
-      newTranslObj.setTargetLang(translationRequest.getTarget());
-      newTranslObj.setText(inputText);
-      translObjs.add(newTranslObj);
-    }
-    
-    //get the configured translation services
-    LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
-    TranslationService translationService = selectTranslationService(translationRequest, languagePair);
+
+  public TranslationResponse translate(TranslationRequest translationRequest)
+      throws EuropeanaI18nApiException {
+    List<TranslationObj> translObjs = buildTranslationObjectList(translationRequest);
+
+    // get the configured translation services
+    LanguagePair languagePair =
+        new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
+    TranslationService translationService =
+        selectTranslationService(translationRequest, languagePair);
     TranslationService fallback = null;
     if (translationRequest.getFallback() != null) {
       fallback = getTranslationService(translationRequest.getFallback(), languagePair, true);
     }
 
-    //create the architecture with/without caching services
-    List<TranslationService> translServicesToCall = new ArrayList<TranslationService>();
-    if(translationRequest.useCaching() && isCachingEnabled()) {
-      CachedTranslationService cachedTranslServ1 = new CachedTranslationService(redisCacheService, translationService);
-      translServicesToCall.add(cachedTranslServ1);
-      if(fallback!=null) {
-        CachedTranslationService cachedTranslServ2 = new CachedTranslationService(redisCacheService, fallback);
-        translServicesToCall.add(cachedTranslServ2);
-      }
-    } else {
-      translServicesToCall.add(translationService);
-      if(fallback!=null) {
-        translServicesToCall.add(fallback);
-      }
-    }
-    
-    //calling the translation services and creating the results
-    TranslationException translError=null;
-    String serviceId=null;
-    for(TranslationService translServ : translServicesToCall) {
+    // build the list of caching services
+    List<TranslationService> cachedTranslationServices = buildCachedTranslationServices(
+        translationRequest.useCaching(), translationService, fallback);
+
+    // calling the translation services and creating the results
+    TranslationException translationError = null;
+    String serviceId = null;
+    for (TranslationService cachedTranslationService : cachedTranslationServices) {
       try {
-        translServ.translate(translObjs);
-        //call this method after the translate() method, because the serviceId changes depending if there is sth in the cache
-        serviceId = translServ.getServiceId();
+        cachedTranslationService.translate(translObjs);
+        // call this method after the translate() method, because the serviceId changes depending if
+        // there is sth in the cache
+        serviceId = cachedTranslationService.getServiceId();
+        // clear translation error if the invocation is successfull
+        translationError = null;
         break;
-      }
-      catch (TranslationException ex) {
-        if(translError==null) {
-          translError=ex;
+      } catch (TranslationException ex) {
+        // keep the original exception for error response
+        if (translationError == null) {
+          translationError = ex;
         }
         if (logger.isDebugEnabled()) {
           logger.debug("Error when calling translation service: " + serviceId, ex);
         }
       }
     }
-    if(translError!=null) {
-      throwApiException(translError);
+
+    if (translationError != null) {
+      throwApiException(translationError);
     }
-    
+
+    return buildTranslationResponse(translationRequest, translObjs, serviceId);
+  }
+
+
+  private TranslationResponse buildTranslationResponse(TranslationRequest translationRequest,
+      List<TranslationObj> translObjs, String serviceId) {
     TranslationResponse result = new TranslationResponse();
-    result.setTranslations(translObjs.stream().map(el -> el.getTranslation()).collect(Collectors.toList()));
+    result.setTranslations(
+        translObjs.stream().map(el -> el.getTranslation()).collect(Collectors.toList()));
     result.setLang(translationRequest.getTarget());
     result.setService(serviceId);
     return result;
-
   }
-  
-  private boolean isCachingEnabled() {
-    return getRedisCacheService() != null;
+
+  private List<TranslationService> buildCachedTranslationServices(boolean useCaching,
+      TranslationService translationService, TranslationService fallback) {
+    List<TranslationService> cachedTranslationServices = new ArrayList<TranslationService>();
+    // if(translationRequest.useCaching() && isCachingEnabled()) {
+    cachedTranslationServices
+        .add(instantiateCachedTranslationService(useCaching, translationService));
+
+    if (fallback != null) {
+      cachedTranslationServices.add(instantiateCachedTranslationService(useCaching, fallback));
+    }
+    // } else {
+    // translServicesToCall.add(translationService);
+    // if(fallback!=null) {
+    // translServicesToCall.add(fallback);
+    // }
+    // }
+    return cachedTranslationServices;
+  }
+
+  CachedTranslationService instantiateCachedTranslationService(boolean useCaching,
+      TranslationService translationService) {
+    if (useCaching) {
+      return new CachedTranslationService(redisCacheService, translationService);
+    } else {
+      return new CachedTranslationService(null, translationService);
+    }
+  }
+
+  private List<TranslationObj> buildTranslationObjectList(TranslationRequest translationRequest) {
+    // create a list of objects to be translated
+    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
+    for (String inputText : translationRequest.getText()) {
+      TranslationObj newTranslObj = new TranslationObj();
+      newTranslObj.setSourceLang(translationRequest.getSource());
+      newTranslObj.setTargetLang(translationRequest.getTarget());
+      newTranslObj.setText(inputText);
+      translObjs.add(newTranslObj);
+    }
+    return translObjs;
   }
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest,

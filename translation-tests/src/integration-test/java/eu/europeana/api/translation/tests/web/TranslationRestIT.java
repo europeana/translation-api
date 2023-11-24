@@ -119,6 +119,28 @@ public class TranslationRestIT extends BaseTranslationTest {
   }
   
   @Test
+  void translationPangeanicNoSrcMultipleLanguages() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);
+    String result = mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
+    assertNotNull(langFieldValue);    
+    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
+    assertTrue(translations.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+  }
+  
+  @Test
   void translationWithCaching() throws Exception {
 
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_CACHING);
@@ -145,7 +167,7 @@ public class TranslationRestIT extends BaseTranslationTest {
         .andExpect(status().isOk());
     
     //check that there are data in the cache
-    redisCacheService.getCachedTranslations(translObjs);
+    redisCacheService.fillWithCachedTranslations(translObjs);
     assertTrue(translObjs.stream().filter(el -> el.getIsCached()).collect(Collectors.toList()).size()==2);
     
     String cachedResult = mockMvc

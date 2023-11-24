@@ -2,7 +2,6 @@ package eu.europeana.api.translation.service.google;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
@@ -50,32 +49,20 @@ public class GoogleTranslationService extends AbstractTranslationService {
       if(translationObjs.isEmpty()) {
         return;
       }
-      //analyze only objects that still do not have the translation
-      List<Integer> validIndexes = IntStream.range(0, translationObjs.size())
-          .filter(i -> translationObjs.get(i).getTranslation()==null)
-          .boxed()
-          .collect(Collectors.toList());
-      if(validIndexes.isEmpty()) {
-        return;
-      }
-      List<String> texts = validIndexes.stream()
-          .map(el -> translationObjs.get(el).getText())
-          .collect(Collectors.toList());
-      
-      String targetLang = translationObjs.get(validIndexes.get(0)).getTargetLang();      
-      Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
-          .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
-      TranslateTextRequest request = requestBuilder.build();
-  
+      //build request
+      TranslateTextRequest request = buildTranslationRequest(translationObjs);
+      //extract response
       TranslateTextResponse response = this.clientWrapper.getClient().translateText(request);
 
-      int counter=0;
-      for (Translation t : response.getTranslationsList()) {
-        if(translationObjs.get(validIndexes.get(counter)).getSourceLang()==null) {
-          translationObjs.get(validIndexes.get(counter)).setSourceLang(t.getDetectedLanguageCode());
-        }
-        translationObjs.get(validIndexes.get(counter)).setTranslation(t.getTranslatedText());
-        counter++;
+      //check if the translation is complete / successful
+      if(translationObjs.size() != response.getTranslationsCount()) {
+        throw new TranslationException("The translation is not completed successfully. Expected " 
+            + translationObjs.size() + " but received: " + response.getTranslationsCount());
+      }
+
+      //accumulate translation results
+      for (int i = 0; i < response.getTranslationsCount(); i++) {
+        updateFromTranslation(translationObjs.get(i), response.getTranslations(i));
       }
     }
     catch (ApiException ex) {
@@ -83,6 +70,33 @@ public class GoogleTranslationService extends AbstractTranslationService {
       throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
     } 
     
+  }
+
+  private void updateFromTranslation( TranslationObj translationObj, Translation translation) {
+    if(translationObj.getSourceLang()==null) {
+      translationObj.setSourceLang(translation.getDetectedLanguageCode());
+    }
+    translationObj.setTranslation(translation.getTranslatedText());
+  }
+
+  private TranslateTextRequest buildTranslationRequest(List<TranslationObj> translationObjs) {
+    //get texts to translate
+    List<String> texts = translationObjs.stream()
+        .map(to -> to.getText())
+        .collect(Collectors.toList());
+  
+    //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
+    //If these conditions change  
+    
+    //build request
+    String targetLang = translationObjs.get(0).getTargetLang();      
+    Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
+        .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
+    String sourceLanguage = translationObjs.get(0).getSourceLang();
+    if(sourceLanguage != null) {
+      requestBuilder.setSourceLanguageCode(sourceLanguage);
+    }
+    return requestBuilder.build();
   }
 
   @Override

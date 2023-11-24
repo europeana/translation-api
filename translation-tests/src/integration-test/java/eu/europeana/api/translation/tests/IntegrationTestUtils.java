@@ -29,6 +29,10 @@ public abstract class IntegrationTestUtils {
   public static final String TRANSLATION_GOOGLE_REQUEST = "/content/google/translate/translate_google_request.txt";
   public static final String TRANSLATION_GOOGLE_RESPONSE = "/content/google/translate/translate_google_response.json";
   
+  public static final String TRANSLATION_GOOGLE_REQUEST_NO_SRC_LANG = "/content/google/translate/translate_google_request_no_src_lang.txt";
+  public static final String TRANSLATION_GOOGLE_RESPONSE_NO_SRC_LANG = "/content/google/translate/translate_google_response_no_src_lang.json";
+  
+  
   public static final String TRANSLATION_REQUEST_2 = "/content/translation_request_2.json";
   public static final String TRANSLATION_PANGEANIC_REQUEST_2 = "/content/pangeanic/translate/translate_pangeanic_request_2.json";
   public static final String TRANSLATION_PANGEANIC_RESPONSE_2 = "/content/pangeanic/translate/translate_pangeanic_response_2.json";

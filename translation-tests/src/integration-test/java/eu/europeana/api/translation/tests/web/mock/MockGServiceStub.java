@@ -3,7 +3,7 @@ package eu.europeana.api.translation.tests.web.mock;
 import static eu.europeana.api.translation.tests.IntegrationTestUtils.LANG_DETECT_GOOGLE_REQUEST;
 import static eu.europeana.api.translation.tests.IntegrationTestUtils.LANG_DETECT_GOOGLE_RESPONSE;
 import static eu.europeana.api.translation.tests.IntegrationTestUtils.TRANSLATION_GOOGLE_REQUEST;
-import static eu.europeana.api.translation.tests.IntegrationTestUtils.TRANSLATION_GOOGLE_RESPONSE;
+import static eu.europeana.api.translation.tests.IntegrationTestUtils.*;
 import static eu.europeana.api.translation.tests.IntegrationTestUtils.loadFile;
 import java.io.IOException;
 import java.util.Map;
@@ -30,7 +30,8 @@ public class MockGServiceStub extends HttpJsonTranslationServiceStub{
   private static Map<String, String> initTranslationMap() {
     try {
       return Map.of(
-          loadFile(TRANSLATION_GOOGLE_REQUEST).replaceAll("\r", "\n").trim(), loadFile(TRANSLATION_GOOGLE_RESPONSE)
+          loadFile(TRANSLATION_GOOGLE_REQUEST).replaceAll("\r", "\n").trim(), loadFile(TRANSLATION_GOOGLE_RESPONSE),
+          loadFile(TRANSLATION_GOOGLE_REQUEST_NO_SRC_LANG).replaceAll("\r", "\n").trim(), loadFile(TRANSLATION_GOOGLE_RESPONSE_NO_SRC_LANG)
       );
     } catch (IOException e) {
       throw new RuntimeException("Test initialization exception (translation map)!", e);
