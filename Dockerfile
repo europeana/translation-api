@@ -1,5 +1,6 @@
 # Builds a docker image from a locally built Maven war. Requires 'mvn package' to have been run beforehand
-FROM eclipse-temurin:17-jre-alpine
+#FROM eclipse-temurin:17-jre-alpine
+FROM tomcat:9.0.74-jdk17
 LABEL Author="Europeana Foundation <development@europeana.eu>"
 
 # Configure APM and add APM agent
