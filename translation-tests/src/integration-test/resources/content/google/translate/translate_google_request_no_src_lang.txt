@@ -1,0 +1,5 @@
+contents: "eine Textzeile auf Deutsch"
+contents: "eine zweite Textzeile auf Deutsch"
+mime_type: "text/plain"
+target_language_code: "en"
+parent: "projects/project-id-test/locations/global"

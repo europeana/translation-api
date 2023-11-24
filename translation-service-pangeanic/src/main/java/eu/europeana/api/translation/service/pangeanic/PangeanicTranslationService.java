@@ -1,10 +1,9 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -21,6 +20,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -58,10 +58,10 @@ public class PangeanicTranslationService extends AbstractTranslationService {
    * @throws JSONException when there is a problem decoding the received token
    */
   private void init() {
-    if(StringUtils.isBlank(getExternalServiceEndPoint())) {
+    if (StringUtils.isBlank(getExternalServiceEndPoint())) {
       return;
     }
-    
+
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(PangeanicTranslationUtils.MAX_CONNECTIONS);
     cm.setDefaultMaxPerRoute(PangeanicTranslationUtils.MAX_CONNECTIONS_PER_ROUTE);
@@ -98,105 +98,104 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     return PangeanicLanguages.isTargetLanguageSupported(targetLanguage);
   }
 
-
   @Override
-  public List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage)
-      throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     try {
-      if (texts.isEmpty()) {
-        return new ArrayList<>();
+      if (translationObjs.isEmpty()) {
+        return;
       }
 
-      if (sourceLanguage == null) {
-        // In this case source language is the hint. The texts passed will be sent for
-        // lang-detection first and later will translated
-        return translateWithLangDetect(texts, targetLanguage, sourceLanguage);
+      // if source language is available for the first item it must be available for all
+      if (translationObjs.get(0).getSourceLang() != null) {
+        detectLanguages(translationObjs);
       }
-      
-      //regular invocation of external translation service 
-      HttpPost post = PangeanicTranslationUtils.createTranslateRequest(getExternalServiceEndPoint(),
-          texts, targetLanguage, sourceLanguage, "");
-      return PangeanicTranslationUtils.getResults(texts,
-          sendTranslateRequestAndParse(post, sourceLanguage));
+
+      computeTranslations(translationObjs);
+
     } catch (JSONException e) {
       throw new TranslationException("Exception occured during Pangeanic translation!",
           HttpStatus.SC_BAD_GATEWAY, e);
     }
   }
 
-  @Override
-  public List<String> translate(List<String> texts, String targetLanguage)
-      throws TranslationException {
-    return translate(texts, targetLanguage, null);
-  }
-
-
-  /**
-   * Translates the texts with no source language. First a lang detect request is sent to identify
-   * the source language Later translations are performed
-   *
-   * @param texts
-   * @param targetLanguage
-   * @return
-   * @throws TranslationException
-   */
-  private List<String> translateWithLangDetect(List<String> texts, String targetLanguage,
-      String langHint) throws TranslationException {
-    try {
-      if (langDetectService == null) {
-        throw new TranslationException("No langDetectService configured!",
-            HttpStatus.SC_INTERNAL_SERVER_ERROR);
+  private void computeTranslations(List<TranslationObj> translationObjs)
+      throws JSONException, TranslationException {
+    
+    //collect source languages, they might be multiple 
+    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).collect(Collectors.toSet());
+    
+    List<TranslationObj> toTranslatePerLanguage;
+    //the request has only one target language
+    String targetLang = translationObjs.get(0).getTargetLang(); 
+        
+    for (String sourceLanguage : sourceLanguages) {
+      //not needed to iterate if all are in the same language, it will be only one translation request for all objects
+      if(sourceLanguages.size() == 1) {
+        toTranslatePerLanguage = translationObjs;
+      }else {
+        toTranslatePerLanguage = getObjectsWithSourceLanguage(translationObjs, sourceLanguage); 
       }
-      List<String> detectedLanguages = detectLanguages(texts, langHint);
-      Map<String, String> translations =
-          computeTranslations(texts, targetLanguage, detectedLanguages, langHint);
-      return PangeanicTranslationUtils.getResults(texts, translations);
-    } catch (JSONException | IOException e) {
-      throw new TranslationException("Exception occured during Pangeanic translation!",
-          HttpStatus.SC_BAD_GATEWAY, e);
+      //perform translation and fill results, the translations are filled directly in the original TranslationObj 
+      translateAndAccumulateResults(toTranslatePerLanguage, sourceLanguage, targetLang);
     }
   }
 
 
-  private Map<String, String> computeTranslations(List<String> texts, String targetLanguage,
-      List<String> detectedLanguages, String langHint)
-      throws JSONException, IOException, TranslationException {
-    // create lang-value map for translation
-    Map<String, List<String>> detectedLangValueMap =
-        PangeanicTranslationUtils.getDetectedLangValueMap(texts, detectedLanguages);
+  private void translateAndAccumulateResults(List<TranslationObj> toTranslatePerLanguage,
+      String sourceLanguage, String targetLang) throws JSONException, TranslationException {
+    // send the translation request
+    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).collect(Collectors.toList());
+    HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
+        getExternalServiceEndPoint(), translTexts, targetLang, sourceLanguage, "");
     
-    Map<String, String> translations = new LinkedHashMap<>();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(
-          "Pangeanic detect lang request with hint {} is executed. Detected languages are {} ",
-          LoggingUtils.sanitizeUserInput(langHint),
-          LoggingUtils.sanitizeUserInput(detectedLangValueMap.keySet().toString()));
-    }
-    
-    for (Map.Entry<String, List<String>> entry : detectedLangValueMap.entrySet()) {
-        HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
-            getExternalServiceEndPoint(), entry.getValue(), targetLanguage, entry.getKey(), "");
-        translations.putAll(sendTranslateRequestAndParse(translateRequest, entry.getKey()));   
-    }
-    return translations;
+    //parse response and accumulate results 
+    sendTranslateRequestAndFillTranslations(translateRequest, toTranslatePerLanguage, sourceLanguage);
+  }
+
+  private List<TranslationObj> getObjectsWithSourceLanguage(List<TranslationObj> translationObjs,
+      String sourceLanguage) {
+    return translationObjs.stream()
+        .filter(to -> sourceLanguage.equals(to.getSourceLang())).toList();
   }
 
 
-  private List<String> detectLanguages(List<String> texts, String langHint)
-      throws TranslationException {
-    List<String> detectedLanguages;
+  private void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException {
+    if (langDetectService == null) {
+      throw new TranslationException("No langDetectService configured!",
+          HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    // detect languages
+    List<String> texts =
+        translationObjs.stream().map(to -> to.getText()).collect(Collectors.toList());
+    List<String> detectedLanguages = null;
     try {
-      detectedLanguages = langDetectService.detectLang(texts, langHint);
+      detectedLanguages = langDetectService.detectLang(texts, null);
     } catch (LanguageDetectionException e) {
       throw new TranslationException("Error when tryng to detect the language of the text input!",
           e.getRemoteStatusCode(), e);
     }
-    return detectedLanguages;
+
+    // verify language detection response
+    if (detectedLanguages == null || detectedLanguages.size() != translationObjs.size()) {
+      throw new TranslationException(
+          "The translation cannot be performed. Detected languaged are incomplete.  Expected "
+              + translationObjs.size() + " but received: " + detectedLanguages.size());
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "Pangeanic detect lang request with hint null is executed. Detected languages are {} ",
+          LoggingUtils.sanitizeUserInput(detectedLanguages.toString()));
+    }
+
+    // update source language
+    for (int i = 0; i < detectedLanguages.size(); i++) {
+      translationObjs.get(i).setSourceLang(detectedLanguages.get(i));
+    }
   }
 
-  private Map<String, String> sendTranslateRequestAndParse(HttpPost post, String sourceLanguage)
-      throws TranslationException {
-
+  private void sendTranslateRequestAndFillTranslations(HttpPost post, List<TranslationObj> translationObjs, String sourceLanguage) throws TranslationException {
     // initialize with unknown
     int remoteStatusCode = -1;
     try (CloseableHttpResponse response = translateClient.execute(post)) {
@@ -213,19 +212,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       } else {
         String json = EntityUtils.toString(response.getEntity());
         JSONObject obj = new JSONObject(json);
-        Map<String, String> results = new LinkedHashMap<>();
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
           throw new TranslationException("Pangeanic Translation API returned empty response",
               remoteStatusCode);
         }
-        extractTranslations(obj, sourceLanguage, results);
-        // response should not be empty
-        if (results.isEmpty()) {
-          throw new TranslationException("Translation failed for source language - "
-              + obj.get(PangeanicTranslationUtils.SOURCE_LANG), remoteStatusCode);
-        }
-        return results;
+        extractTranslations(obj, translationObjs, sourceLanguage, remoteStatusCode);
       }
     } catch (ClientProtocolException e) {
       throw new TranslationException("Remote service invocation error.", remoteStatusCode, e);
@@ -235,10 +227,23 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
   }
 
-
-  private void extractTranslations(JSONObject obj, String sourceLanguage,
-      Map<String, String> results) throws JSONException {
+  private void extractTranslations(JSONObject obj, List<TranslationObj> translationObjs,
+      String sourceLanguage, int remoteStatusCode)
+      throws JSONException, TranslationException {
     JSONArray translations = obj.getJSONArray(PangeanicTranslationUtils.TRANSLATIONS);
+    if (translations.length() == 0) {
+      throw new TranslationException("Translation failed (empty list) for source language - "
+          + obj.get(PangeanicTranslationUtils.SOURCE_LANG), remoteStatusCode);
+    }
+    
+    //ensure the size of the response is correct 
+    if(translations.length() != translationObjs.size()){
+      throw new TranslationException(
+          "The translation is incomplete for text with language: " + sourceLanguage
+          + ".  Expected " + translationObjs.size() + " but received: " + translations.length());
+        
+    }
+    
     for (int i = 0; i < translations.length(); i++) {
       JSONObject object = (JSONObject) translations.get(i);
       if (hasTranslations(object)) {
@@ -246,11 +251,8 @@ public class PangeanicTranslationService extends AbstractTranslationService {
         // only if score returned by the translation service is greater the threshold value, we
         // will accept the translations
         if (score > PangeanicLanguages.getThresholdForLanguage(sourceLanguage)) {
-          results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE),
-              object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
-        } else {
-          // for discarded thresholds add null as translations values
-          results.put(object.getString(PangeanicTranslationUtils.TRANSLATE_SOURCE), null);
+          translationObjs.get(i)
+              .setTranslation(object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
         }
       }
     }

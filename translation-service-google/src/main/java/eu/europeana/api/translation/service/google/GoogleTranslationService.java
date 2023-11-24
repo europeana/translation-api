@@ -1,13 +1,14 @@
 package eu.europeana.api.translation.service.google;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
@@ -43,36 +44,59 @@ public class GoogleTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public List<String> translate(List<String> text, String targetLanguage)
-      throws TranslationException {
-    return translate(text, targetLanguage, null);
-  }
-
-  @Override
-  public List<String> translate(List<String> text, String targetLanguage, String sourceLanguage) throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     try {
-      List<String> result = new ArrayList<>();
-      if(text.isEmpty()) {
-        return result;
+      if(translationObjs.isEmpty()) {
+        return;
       }
-      
-      Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
-          .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLanguage).addAllContents(text);
-      if (sourceLanguage != null) {
-        requestBuilder.setSourceLanguageCode(sourceLanguage);
-      }
-      TranslateTextRequest request = requestBuilder.build();
-  
+      //build request
+      TranslateTextRequest request = buildTranslationRequest(translationObjs);
+      //extract response
       TranslateTextResponse response = this.clientWrapper.getClient().translateText(request);
 
-      for (Translation t : response.getTranslationsList()) {
-        result.add(t.getTranslatedText());
+      //check if the translation is complete / successful
+      if(translationObjs.size() != response.getTranslationsCount()) {
+        throw new TranslationException("The translation is not completed successfully. Expected " 
+            + translationObjs.size() + " but received: " + response.getTranslationsCount());
       }
-      return result;
-    } catch (ApiException ex) {
+
+      //accumulate translation results
+      for (int i = 0; i < response.getTranslationsCount(); i++) {
+        updateFromTranslation(translationObjs.get(i), response.getTranslations(i));
+      }
+    }
+    catch (ApiException ex) {
       final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
       throw new TranslationException("Exception occured during Google translation!", remoteStatusCode, ex);
     } 
+    
+  }
+
+  private void updateFromTranslation( TranslationObj translationObj, Translation translation) {
+    if(translationObj.getSourceLang()==null) {
+      translationObj.setSourceLang(translation.getDetectedLanguageCode());
+    }
+    translationObj.setTranslation(translation.getTranslatedText());
+  }
+
+  private TranslateTextRequest buildTranslationRequest(List<TranslationObj> translationObjs) {
+    //get texts to translate
+    List<String> texts = translationObjs.stream()
+        .map(to -> to.getText())
+        .collect(Collectors.toList());
+  
+    //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
+    //If these conditions change  
+    
+    //build request
+    String targetLang = translationObjs.get(0).getTargetLang();      
+    Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
+        .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
+    String sourceLanguage = translationObjs.get(0).getSourceLang();
+    if(sourceLanguage != null) {
+      requestBuilder.setSourceLanguageCode(sourceLanguage);
+    }
+    return requestBuilder.build();
   }
 
   @Override
@@ -103,4 +127,5 @@ public class GoogleTranslationService extends AbstractTranslationService {
   public void close() {
     this.clientWrapper.close();
   }
+
 }

@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -27,28 +28,12 @@ public interface TranslationService {
   boolean isSupported(String srcLang, String trgLang);
 
   /**
-   * Translate multiple texts
-   * 
-   * @param texts to translate
-   * @param targetLanguage language into which the texts are translated
-   * @return translations of the provided texts
-   * @throws TranslationException when there is a problem sending the translation request
+   * Translates a list of texts from a list of TranslationObj and saves the results back to the objects.
+   * @param translationObjs
+   * @throws TranslationException
    */
-  List<String> translate(List<String> texts, String targetLanguage) throws TranslationException;
-
-  /**
-   * Translate multiple texts
-   * 
-   * @param texts to translate
-   * @param targetLanguage language into which the texts are translated
-   * @param sourceLanguage source language of the texts to be translated
-   * @return translations of the provided texts
-   * @throws TranslationException when there is a problem sending the translation request
-   */
-  List<String> translate(List<String> texts, String targetLanguage, String sourceLanguage)
-      throws TranslationException;
-
-
+  void translate(List<TranslationObj> translationObjs) throws TranslationException;
+    
   /**
    * to close the engine
    */
