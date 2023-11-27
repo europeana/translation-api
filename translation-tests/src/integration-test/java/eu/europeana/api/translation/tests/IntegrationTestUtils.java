@@ -18,6 +18,10 @@ public abstract class IntegrationTestUtils {
   public static final String LANG_DETECT_PANGEANIC_REQUEST_2 = "/content/pangeanic/detect/lang_detection_pangeanic_request_2.json";
   public static final String LANG_DETECT_PANGEANIC_RESPONSE_2 = "/content/pangeanic/detect/lang_detection_pangeanic_response_2.json";
 
+  public static final String LANG_DETECT_PANGEANIC_MULTIPLE_LANGUAGES_REQUEST = "/content/pangeanic/detect/lang_detection_pangeanic_translate_multiple_languages_request.json";
+  public static final String LANG_DETECT_PANGEANIC_MULTIPLE_LANGUAGES_RESPONSE = "/content/pangeanic/detect/lang_detection_pangeanic_translate_multiple_languages_response.json";
+
+  
   public static final String LANG_DETECT_REQUEST_3 = "/content/lang_detection_request_3.json";
   public static final String LANG_DETECT_GOOGLE_REQUEST = "/content/google/detect/lang_detect_google_request.txt";
   public static final String LANG_DETECT_GOOGLE_RESPONSE = "/content/google/detect/lang_detect_google_response.json";
@@ -36,6 +40,13 @@ public abstract class IntegrationTestUtils {
   public static final String TRANSLATION_REQUEST_2 = "/content/translation_request_2.json";
   public static final String TRANSLATION_PANGEANIC_REQUEST_2 = "/content/pangeanic/translate/translate_pangeanic_request_2.json";
   public static final String TRANSLATION_PANGEANIC_RESPONSE_2 = "/content/pangeanic/translate/translate_pangeanic_response_2.json";
+  
+  public static final String TRANSLATION_REQUEST_PANGEANIC_MULTIPLE_LANG = "/content/translation_pangeanic_multiple_languages_request.json";
+  public static final String TRANSLATION_PANGEANIC_REQUEST_MULTIPLE_LANG_DE = "/content/pangeanic/translate/translate_pangeanic_multiple_languages_request_DE.json";
+  public static final String TRANSLATION_PANGEANIC_RESPONSE_MULTIPLE_LANG_DE = "/content/pangeanic/translate/translate_pangeanic_multiple_languages_response_DE.json";
+  public static final String TRANSLATION_PANGEANIC_REQUEST_MULTIPLE_LANG_RO = "/content/pangeanic/translate/translate_pangeanic_multiple_languages_request_RO.json";
+  public static final String TRANSLATION_PANGEANIC_RESPONSE_MULTIPLE_LANG_RO = "/content/pangeanic/translate/translate_pangeanic_multiple_languages_response_RO.json";
+  
   
   public static final String TRANSLATION_REQUEST_CACHING = "/content/translation_request_caching.json";
   

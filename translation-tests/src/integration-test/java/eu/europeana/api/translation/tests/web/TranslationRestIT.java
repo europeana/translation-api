@@ -1,10 +1,12 @@
 package eu.europeana.api.translation.tests.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +51,9 @@ public class TranslationRestIT extends BaseTranslationTest {
   
   private static RedisServer redisServer = startRedisService();
   
+  public static final String LANGUAGE_EN = "en";
+  
+  
   @Autowired 
   @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
   GoogleTranslationServiceClientWrapper clientWrapper;
@@ -89,7 +94,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
     String langFieldValue = json.getString(TranslationAppConstants.LANG);
-    assertNotNull(langFieldValue);    
+    assertEquals(LANGUAGE_EN, langFieldValue);
     List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
     assertTrue(translations.size()>0);
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
@@ -111,7 +116,8 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
     String langFieldValue = json.getString(TranslationAppConstants.LANG);
-    assertNotNull(langFieldValue);    
+    assertEquals(LANGUAGE_EN, langFieldValue);
+        
     List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
     assertTrue(translations.size()>0);
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
@@ -120,22 +126,29 @@ public class TranslationRestIT extends BaseTranslationTest {
   
   @Test
   void translationPangeanicNoSrcMultipleLanguages() throws Exception {
-    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_2);
+    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_PANGEANIC_MULTIPLE_LANG);
     String result = mockMvc
         .perform(
-            post(BASE_URL_TRANSLATE)
-              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .content(requestJson))
+            post(BASE_URL_TRANSLATE).characterEncoding(StandardCharsets.UTF_8)
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
         .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+        .andReturn().getResponse()
+        .getContentAsString();
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
     String langFieldValue = json.getString(TranslationAppConstants.LANG);
-    assertNotNull(langFieldValue);    
-    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
-    assertTrue(translations.size()>0);
+    assertEquals(LANGUAGE_EN, langFieldValue);
+        
+    final JSONArray translations = json.optJSONArray(TranslationAppConstants.TRANSLATIONS);
+    assertTrue(translations.length()==3);
+    assertEquals("This is a dog", translations.getString(0));
+    assertEquals("In the courtyard is played a puppy and a cat", translations.getString(1));
+    //there is a MOCKMvc issue that doesn't deliver correct encoding, therefore we check only the end of the string
+    assertTrue(translations.getString(2).endsWith("another cat"));
+    
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }

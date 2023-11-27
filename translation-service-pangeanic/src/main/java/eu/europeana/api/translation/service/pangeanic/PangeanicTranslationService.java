@@ -211,12 +211,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
       remoteStatusCode = response.getStatusLine().getStatusCode();
       boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
+      String responseBody = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
       if (failedRequest) {
         throw new TranslationException(
-            "Error from Pangeanic Translation API: " + response.getEntity(), remoteStatusCode);
+            "Error from Pangeanic Translation API: " + responseBody, remoteStatusCode);
       } else {
-        String json = EntityUtils.toString(response.getEntity());
-        JSONObject obj = new JSONObject(json);
+        JSONObject obj = new JSONObject(responseBody);
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
           throw new TranslationException("Pangeanic Translation API returned empty response",

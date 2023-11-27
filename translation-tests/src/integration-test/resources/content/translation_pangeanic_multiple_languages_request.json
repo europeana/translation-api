@@ -1,0 +1,10 @@
+{
+  "target": "en",
+  "service": "PANGEANIC",
+  "text": [
+    "Das ist ein Hund",
+    "În curte se joaca un cațel și o pisică",
+    "Das ist noch eine Katze"
+  ],
+  "caching": false
+}
