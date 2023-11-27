@@ -106,7 +106,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       }
 
       // if source language is available for the first item it must be available for all
-      if (translationObjs.get(0).getSourceLang() != null) {
+      if (translationObjs.get(0).getSourceLang() == null) {
         detectLanguages(translationObjs);
       }
 
@@ -128,9 +128,14 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     //the request has only one target language
     String targetLang = translationObjs.get(0).getTargetLang(); 
         
+    //when language detection is used, some texts might still have no language (i.e. bellow threshold)
+    if(sourceLanguages.contains(null)) {
+      
+    }
+    
     for (String sourceLanguage : sourceLanguages) {
-      //not needed to iterate if all are in the same language, it will be only one translation request for all objects
       if(sourceLanguages.size() == 1) {
+        //not needed to iterate if all are in the same language, it will be only one translation request for all objects
         toTranslatePerLanguage = translationObjs;
       }else {
         toTranslatePerLanguage = getObjectsWithSourceLanguage(translationObjs, sourceLanguage); 
@@ -177,7 +182,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
 
     // verify language detection response
-    if (detectedLanguages == null || detectedLanguages.size() != translationObjs.size()) {
+    if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
           "The translation cannot be performed. Detected languaged are incomplete.  Expected "
               + translationObjs.size() + " but received: " + detectedLanguages.size());
