@@ -22,7 +22,8 @@
 		<module>translation-service-pangeanic</module>
 		<module>translation-web</module>
 		<module>translation-tests</module>
-		
+
+		<module>translation-service-apache-tika</module>
 	</modules>
 	
 	<repositories>

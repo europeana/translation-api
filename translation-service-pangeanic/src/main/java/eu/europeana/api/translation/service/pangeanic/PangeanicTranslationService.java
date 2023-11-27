@@ -155,7 +155,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private List<TranslationObj> getObjectsWithSourceLanguage(List<TranslationObj> translationObjs,
       String sourceLanguage) {
     return translationObjs.stream()
-        .filter(to -> sourceLanguage.equals(to.getSourceLang())).toList();
+        .filter(to -> sourceLanguage.equals(to.getSourceLang())).collect(Collectors.toList());
   }
 
 
