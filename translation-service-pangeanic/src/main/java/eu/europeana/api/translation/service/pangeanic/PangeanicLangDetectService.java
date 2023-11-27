@@ -105,13 +105,13 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
       } 
       
       remoteStatusCode = response.getStatusLine().getStatusCode(); 
-      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK; 
+      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
+      String json = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
       if ( failedRequest ) {
         throw new LanguageDetectionException(
-            "Error from Pangeanic Language Detect API: " + response.getEntity(),
+            "Error from Pangeanic Language Detect API: " + json,
             remoteStatusCode);
       } else {
-        String json = EntityUtils.toString(response.getEntity());
         // sometimes language detect sends 200 ok status with empty response data
         if (json.isEmpty()) {
           throw new LanguageDetectionException("Language detect returned an empty response",

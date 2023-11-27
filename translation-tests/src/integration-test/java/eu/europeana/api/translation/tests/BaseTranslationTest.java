@@ -58,7 +58,8 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     try {
       return Map.of(
           loadFile(LANG_DETECT_PANGEANIC_REQUEST).trim(), loadFile(LANG_DETECT_PANGEANIC_RESPONSE),
-          loadFile(LANG_DETECT_PANGEANIC_REQUEST_2).trim(), loadFile(LANG_DETECT_PANGEANIC_RESPONSE_2)
+          loadFile(LANG_DETECT_PANGEANIC_REQUEST_2).trim(), loadFile(LANG_DETECT_PANGEANIC_RESPONSE_2),
+          loadFile(LANG_DETECT_PANGEANIC_MULTIPLE_LANGUAGES_REQUEST).trim(), loadFile(LANG_DETECT_PANGEANIC_MULTIPLE_LANGUAGES_RESPONSE)
       );
     } catch (IOException e) {
       throw new RuntimeException("Test initialization exception!", e);
@@ -68,7 +69,9 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   private static Map<String, String> initTranslationMap() {
     try {
       return Map.of(
-          loadFile(TRANSLATION_PANGEANIC_REQUEST_2).trim(), loadFile(TRANSLATION_PANGEANIC_RESPONSE_2)
+          loadFile(TRANSLATION_PANGEANIC_REQUEST_2).trim(), loadFile(TRANSLATION_PANGEANIC_RESPONSE_2),
+          loadFile(TRANSLATION_PANGEANIC_REQUEST_MULTIPLE_LANG_DE).trim(), loadFile(TRANSLATION_PANGEANIC_RESPONSE_MULTIPLE_LANG_DE),
+          loadFile(TRANSLATION_PANGEANIC_REQUEST_MULTIPLE_LANG_RO).trim(), loadFile(TRANSLATION_PANGEANIC_RESPONSE_MULTIPLE_LANG_RO)
       );
     } catch (IOException e) {
       throw new RuntimeException("Test initialization exception!", e);
