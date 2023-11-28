@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
@@ -82,21 +81,31 @@ public class GoogleTranslationService extends AbstractTranslationService {
   private TranslateTextRequest buildTranslationRequest(List<TranslationObj> translationObjs) {
     //get texts to translate
     List<String> texts = translationObjs.stream()
-        .map(to -> to.getText())
-        .collect(Collectors.toList());
+        .map(to -> to.getText()).toList();
   
-    //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
-    //If these conditions change  
-    
+        
     //build request
     String targetLang = translationObjs.get(0).getTargetLang();      
     Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
         .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
-    String sourceLanguage = translationObjs.get(0).getSourceLang();
+    
+    //multiple source languages might be a results of previously applied language detection
+    //for the time being we do not rely on external language detection but allow google to detect the language
+    String sourceLanguage = getUniqueSourceLanguage(translationObjs);
     if(sourceLanguage != null) {
       requestBuilder.setSourceLanguageCode(sourceLanguage);
     }
     return requestBuilder.build();
+  }
+
+  private String getUniqueSourceLanguage(List<TranslationObj> translationObjs) {
+    //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
+    List<String> srcLanguages = translationObjs.stream()
+        .map(to -> to.getSourceLang()).toList();
+    if(srcLanguages.size() == 1) {
+      return srcLanguages.get(0);
+    }
+    return null;
   }
 
   @Override

@@ -106,7 +106,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       }
 
       // if source language is available for the first item it must be available for all
-      if (translationObjs.get(0).getSourceLang() != null) {
+      if (translationObjs.get(0).getSourceLang() == null) {
         detectLanguages(translationObjs);
       }
 
@@ -128,9 +128,14 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     //the request has only one target language
     String targetLang = translationObjs.get(0).getTargetLang(); 
         
+    //when language detection is used, some texts might still have no language (i.e. bellow threshold)
+    if(sourceLanguages.contains(null)) {
+      
+    }
+    
     for (String sourceLanguage : sourceLanguages) {
-      //not needed to iterate if all are in the same language, it will be only one translation request for all objects
       if(sourceLanguages.size() == 1) {
+        //not needed to iterate if all are in the same language, it will be only one translation request for all objects
         toTranslatePerLanguage = translationObjs;
       }else {
         toTranslatePerLanguage = getObjectsWithSourceLanguage(translationObjs, sourceLanguage); 
@@ -177,7 +182,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
 
     // verify language detection response
-    if (detectedLanguages == null || detectedLanguages.size() != translationObjs.size()) {
+    if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
           "The translation cannot be performed. Detected languaged are incomplete.  Expected "
               + translationObjs.size() + " but received: " + detectedLanguages.size());
@@ -206,12 +211,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
       remoteStatusCode = response.getStatusLine().getStatusCode();
       boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
+      String responseBody = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
       if (failedRequest) {
         throw new TranslationException(
-            "Error from Pangeanic Translation API: " + response.getEntity(), remoteStatusCode);
+            "Error from Pangeanic Translation API: " + responseBody, remoteStatusCode);
       } else {
-        String json = EntityUtils.toString(response.getEntity());
-        JSONObject obj = new JSONObject(json);
+        JSONObject obj = new JSONObject(responseBody);
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
           throw new TranslationException("Pangeanic Translation API returned empty response",
