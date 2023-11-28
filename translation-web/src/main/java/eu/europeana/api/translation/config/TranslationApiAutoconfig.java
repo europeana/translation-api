@@ -45,6 +45,8 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationServic
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 import eu.europeana.api.translation.web.service.RedisCacheService;
+import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
+import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
@@ -97,6 +99,15 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       throws IOException {
     return new GoogleTranslationServiceClientWrapper(
         translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
+  }
+
+  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
+    if (useDummyServices) {
+      return new DummyApacheTikaLangDetectService();
+    } else {
+      return new ApacheTikaLangDetectService();
+    }
   }
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)

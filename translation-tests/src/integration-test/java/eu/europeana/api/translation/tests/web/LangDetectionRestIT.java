@@ -68,7 +68,27 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
-  
+
+  @Test
+  void langDetectionApacheTika() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA);
+    String result = mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    List<String> langs = Collections.singletonList(json.getString(TranslationAppConstants.LANGS));
+    assertTrue(langs.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+  }
+
   @Test
   void langDetectionGoogle() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_3);

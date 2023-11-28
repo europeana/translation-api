@@ -19,7 +19,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   private String serviceId;
 
   private Set<String> supportedLanguages = Set.of("af", "an", "ar", "ast", "be", "br", "ca", "bg",
-      "bn", "cs", "cy", "da", "de", "el", "es", "et", "eu", "fa", "fi", "fr", "ga", "gl", "gu", "he", "hi",
+      "bn", "cs", "cy", "da", "de", "el", "en", "es", "et", "eu", "fa", "fi", "fr", "ga", "gl", "gu", "he", "hi",
       "hr", "ht", "hu", "id", "is", "it", "ja", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ms", "mt",
       "ne", "nl", "no", "oc", "pa", "pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sr", "sv", "sw", "ta", "te", "th", "tl",
       "tr", "uk", "ur", "vi", "wa", "yi", "zh-cn", "zh-tw");
@@ -41,14 +41,12 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     
     List<String> detectedLangs = new ArrayList<String>();
     for(String text : texts) {
-
       //returns all tika languages sorted by score
       List<LanguageResult> tikaLanguages =  this.detector.detectAll(text);
       if(tikaLanguages.isEmpty()) {
         detectedLangs.add(null);
         continue;
       }
-      
       //if langHint is null, return the first detected language (has the highest confidence)
       if(StringUtils.isBlank(langHint)) {
         detectedLangs.add(tikaLanguages.get(0).getLanguage());
@@ -57,17 +55,17 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
 
       /*
        * in case lang hint is not null, check if it myabe exists among the langs with the highest confidence, 
-       * and if so return that as a detected lang
+       * and if so return the langHint as a detected lang, if not return the first one
        */
       String detectedLang=tikaLanguages.get(0).getLanguage();
-      if(detectedLang.equals(langHint)) {
+      if(langHint.equals(detectedLang)) {
         detectedLangs.add(langHint);
         continue;
       }
       float confidence=tikaLanguages.get(0).getRawScore();
       for(int i=1;i<tikaLanguages.size();i++) {
         if(tikaLanguages.get(i).getRawScore()==confidence) {
-          if(tikaLanguages.get(i).getLanguage().equals(langHint)) {
+          if(langHint.equals(tikaLanguages.get(i).getLanguage())) {
             detectedLang=langHint;
             break;
           }
@@ -78,9 +76,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
       }
       detectedLangs.add(detectedLang);
     }
-    
     return detectedLangs;
-    
   }
 
   @Override
