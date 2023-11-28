@@ -274,6 +274,18 @@
 					</configuration>
 				</plugin>
 				<plugin>
+					<inherited>true</inherited>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<!--
+					<version>3.10.1</version>
+					-->
+					<configuration>
+						<source>${version.java}</source>
+						<target>${version.java}</target>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<!-- JUnit 5 requires Surefire version 2.22.0 or higher -->
