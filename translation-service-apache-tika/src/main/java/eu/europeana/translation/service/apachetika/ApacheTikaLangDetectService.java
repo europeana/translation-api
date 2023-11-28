@@ -77,6 +77,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
         continue;
       }
       float confidence=tikaLanguages.get(0).getRawScore();
+      
       for(int i=1;i<tikaLanguages.size();i++) {
         if(tikaLanguages.get(i).getRawScore()==confidence) {
           if(langHint.equals(tikaLanguages.get(i).getLanguage())) {
