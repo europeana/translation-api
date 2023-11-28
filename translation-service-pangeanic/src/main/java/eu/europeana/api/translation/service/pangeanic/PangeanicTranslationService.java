@@ -105,8 +105,8 @@ public class PangeanicTranslationService extends AbstractTranslationService {
         return;
       }
 
-      // if source language is available for the first item it must be available for all
       if (translationObjs.get(0).getSourceLang() == null) {
+        // if the source language was not provided in the request, language detection needs to be called
         detectLanguages(translationObjs);
       }
 
@@ -128,11 +128,6 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     //the request has only one target language
     String targetLang = translationObjs.get(0).getTargetLang(); 
         
-    //when language detection is used, some texts might still have no language (i.e. bellow threshold)
-    if(sourceLanguages.contains(null)) {
-      
-    }
-    
     for (String sourceLanguage : sourceLanguages) {
       if(sourceLanguages.size() == 1) {
         //not needed to iterate if all are in the same language, it will be only one translation request for all objects
@@ -148,6 +143,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
   private void translateAndAccumulateResults(List<TranslationObj> toTranslatePerLanguage,
       String sourceLanguage, String targetLang) throws JSONException, TranslationException {
+    
+    if(sourceLanguage == null) {
+      //language not provided and not detected, skip translation request
+      return;  
+    }
+    
     // send the translation request
     List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).collect(Collectors.toList());
     HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
