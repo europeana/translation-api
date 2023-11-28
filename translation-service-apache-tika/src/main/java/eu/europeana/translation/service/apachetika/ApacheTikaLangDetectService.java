@@ -38,6 +38,20 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     if (texts.isEmpty()) {
       return new ArrayList<>();
     }
+
+    /*
+     * this code can be used for testing the lang hint, but the setPriors map cannot be sent empty or null
+     */
+//    try {
+//      Map<String, Float> languageProbabilities = new HashMap<String, Float>();
+//      if(! StringUtils.isBlank(langHint)) {
+//        languageProbabilities.put(langHint, (float) 1.0);
+//      }
+//      this.detector.setPriors(languageProbabilities);
+//    } catch (IOException e) {
+//      throw new LanguageDetectionException(
+//          "Invalid setting of the language hint for the Apache-Tika service!", -1, e);
+//    }        
     
     List<String> detectedLangs = new ArrayList<String>();
     for(String text : texts) {
