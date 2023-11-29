@@ -185,8 +185,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     // verify language detection response
     if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
-          "The translation cannot be performed. Detected languaged are incomplete.  Expected "
-              + translationObjs.size() + " but received: " + detectedLanguages.size());
+          "The translation cannot be performed. A list of detected languages is null or contains nulls.");
     }
 
     if (LOG.isDebugEnabled()) {
