@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import com.google.common.primitives.Ints;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.model.CachedTranslation;
 import io.micrometer.core.instrument.util.StringUtils;
@@ -136,8 +138,10 @@ public class RedisCacheService {
    * @return generated redis key
    */
   public String generateRedisKey(String inputText, String sourceLang, String targetLang) {
-    String key = inputText + sourceLang + targetLang;
-    return String.valueOf(key.hashCode());
+    StringBuilder builder = (new StringBuilder()).append(sourceLang).append(targetLang);
+    byte[] hash = Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
+    builder.append(new String(hash));
+    return builder.toString();
   }
 
 }
