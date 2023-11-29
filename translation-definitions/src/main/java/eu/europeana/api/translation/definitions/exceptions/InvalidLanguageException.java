@@ -10,4 +10,8 @@ public class InvalidLanguageException extends Exception{
   public InvalidLanguageException(String message) {
     super(message);
   }
+  
+  public InvalidLanguageException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

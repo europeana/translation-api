@@ -53,8 +53,9 @@ public class RedisCacheService {
     if (redisResponse == null || redisResponse.size() != cacheableTranslations.size()) {
       // ensure that the response size corresponds to request size
       // this should not happen, but better use defensive programming
+      int redisSize=redisResponse==null ? 0 : redisResponse.size();
       logger.warn("Redis response size {} doesn't match the request size{}, for keys: {}",
-          redisResponse.size(), cacheableTranslations.size(), cacheKeys);
+          redisSize, cacheableTranslations.size(), cacheKeys);
       return;
     }
 
