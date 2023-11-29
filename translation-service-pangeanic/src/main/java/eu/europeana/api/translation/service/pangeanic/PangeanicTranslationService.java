@@ -3,7 +3,6 @@ package eu.europeana.api.translation.service.pangeanic;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -122,7 +121,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       throws JSONException, TranslationException {
     
     //collect source languages, they might be multiple 
-    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).collect(Collectors.toSet());
+    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).toSet();
     
     List<TranslationObj> toTranslatePerLanguage;
     //the request has only one target language
@@ -150,7 +149,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
     
     // send the translation request
-    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).collect(Collectors.toList());
+    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).toList();
     HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
         getExternalServiceEndPoint(), translTexts, targetLang, sourceLanguage, "");
     
@@ -161,7 +160,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private List<TranslationObj> getObjectsWithSourceLanguage(List<TranslationObj> translationObjs,
       String sourceLanguage) {
     return translationObjs.stream()
-        .filter(to -> sourceLanguage.equals(to.getSourceLang())).collect(Collectors.toList());
+        .filter(to -> sourceLanguage.equals(to.getSourceLang())).toList();
   }
 
 
@@ -173,7 +172,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
     // detect languages
     List<String> texts =
-        translationObjs.stream().map(to -> to.getText()).collect(Collectors.toList());
+        translationObjs.stream().map(to -> to.getText()).toList();
     List<String> detectedLanguages = null;
     try {
       detectedLanguages = langDetectService.detectLang(texts, null);
