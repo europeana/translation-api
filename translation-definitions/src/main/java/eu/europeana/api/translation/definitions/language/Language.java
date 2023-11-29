@@ -28,6 +28,8 @@ public enum Language {
 
     public static final String DEF = "def";
     public static final String NO_LINGUISTIC_CONTENT = "zxx";
+
+    // pivot language
     public static final String ENGLISH = Language.EN.name().toLowerCase(Locale.ROOT);
 
     /**

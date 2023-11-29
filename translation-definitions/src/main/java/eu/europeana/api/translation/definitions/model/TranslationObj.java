@@ -7,7 +7,13 @@ public class TranslationObj {
   private String translation;
   private String cacheKey;
   private boolean isCached;
-  
+
+  public TranslationObj(String text, String sourceLang, String targetLang) {
+    this.text = text;
+    this.sourceLang = sourceLang;
+    this.targetLang = targetLang;
+  }
+
   public String getText() {
     return text;
   }
@@ -44,5 +50,5 @@ public class TranslationObj {
   public void setIsCached(boolean cached) {
     this.isCached = cached;
   }
-  
+
 }
