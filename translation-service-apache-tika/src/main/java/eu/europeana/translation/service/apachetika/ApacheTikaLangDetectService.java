@@ -61,33 +61,30 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     for(String text : texts) {
       //returns all tika languages sorted by score
       tikaLanguages =  this.detector.detectAll(text);
-      if(tikaLanguages.isEmpty()) {
-        detectedLangs.add(null);
-        continue;
-      }
-      //if langHint is null, return the first detected language (has the highest confidence)
-      if(StringUtils.isBlank(langHint)) {
-        detectedLangs.add(tikaLanguages.get(0).getLanguage());
-        continue;
-      }
 
-      detectedLangs.add(getDetectedLangByHint(tikaLanguages, langHint));
+      detectedLangs.add(chooseDetectedLang(tikaLanguages, langHint));
       
     }
     return detectedLangs;
   }
 
-  /*
+  /**
    * In case lang hint is not null, check if it myabe exists among the langs with the highest confidence, 
    * and if so return the langHint as a detected lang, if not return the first one. 
-   * The lang hint param cannot be null.
    */
-  private String getDetectedLangByHint(List<LanguageResult> tikaLanguages, String langHint) {
+  private String chooseDetectedLang(List<LanguageResult> tikaLanguages, String langHint) {
+    if(tikaLanguages.isEmpty()) {
+      return null;
+    }
+    //if langHint is null, return the first detected language (has the highest confidence)
+    if(StringUtils.isBlank(langHint)) {
+      return tikaLanguages.get(0).getLanguage();
+    }
+
     String detectedLang=tikaLanguages.get(0).getLanguage();
     if(langHint.equals(detectedLang)) {
       return langHint;
     }
-    
     float confidence=tikaLanguages.get(0).getRawScore();
     for(int i=1;i<tikaLanguages.size();i++) {
       if(tikaLanguages.get(i).getRawScore()>=confidence) {
