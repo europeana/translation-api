@@ -39,24 +39,8 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     if (texts.isEmpty()) {
       return Collections.emptyList();
     }
-
-    /*
-     * this code can be used for testing the lang hint, but the setPriors map cannot be sent empty or null,
-     * and once it is set, it stays for the next call as well, so to empty it, the detector would probably 
-     * need to be recreated
-     */
-//    try {
-//      Map<String, Float> languageProbabilities = new HashMap<String, Float>();
-//      if(! StringUtils.isBlank(langHint)) {
-//        languageProbabilities.put(langHint, (float) 1.0);
-//      }
-//      this.detector.setPriors(languageProbabilities);
-//    } catch (IOException e) {
-//      throw new LanguageDetectionException(
-//          "Invalid setting of the language hint for the Apache-Tika service!", -1, e);
-//    }        
     
-    List<String> detectedLangs = new ArrayList<String>();
+    List<String> detectedLangs = new ArrayList<>();
     List<LanguageResult> tikaLanguages=null;
     for(String text : texts) {
       //returns all tika languages sorted by score
@@ -92,8 +76,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
           detectedLang=langHint;
           break;
         }
-      }
-      else {
+      } else {
         break;
       }        
     }

@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.tests.web;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -87,7 +88,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     assertTrue(langs.length()==3 && "hr".equals(langs.getString(0)) && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertTrue("APACHE-TIKA".equals(serviceFieldValue));
+    assertEquals("APACHE-TIKA", serviceFieldValue);
   }
 
   @Test
