@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +122,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       throws JSONException, TranslationException {
     
     //collect source languages, they might be multiple 
-    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).toSet();
+    Set<String> sourceLanguages = new HashSet<>(translationObjs.stream().map(to -> to.getSourceLang()).toList());
     
     List<TranslationObj> toTranslatePerLanguage;
     //the request has only one target language
