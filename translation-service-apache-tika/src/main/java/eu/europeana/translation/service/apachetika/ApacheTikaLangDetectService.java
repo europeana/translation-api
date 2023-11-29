@@ -1,6 +1,7 @@
 package eu.europeana.translation.service.apachetika;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -36,11 +37,13 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   @Override
   public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
     if (texts.isEmpty()) {
-      return new ArrayList<>();
+      return Collections.emptyList();
     }
 
     /*
-     * this code can be used for testing the lang hint, but the setPriors map cannot be sent empty or null
+     * this code can be used for testing the lang hint, but the setPriors map cannot be sent empty or null,
+     * and once it is set, it stays for the next call as well, so to empty it, the detector would probably 
+     * need to be recreated
      */
 //    try {
 //      Map<String, Float> languageProbabilities = new HashMap<String, Float>();
@@ -54,9 +57,10 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
 //    }        
     
     List<String> detectedLangs = new ArrayList<String>();
+    List<LanguageResult> tikaLanguages=null;
     for(String text : texts) {
       //returns all tika languages sorted by score
-      List<LanguageResult> tikaLanguages =  this.detector.detectAll(text);
+      tikaLanguages =  this.detector.detectAll(text);
       if(tikaLanguages.isEmpty()) {
         detectedLangs.add(null);
         continue;
@@ -67,31 +71,36 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
         continue;
       }
 
-      /*
-       * in case lang hint is not null, check if it myabe exists among the langs with the highest confidence, 
-       * and if so return the langHint as a detected lang, if not return the first one
-       */
-      String detectedLang=tikaLanguages.get(0).getLanguage();
-      if(langHint.equals(detectedLang)) {
-        detectedLangs.add(langHint);
-        continue;
-      }
-      float confidence=tikaLanguages.get(0).getRawScore();
+      detectedLangs.add(getDetectedLangByHint(tikaLanguages, langHint));
       
-      for(int i=1;i<tikaLanguages.size();i++) {
-        if(tikaLanguages.get(i).getRawScore()>=confidence) {
-          if(langHint.equals(tikaLanguages.get(i).getLanguage())) {
-            detectedLang=langHint;
-            break;
-          }
-        }
-        else {
-          break;
-        }        
-      }
-      detectedLangs.add(detectedLang);
     }
     return detectedLangs;
+  }
+
+  /*
+   * In case lang hint is not null, check if it myabe exists among the langs with the highest confidence, 
+   * and if so return the langHint as a detected lang, if not return the first one. 
+   * The lang hint param cannot be null.
+   */
+  private String getDetectedLangByHint(List<LanguageResult> tikaLanguages, String langHint) {
+    String detectedLang=tikaLanguages.get(0).getLanguage();
+    if(langHint.equals(detectedLang)) {
+      return langHint;
+    }
+    
+    float confidence=tikaLanguages.get(0).getRawScore();
+    for(int i=1;i<tikaLanguages.size();i++) {
+      if(tikaLanguages.get(i).getRawScore()>=confidence) {
+        if(langHint.equals(tikaLanguages.get(i).getLanguage())) {
+          detectedLang=langHint;
+          break;
+        }
+      }
+      else {
+        break;
+      }        
+    }
+    return detectedLang;
   }
 
   @Override

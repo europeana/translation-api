@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,10 +84,10 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    List<String> langs = Collections.singletonList(json.getString(TranslationAppConstants.LANGS));
-    assertTrue(langs.size()>0);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertTrue(langs.length()==3 && "hr".equals(langs.getString(0)) && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertNotNull(serviceFieldValue);
+    assertTrue("APACHE-TIKA".equals(serviceFieldValue));
   }
 
   @Test
