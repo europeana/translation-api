@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -68,7 +69,27 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
-  
+
+  @Test
+  void langDetectionApacheTika() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA);
+    String result = mockMvc
+        .perform(
+            post(BASE_URL_DETECT)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertTrue(langs.length()==3 && "hr".equals(langs.getString(0)) && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertTrue("APACHE-TIKA".equals(serviceFieldValue));
+  }
+
   @Test
   void langDetectionGoogle() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_3);

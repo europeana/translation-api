@@ -1,9 +1,9 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -122,7 +122,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       throws JSONException, TranslationException {
     
     //collect source languages, they might be multiple 
-    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).collect(Collectors.toSet());
+    Set<String> sourceLanguages = new HashSet<>(translationObjs.stream().map(to -> to.getSourceLang()).toList());
     
     List<TranslationObj> toTranslatePerLanguage;
     //the request has only one target language
@@ -150,7 +150,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
     
     // send the translation request
-    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).collect(Collectors.toList());
+    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).toList();
     HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
         getExternalServiceEndPoint(), translTexts, targetLang, sourceLanguage, "");
     
@@ -173,7 +173,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
     // detect languages
     List<String> texts =
-        translationObjs.stream().map(to -> to.getText()).collect(Collectors.toList());
+        translationObjs.stream().map(to -> to.getText()).toList();
     List<String> detectedLanguages = null;
     try {
       detectedLanguages = langDetectService.detectLang(texts, null);
@@ -185,8 +185,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     // verify language detection response
     if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
-          "The translation cannot be performed. Detected languaged are incomplete.  Expected "
-              + translationObjs.size() + " but received: " + detectedLanguages.size());
+          "The translation cannot be performed. A list of detected languages is null or contains nulls.");
     }
 
     if (LOG.isDebugEnabled()) {

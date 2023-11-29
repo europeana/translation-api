@@ -11,7 +11,11 @@
             {
                 "id": "GOOGLE"
               , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
-            }            
+            },
+            {
+                "id": "APACHE-TIKA"
+              , "classname": "eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService"
+            }          
         ],
         "default": "PANGEANIC"
     },

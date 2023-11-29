@@ -22,7 +22,8 @@
 		<module>translation-service-pangeanic</module>
 		<module>translation-web</module>
 		<module>translation-tests</module>
-		
+
+		<module>translation-service-apache-tika</module>
 	</modules>
 	
 	<repositories>
@@ -74,6 +75,7 @@
 		<sonar.cpd.exclusions>**/model/**/*</sonar.cpd.exclusions>
 		<aggregate.report.xml>translation-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.xml>
 		<sonar.coverage.jacoco.xmlReportPaths>${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
+		<apache.tika.version>2.9.1</apache.tika.version>
 
 	</properties>
 
