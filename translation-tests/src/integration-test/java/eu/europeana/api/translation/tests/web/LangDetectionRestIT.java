@@ -118,6 +118,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONObject obj = new JSONObject(response);
     Assertions.assertEquals(obj.get("success"), false);
     Assertions.assertEquals(obj.get("status"), HttpStatus.BAD_REQUEST.value());
+    Assertions.assertEquals(obj.get("code"), "mandatory_param_empty");
     Assertions.assertTrue(obj.has("error"));
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));
