@@ -83,9 +83,15 @@ public class RedisCacheService {
     }
   }
 
+  /**
+   * verifies is the source language and translations are available in the object
+   * NOTE: currently we rely that the calling methods are verifying the availability of the target language and original text 
+   * @param translationObj the translation object to verify if it should be cached
+   * @return true is source language and translation are available 
+   */
   private boolean isCacheable(TranslationObj translationObj) {
     return translationObj.getSourceLang() != null
-        && StringUtils.isNotEmpty(translationObj.getText());
+        && StringUtils.isNotEmpty(translationObj.getTranslation());
   }
 
   /**
