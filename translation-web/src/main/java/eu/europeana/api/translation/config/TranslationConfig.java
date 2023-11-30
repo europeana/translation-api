@@ -19,7 +19,7 @@ import org.springframework.context.annotation.PropertySources;
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
 public class TranslationConfig{
 
-  private final Logger LOG = LogManager.getLogger(TranslationConfig.class);
+  private static final Logger LOG = LogManager.getLogger(TranslationConfig.class);
   /** Matches spring.profiles.active property in test/resource application.properties file */
   public static final String ACTIVE_TEST_PROFILE = "test";
 

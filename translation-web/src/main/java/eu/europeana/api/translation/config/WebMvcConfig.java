@@ -19,6 +19,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
   /** Setup CORS for all GET, HEAD and OPTIONS, requests. */
   @Override
+  @SuppressWarnings("external_findsecbugs:PERMISSIVE_CORS") //the API is public
   public void addCorsMappings(CorsRegistry registry) {
     registry
         .addMapping("/**")

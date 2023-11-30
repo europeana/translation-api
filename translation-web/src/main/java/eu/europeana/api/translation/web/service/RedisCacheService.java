@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.web.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -159,7 +160,7 @@ public class RedisCacheService {
   public String generateRedisKey(String inputText, String sourceLang, String targetLang) {
     StringBuilder builder = (new StringBuilder()).append(sourceLang).append(targetLang);
     byte[] hash = Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
-    builder.append(new String(hash));
+    builder.append(new String(hash, StandardCharsets.UTF_8));
     return builder.toString();
   }
 

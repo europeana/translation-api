@@ -175,6 +175,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     // if redis secure protocol is used (rediss vs. redis)
     boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
     if (sslEnabled) {
+      @SuppressWarnings("external_findsecbugs:PATH_TRAVERSAL_IN") // the trustore path is not user input but application config
       final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
           .truststore(truststore,

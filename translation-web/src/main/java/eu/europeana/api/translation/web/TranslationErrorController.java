@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorCon
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons.web.http.HttpHeaders;
@@ -21,7 +22,7 @@ public class TranslationErrorController extends AbstractErrorController {
     }
 
 
-    @RequestMapping(value = "/error", produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, HttpHeaders.CONTENT_TYPE_JSONLD})
+    @RequestMapping(value = "/error", produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, HttpHeaders.CONTENT_TYPE_JSONLD}, method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public Map<String, Object> error(final HttpServletRequest request) {
         return this.getErrorAttributes(request, ErrorAttributeOptions.defaults());
