@@ -32,6 +32,7 @@ public class JsonRedisSerializer implements RedisSerializer<Object> {
   }
 
   @Override
+  @SuppressWarnings("external_fbcontrib:LEST_LOST_EXCEPTION_STACK_TRACE") // cannot change external interface
   public CachedTranslation deserialize(byte[] bytes) throws SerializationException {
     if(bytes == null){
       return null;
@@ -39,7 +40,7 @@ public class JsonRedisSerializer implements RedisSerializer<Object> {
     try {
       return om.readValue(bytes, CachedTranslation.class);
     } catch (IOException e) {
-      throw new SerializationException(e.getMessage(), e);
+      throw new SerializationException("Cannot deserialize redis response: " + e.getMessage(), e);
     }
   }
 	      
