@@ -168,7 +168,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
-  @SuppressWarnings(["external_findsecbugs:PATH_TRAVERSAL_IN", "findsecbugs:PATH_TRAVERSAL_IN"]) // the trustore path is not user input but application config
+  @SuppressWarnings({"external_findsecbugs:PATH_TRAVERSAL_IN", "findsecbugs:PATH_TRAVERSAL_IN"}) // the trustore path is not user input but application config
   private LettuceConnectionFactory getRedisConnectionFactory() {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
@@ -176,6 +176,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     // if redis secure protocol is used (rediss vs. redis)
     boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
     if (sslEnabled) {
+      @SuppressWarnings("external_findsecbugs:PATH_TRAVERSAL_IN") // the trustore path is not user input but application config
       final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
           .truststore(truststore,
