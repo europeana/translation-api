@@ -37,15 +37,12 @@ public class MetadataChosenLanguageService {
             return null;
         }
 
-        System.out.println("langCountMap "+langCountMap);
         //reverse map - as values might not be unique so using grouping method
         Map<Integer, List<String>> reverseMap =
                 langCountMap.entrySet()
                         .stream()
                         .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
         List<String> languagesWithMostvalues = reverseMap.get(Collections.max(reverseMap.keySet()));
-
-        System.out.println("reverseMap "+reverseMap);
 
         // if there is a tie between more than one language, choose based on the precedance list
         if (languagesWithMostvalues.size() > 1) {

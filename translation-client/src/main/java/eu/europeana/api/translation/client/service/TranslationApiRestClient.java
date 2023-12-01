@@ -33,13 +33,7 @@ public class TranslationApiRestClient {
      * @return
      */
     public TranslationResponse getTranslations(String request) {
-        TranslationResponse response = getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false);
-
-        System.out.println(response.getTranslations());
-        System.out.println(response.getLang());
-        System.out.println(response.getService());
-
-        return response;
+       return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false);
     }
 
     /**
@@ -48,10 +42,7 @@ public class TranslationApiRestClient {
      * @return
      */
     public LangDetectResponse getDetectedLanguages(String request) {
-        LangDetectResponse response = getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true);
-        System.out.println(response.getLangs());
-        System.out.println(response.getService());
-        return response;
+        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true);
     }
 
 
