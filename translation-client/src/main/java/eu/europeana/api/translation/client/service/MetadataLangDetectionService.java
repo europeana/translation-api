@@ -100,7 +100,7 @@ public class MetadataLangDetectionService extends BaseService {
             // 3. collect all the values in one list for single lang-detection request per proxy
             LanguageDetectionUtils.getTextsForDetectionRequest(textsForDetection, textsPerField, langValueFieldMapForDetection);
 
-            LOG.debug("Gathering detection values for {} took {}ms ", bean.getAbout(), (System.currentTimeMillis() - start));
+            LOG.debug("Gathering detection values for {} took {} ms ", bean.getAbout(), (System.currentTimeMillis() - start));
 
             // 4. send lang-detect request
             List<String> detectedLanguages = getTranslationApiClient().detectLang(createLangDetectRequest(textsForDetection, langHint)).getLangs();
@@ -119,7 +119,7 @@ public class MetadataLangDetectionService extends BaseService {
             // 6. add all the new language tagged values to europeana proxy
             Proxy europeanProxy = getEuropeanaProxy(bean.getProxies(), bean.getAbout());
             updateProxy(europeanProxy, correctLangValueMap);
-            LOG.debug("Language detection took {}ms", bean.getAbout(), (System.currentTimeMillis() - start));
+            LOG.debug("Language detection for {} took {} ms", bean.getAbout(), (System.currentTimeMillis() - start));
         }
         return bean;
     }
