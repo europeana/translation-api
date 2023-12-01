@@ -1,9 +1,9 @@
-package eu.europeana.api.translation.record.utils;
+package eu.europeana.api.translation.client.utils;
 
 import eu.europeana.api.commons.definitions.utils.ComparatorUtils;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
-import eu.europeana.api.translation.record.service.BaseService;
+import eu.europeana.api.translation.client.service.BaseService;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.utils.EuropeanaUriUtils;
@@ -224,5 +224,9 @@ public class LanguageDetectionUtils {
             }
         }
         return nonLangTaggedDefvalues;
+    }
+
+    public static boolean onlyNulls(List<String> values) {
+        return values.stream().noneMatch(Objects::nonNull);
     }
 }

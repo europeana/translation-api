@@ -1,7 +1,8 @@
-package eu.europeana.api.translation.record.service;
+package eu.europeana.api.translation.client.service;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.record.exception.InvalidParamValueException;
+import eu.europeana.api.translation.client.exception.InvalidParamValueException;
+import eu.europeana.api.translation.client.web.TranslationApiClient;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
@@ -19,6 +20,8 @@ public class BaseService {
 
     private static final Logger LOG = LogManager.getLogger(BaseService.class);
 
+    private final TranslationApiClient translationApiClient;
+
     protected static final List<String> PRECENDANCE_LIST = List.of("sk", "hr", "pl", "ro", "it", "sv", "bg", "fr", "es", "cs", "de", "lv", "el", "fi", "nl", "hu", "da", "sl", "et", "pt", "lt", "ga", "en");
 
     private static final Set<String> INCLUDE_PROXY_MAP_FIELDS = Set.of("dcContributor", "dcCoverage", "dcCreator", "dcDate", "dcDescription", "dcFormat","dcPublisher",
@@ -28,9 +31,16 @@ public class BaseService {
 
     private static final List<String> ENTITIES = List.of("agents", "concepts", "places", "timespans");
 
-    protected static final ReflectionUtils.FieldFilter proxyFieldFilter = field -> field.getType().isAssignableFrom(Map.class) &&
+    public static final ReflectionUtils.FieldFilter proxyFieldFilter = field -> field.getType().isAssignableFrom(Map.class) &&
             INCLUDE_PROXY_MAP_FIELDS.contains(field.getName());
 
+    public BaseService(TranslationApiClient translationApiClient) {
+        this.translationApiClient = translationApiClient;
+    }
+
+    public TranslationApiClient getTranslationApiClient() {
+        return translationApiClient;
+    }
 
     /**
      * Get the europeana proxy from the list of proxy
@@ -38,7 +48,7 @@ public class BaseService {
      * @param proxies
      * @param recordId
      * @return
-     * @throws TranslationException
+     * @throws EuropeanaApiException
      */
     public static Proxy getEuropeanaProxy(List<? extends Proxy> proxies, String recordId) throws EuropeanaApiException {
         Optional<? extends Proxy> europeanaProxy = proxies.stream().filter(Proxy :: isEuropeanaProxy).findFirst();

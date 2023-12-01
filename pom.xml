@@ -22,7 +22,7 @@
 		<module>translation-service-pangeanic</module>
 		<module>translation-web</module>
 		<module>translation-tests</module>
-		<module>translation-record</module>
+		<module>translation-client</module>
 
 	</modules>
 	
