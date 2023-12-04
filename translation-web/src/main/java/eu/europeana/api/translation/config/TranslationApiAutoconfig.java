@@ -27,12 +27,12 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.model.CachedTranslation;
-import eu.europeana.api.translation.serialization.JsonRedisSerializer;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -204,9 +204,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       throw new AppConfigurationException("A trustore must be provided in configurations when confinguring redis ssl connection");
     }
     //allow configurations to use the full path, for backward compatibility
-    truststorePathConfig.replace(CONFIGS_FOLDER, "");
-    
-    return new File(CONFIGS_FOLDER, FilenameUtils.normalize(truststorePathConfig));
+    final File trustoreFile = new File(CONFIGS_FOLDER, FilenameUtils.getName(truststorePathConfig));
+    if(!trustoreFile.exists()) {
+      throw new AppConfigurationException("Invalid config file location: " + trustoreFile.getAbsolutePath());
+    }
+    return trustoreFile;
   }
 
   private RedisTemplate<String, CachedTranslation> getRedisTemplate(
@@ -214,7 +216,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
-    redisTemplate.setValueSerializer(new JsonRedisSerializer());
+    redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<CachedTranslation>(CachedTranslation.class));
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
