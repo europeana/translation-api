@@ -32,7 +32,7 @@ public class JsonRedisSerializer implements RedisSerializer<Object> {
   }
 
   @Override
-  @SuppressWarnings("external_fbcontrib:LEST_LOST_EXCEPTION_STACK_TRACE") // cannot change external interface
+  @SuppressWarnings({"external_fbcontrib:LEST_LOST_EXCEPTION_STACK_TRACE", "external_fbcontrib:EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS"}) // cannot change external interface
   public CachedTranslation deserialize(byte[] bytes) throws SerializationException {
     if(bytes == null){
       return null;
