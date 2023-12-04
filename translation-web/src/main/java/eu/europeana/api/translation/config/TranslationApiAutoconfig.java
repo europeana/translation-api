@@ -44,6 +44,7 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.service.RedisCacheService;
 import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
 import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
@@ -58,6 +59,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @Value("${translation.dummy.services:false}")
   private boolean useDummyServices;
 
+  public static final String CONFIGS_FOLDER = "/opt/app/config/"; 
+  
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
@@ -168,16 +171,14 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
-  @SuppressWarnings({"external_findsecbugs:PATH_TRAVERSAL_IN", "findsecbugs:PATH_TRAVERSAL_IN"}) // the trustore path is not user input but application config
-  private LettuceConnectionFactory getRedisConnectionFactory() {
+  private LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
         LettuceClientConfiguration.builder();
     // if redis secure protocol is used (rediss vs. redis)
     boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
     if (sslEnabled) {
-      @SuppressWarnings("external_findsecbugs:PATH_TRAVERSAL_IN") // the trustore path is not user input but application config
-      final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
+      final File truststore = getTrustoreFile();
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
           .truststore(truststore,
               translationConfig.getTruststorePass())
@@ -196,6 +197,18 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
   }
 
+  private File getTrustoreFile() throws AppConfigurationException {
+    
+    String truststorePathConfig = translationConfig.getTruststorePath();
+    if(truststorePathConfig == null) {
+      throw new AppConfigurationException("A trustore must be provided in configurations when confinguring redis ssl connection");
+    }
+    //allow configurations to use the full path, for backward compatibility
+    truststorePathConfig.replace(CONFIGS_FOLDER, "");
+    
+    return new File(CONFIGS_FOLDER, FilenameUtils.normalize(truststorePathConfig));
+  }
+
   private RedisTemplate<String, CachedTranslation> getRedisTemplate(
       RedisConnectionFactory redisConnectionFactory) {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
@@ -208,7 +221,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
-  public RedisCacheService getRedisCacheService() {
+  public RedisCacheService getRedisCacheService() throws AppConfigurationException {
     LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
     redisConnectionFactory.afterPropertiesSet();
     RedisTemplate<String, CachedTranslation> redisTemplate =
