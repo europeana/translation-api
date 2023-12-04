@@ -5,7 +5,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.model.CachedTranslation;
+import eu.europeana.api.translation.definitions.model.CachedTranslation;
 
 /**
  * Json Serializer for objects managed with redis cache  

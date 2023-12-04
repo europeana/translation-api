@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
-import eu.europeana.api.translation.model.CachedTranslation;
+import eu.europeana.api.translation.definitions.model.CachedTranslation;
 import io.micrometer.core.instrument.util.StringUtils;
 
 public class RedisCacheService {

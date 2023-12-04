@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.BaseTranslationApiClient;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
-import eu.europeana.api.translation.model.LangDetectRequest;
-import eu.europeana.api.translation.model.LangDetectResponse;
-import eu.europeana.api.translation.model.TranslationRequest;
-import eu.europeana.api.translation.model.TranslationResponse;
+import eu.europeana.api.translation.definitions.model.LangDetectRequest;
+import eu.europeana.api.translation.definitions.model.LangDetectResponse;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
+import eu.europeana.api.translation.definitions.model.TranslationResponse;
 
 public class TranslationApiClient extends BaseTranslationApiClient {
 

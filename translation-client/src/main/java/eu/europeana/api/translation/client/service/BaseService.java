@@ -3,7 +3,6 @@ package eu.europeana.api.translation.client.service;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.exception.InvalidParamValueException;
 import eu.europeana.api.translation.client.web.TranslationApiClient;
-import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;

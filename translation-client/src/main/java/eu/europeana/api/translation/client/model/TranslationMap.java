@@ -3,13 +3,13 @@ package eu.europeana.api.translation.client.model;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
 import eu.europeana.api.translation.client.web.TranslationApiClient;
-import eu.europeana.api.translation.model.TranslationRequest;
-import eu.europeana.api.translation.model.TranslationResponse;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
+import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import eu.europeana.corelib.utils.ComparatorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 public class TranslationMap extends LinkedHashMap<String, List<String>> {
@@ -18,14 +18,14 @@ public class TranslationMap extends LinkedHashMap<String, List<String>> {
 
     private static final Logger LOG = LogManager.getLogger(TranslationMap.class);
 
-    @Nonnull
+    @NotNull
     private final String sourceLanguage;
 
-    public TranslationMap(@Nonnull String sourceLanguage) {
+    public TranslationMap(@NotNull String sourceLanguage) {
         this.sourceLanguage = sourceLanguage;
     }
 
-    public TranslationMap(@Nonnull String sourceLanguage, String fieldName, List<String> values) {
+    public TranslationMap(@NotNull String sourceLanguage, String fieldName, List<String> values) {
         this.sourceLanguage = sourceLanguage;
         add(fieldName, values);
     }
@@ -124,7 +124,7 @@ public class TranslationMap extends LinkedHashMap<String, List<String>> {
         return translationsForField;
     }
 
-    @Nonnull
+    @NotNull
     public String getSourceLanguage() {
         return sourceLanguage;
     }

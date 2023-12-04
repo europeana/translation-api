@@ -5,8 +5,7 @@ import eu.europeana.api.translation.client.web.TranslationApiClient;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
-import eu.europeana.api.translation.model.LangDetectRequest;
-import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
 import org.apache.commons.lang3.SerializationUtils;
@@ -63,7 +62,6 @@ public class MetadataLangDetectionService extends BaseService {
      *
      * @param bean
      * @throws EuropeanaApiException
-     * @throws LanguageDetectionException
      */
     public FullBean detectLanguageForProxy(FullBean bean) throws EuropeanaApiException {
         long start = System.currentTimeMillis();
