@@ -1,0 +1,8 @@
+{
+  "text": [
+    "Ovo je tekst na srpskom jeziku",
+    "Das ist ein deutscher Text",
+    "This is an English text"
+  ],
+  "service": "APACHE-TIKA"
+}

@@ -48,7 +48,7 @@ public class CachedTranslationService extends AbstractTranslationService {
     }
 
     List<TranslationObj> toTranslate = translationObjs.stream().filter(
-        t -> t.getTranslation() == null).collect(Collectors.toList());
+        t -> t.getTranslation() == null).toList();
     
     if(toTranslate.isEmpty()) {
       //all entries retrieved from cache, processing complete

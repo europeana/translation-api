@@ -181,7 +181,9 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    assertTrue(translObjs.stream().filter(el -> el.getIsCached()).collect(Collectors.toList()).size()==2);
+    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
+    //check if all are availble in the cache
+    assertTrue(cachedTranslations.size() == translObjs.size());
     
     String cachedResult = mockMvc
         .perform(
@@ -245,6 +247,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     JSONObject obj = new JSONObject(response);
     Assertions.assertEquals(obj.get("success"), false);
     Assertions.assertEquals(obj.get("status"), HttpStatus.BAD_REQUEST.value());
+    Assertions.assertEquals(obj.get("code"), "mandatory_param_empty");
     Assertions.assertTrue(obj.has("error"));
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));

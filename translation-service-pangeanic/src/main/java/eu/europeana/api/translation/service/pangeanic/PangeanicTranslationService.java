@@ -1,9 +1,9 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -105,8 +105,8 @@ public class PangeanicTranslationService extends AbstractTranslationService {
         return;
       }
 
-      // if source language is available for the first item it must be available for all
       if (translationObjs.get(0).getSourceLang() == null) {
+        // if the source language was not provided in the request, language detection needs to be called
         detectLanguages(translationObjs);
       }
 
@@ -122,17 +122,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       throws JSONException, TranslationException {
     
     //collect source languages, they might be multiple 
-    Set<String> sourceLanguages = translationObjs.stream().map(to -> to.getSourceLang()).collect(Collectors.toSet());
+    Set<String> sourceLanguages = new HashSet<>(translationObjs.stream().map(to -> to.getSourceLang()).toList());
     
     List<TranslationObj> toTranslatePerLanguage;
     //the request has only one target language
     String targetLang = translationObjs.get(0).getTargetLang(); 
         
-    //when language detection is used, some texts might still have no language (i.e. bellow threshold)
-    if(sourceLanguages.contains(null)) {
-      
-    }
-    
     for (String sourceLanguage : sourceLanguages) {
       if(sourceLanguages.size() == 1) {
         //not needed to iterate if all are in the same language, it will be only one translation request for all objects
@@ -148,8 +143,14 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
   private void translateAndAccumulateResults(List<TranslationObj> toTranslatePerLanguage,
       String sourceLanguage, String targetLang) throws JSONException, TranslationException {
+    
+    if(sourceLanguage == null) {
+      //language not provided and not detected, skip translation request
+      return;  
+    }
+    
     // send the translation request
-    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).collect(Collectors.toList());
+    List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).toList();
     HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(
         getExternalServiceEndPoint(), translTexts, targetLang, sourceLanguage, "");
     
@@ -172,7 +173,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
     // detect languages
     List<String> texts =
-        translationObjs.stream().map(to -> to.getText()).collect(Collectors.toList());
+        translationObjs.stream().map(to -> to.getText()).toList();
     List<String> detectedLanguages = null;
     try {
       detectedLanguages = langDetectService.detectLang(texts, null);
@@ -184,8 +185,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     // verify language detection response
     if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
-          "The translation cannot be performed. Detected languaged are incomplete.  Expected "
-              + translationObjs.size() + " but received: " + detectedLanguages.size());
+          "The translation cannot be performed. A list of detected languages is null or contains nulls.");
     }
 
     if (LOG.isDebugEnabled()) {

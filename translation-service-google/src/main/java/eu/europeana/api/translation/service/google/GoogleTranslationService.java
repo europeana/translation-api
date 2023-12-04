@@ -7,6 +7,7 @@ import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.Translation;
+import com.google.cloud.translate.v3.TranslationOrBuilder;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -71,7 +72,7 @@ public class GoogleTranslationService extends AbstractTranslationService {
     
   }
 
-  private void updateFromTranslation( TranslationObj translationObj, Translation translation) {
+  private void updateFromTranslation( TranslationObj translationObj, TranslationOrBuilder translation) {
     if(translationObj.getSourceLang()==null) {
       translationObj.setSourceLang(translation.getDetectedLanguageCode());
     }

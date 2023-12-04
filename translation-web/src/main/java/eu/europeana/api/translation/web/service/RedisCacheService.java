@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.web.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import com.google.common.primitives.Ints;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.model.CachedTranslation;
 import io.micrometer.core.instrument.util.StringUtils;
@@ -51,8 +54,9 @@ public class RedisCacheService {
     if (redisResponse == null || redisResponse.size() != cacheableTranslations.size()) {
       // ensure that the response size corresponds to request size
       // this should not happen, but better use defensive programming
+      int redisSize=redisResponse==null ? 0 : redisResponse.size();
       logger.warn("Redis response size {} doesn't match the request size{}, for keys: {}",
-          redisResponse.size(), cacheableTranslations.size(), cacheKeys);
+          redisSize, cacheableTranslations.size(), cacheKeys);
       return;
     }
 
@@ -80,11 +84,29 @@ public class RedisCacheService {
     }
   }
 
+  /**
+   * verifies is the source language and text are available in the object
+   * This method is used both for for verifying the cacheability for retrieval and for storage  
+   * NOTE: currently we rely that the calling methods are verifying the availability of the target language and original text 
+   * @param translationObj the translation object to verify if it should be cached
+   * @param checkTranslationAvailable indicate if the availability of the translation needs to be checked (use true when storing and false ) 
+   * @return true is source language and text are available 
+   */
   private boolean isCacheable(TranslationObj translationObj) {
     return translationObj.getSourceLang() != null
         && StringUtils.isNotEmpty(translationObj.getText());
   }
 
+  /**
+   * This method indicates if the object has the target language and the translation available
+   * @param translationObj object to verify
+   * @return true is both the target language and the translation are available
+   */
+  private boolean hasTranslation(TranslationObj translationObj) {
+    return translationObj.getTargetLang() != null
+        && StringUtils.isNotEmpty(translationObj.getTranslation());
+  }
+  
   /**
    * Method to store translations into the cache. Only objects that are not marked as existing in the cache and fullfiling the {@link #isCacheable(TranslationObj)} criteria will be written into the cache
    * @param translationObjs the translations to be written into the cache 
@@ -93,7 +115,7 @@ public class RedisCacheService {
     Map<String, CachedTranslation> valueMap = new HashMap<>();
     String key;
     for (TranslationObj translObj : translationObjs) {
-      if (isCacheable(translObj) && !translObj.getIsCached()) {
+      if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.getIsCached()) {
         // String key = translObj.getCacheKey();
         key = generateRedisKey(translObj.getText(), translObj.getSourceLang(),
             translObj.getTargetLang());
@@ -136,8 +158,10 @@ public class RedisCacheService {
    * @return generated redis key
    */
   public String generateRedisKey(String inputText, String sourceLang, String targetLang) {
-    String key = inputText + sourceLang + targetLang;
-    return String.valueOf(key.hashCode());
+    StringBuilder builder = (new StringBuilder()).append(sourceLang).append(targetLang);
+    byte[] hash = Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
+    builder.append(new String(hash, StandardCharsets.UTF_8));
+    return builder.toString();
   }
 
 }

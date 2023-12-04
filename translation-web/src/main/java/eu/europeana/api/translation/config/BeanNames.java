@@ -2,7 +2,7 @@ package eu.europeana.api.translation.config;
 
 public interface BeanNames {
 
-
+  String BEAN_APACHE_TIKA_LANG_DETECT_SERVICE = "apacheTikaLangDetectService";
   String BEAN_PANGEANIC_LANG_DETECT_SERVICE = "pangeanicLangDetectService";
   String BEAN_PANGEANIC_TRANSLATION_SERVICE = "pangeanicTranslationService";
   String BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER = "googleTranslationClientWrapper";

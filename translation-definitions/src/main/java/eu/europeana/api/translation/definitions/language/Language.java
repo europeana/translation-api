@@ -47,7 +47,7 @@ public enum Language {
         try {
             result = Language.valueOf(languageAbbrevation.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new InvalidLanguageException("Language value '" + languageAbbrevation + "' is not valid");
+            throw new InvalidLanguageException("Language value '" + languageAbbrevation + "' is not valid", e);
         }
         return result;
     }
@@ -64,8 +64,8 @@ public enum Language {
             throw new InvalidLanguageException("Empty language value");
         }
 
-        List<Language> result = new ArrayList<>();
         String[] languages = languageAbbrevations.split(SEPARATOR);
+        List<Language> result = new ArrayList<>(languages.length);
         for (String language: languages) {
             result.add(validateSingle(language));
         }

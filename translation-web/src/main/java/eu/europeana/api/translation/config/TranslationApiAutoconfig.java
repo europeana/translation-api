@@ -45,6 +45,8 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationServic
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 import eu.europeana.api.translation.web.service.RedisCacheService;
+import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
+import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
@@ -97,6 +99,15 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       throws IOException {
     return new GoogleTranslationServiceClientWrapper(
         translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
+  }
+
+  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
+    if (useDummyServices) {
+      return new DummyApacheTikaLangDetectService();
+    } else {
+      return new ApacheTikaLangDetectService();
+    }
   }
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
@@ -157,6 +168,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
+  @SuppressWarnings({"external_findsecbugs:PATH_TRAVERSAL_IN", "findsecbugs:PATH_TRAVERSAL_IN"}) // the trustore path is not user input but application config
   private LettuceConnectionFactory getRedisConnectionFactory() {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
@@ -164,6 +176,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     // if redis secure protocol is used (rediss vs. redis)
     boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
     if (sslEnabled) {
+      @SuppressWarnings("external_findsecbugs:PATH_TRAVERSAL_IN") // the trustore path is not user input but application config
       final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
           .truststore(truststore,

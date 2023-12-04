@@ -125,7 +125,7 @@ public class TranslationWebService extends BaseWebService {
 
   private List<TranslationObj> buildTranslationObjectList(TranslationRequest translationRequest) {
     // create a list of objects to be translated
-    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
+    List<TranslationObj> translObjs = new ArrayList<TranslationObj>(translationRequest.getText().size());
     for (String inputText : translationRequest.getText()) {
       TranslationObj newTranslObj = new TranslationObj();
       newTranslObj.setSourceLang(translationRequest.getSource());
