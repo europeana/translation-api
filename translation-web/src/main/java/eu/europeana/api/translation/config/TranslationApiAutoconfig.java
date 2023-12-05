@@ -140,6 +140,9 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       // load thresholds from config file if available
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
+        if(logger.isInfoEnabled()) {
+          logger.info("Successfully loaded pangeanic thresholds from config file, Values: {}", thresholds);
+        }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
             "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
@@ -151,6 +154,9 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
           .getResourceAsStream("/" + FILE_PANGEANIC_LANGUAGE_THRESHOLDS)) {
         if (input != null) {
           thresholds.load(input);
+          if(logger.isInfoEnabled()) {
+            logger.info("Successfully loaded pangeanic thresholds from resources, Values: {}", thresholds);
+          }
         }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
