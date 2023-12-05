@@ -55,6 +55,12 @@ public class TranslationConfig{
 
   @Value("${truststore.password:}")
   private String truststorePass;
+  
+  @Value("${translation.dummy.services:false}")
+  private boolean useDummyServices;
+  
+  @Value("${translation.config.folder: /opt/app/config}")
+  private String configFolder; 
 
   public TranslationConfig() {
     super();
@@ -128,6 +134,14 @@ public class TranslationConfig{
 
   public String getTruststorePass() {
     return truststorePass;
+  }
+
+  public boolean isUseDummyServices() {
+    return useDummyServices;
+  }
+
+  public String getConfigFolder() {
+    return configFolder;
   }
   
 }

@@ -21,14 +21,14 @@ public enum PangeanicLanguages {
     DA(0.7548), SL(0.7514), HU(0.7779), PT(0.7243), ET(0.7424),
     LT(0.6538), GA(0.8650);
 
-    private final double translationThresholds;
-
-    PangeanicLanguages(double translationThresholds) {
-        this.translationThresholds = translationThresholds;
+    private final double translationThreshold;
+    
+    PangeanicLanguages(double translationThreshold) {
+        this.translationThreshold = translationThreshold;
     }
 
-    public double getTranslationThresholds() {
-        return translationThresholds;
+    public double getTranslationThreshold() {
+        return translationThreshold;
     }
 
     private static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Stream.of(PangeanicLanguages.values())
@@ -48,7 +48,7 @@ public enum PangeanicLanguages {
     public static double getThresholdForLanguage(String lang) {
         for (PangeanicLanguages e : values()) {
             if (StringUtils.equalsIgnoreCase(e.name(), lang)) {
-                return e.getTranslationThresholds();
+                return e.getTranslationThreshold();
             }
         }
         return 0.0;

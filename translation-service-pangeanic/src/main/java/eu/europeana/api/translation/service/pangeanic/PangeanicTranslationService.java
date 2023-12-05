@@ -1,8 +1,11 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -24,6 +27,7 @@ import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.util.LoggingUtils;
 
 /**
@@ -41,23 +45,56 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
   protected CloseableHttpClient translateClient;
   private String serviceId;
+  
+  
+  private final Map<PangeanicLanguages, Double> configuredThresholds = new HashMap<>();
 
+  
   public PangeanicTranslationService(String externalServiceEndpoint,
-      PangeanicLangDetectService langDetectService) {
+      PangeanicLangDetectService langDetectService) throws TranslationServiceConfigurationException {
+    this(externalServiceEndpoint, langDetectService, null);
+  }
+  
+  public PangeanicTranslationService(String externalServiceEndpoint,
+      PangeanicLangDetectService langDetectService, Properties thresholds) throws TranslationServiceConfigurationException {
     this.externalServiceEndpoint = externalServiceEndpoint;
     this.langDetectService = langDetectService;
-    init();
+    init(thresholds);
   }
 
 
   /**
    * Creates a new client that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
-   * 
+   * @param thresholds optional properties containing threshold configurations for pangeanic languages
+   * @throws TranslationServiceConfigurationException 
    * @throws IOException when there is a problem retrieving the first token
    * @throws JSONException when there is a problem decoding the received token
    */
-  private void init() {
+  private void init(Properties thresholds) throws TranslationServiceConfigurationException {
+    initTranslateClient();
+    initConfiguredThresholds(thresholds);
+  }
+
+  void initConfiguredThresholds(Properties thresholds) throws TranslationServiceConfigurationException {
+    if(thresholds == null || thresholds.isEmpty()) {
+      return;
+    }
+    
+    //fill thresholds map
+    Double threshold;
+    String key;
+    for(PangeanicLanguages language : PangeanicLanguages.values()) {
+      key = language.name().toLowerCase();
+      if(thresholds.containsKey(key)) {
+         threshold = Double.parseDouble(thresholds.getProperty(key));
+         configuredThresholds.put(language, threshold);
+      }
+    }
+  }
+
+
+  private void initTranslateClient() {
     if (StringUtils.isBlank(getExternalServiceEndPoint())) {
       return;
     }
@@ -255,12 +292,18 @@ public class PangeanicTranslationService extends AbstractTranslationService {
         double score = object.getDouble(PangeanicTranslationUtils.TRANSLATE_SCORE);
         // only if score returned by the translation service is greater the threshold value, we
         // will accept the translations
-        if (score > PangeanicLanguages.getThresholdForLanguage(sourceLanguage)) {
+        if (score > getThresholdForLanguage(sourceLanguage)) {
           translationObjs.get(i)
               .setTranslation(object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
         }
       }
     }
+  }
+
+
+  double getThresholdForLanguage(String sourceLanguage) {
+    PangeanicLanguages language = PangeanicLanguages.valueOf(sourceLanguage.toUpperCase());
+    return configuredThresholds.getOrDefault(language, language.getTranslationThreshold());
   }
 
   private boolean hasTranslations(JSONObject object) {
