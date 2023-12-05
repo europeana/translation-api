@@ -2,7 +2,6 @@ package eu.europeana.api.translation.service.google;
 
 import java.util.List;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
-import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
  * Dummy implementation preventing invocation of remote google service

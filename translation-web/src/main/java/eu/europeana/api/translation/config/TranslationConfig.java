@@ -17,8 +17,7 @@ import org.springframework.context.annotation.PropertySources;
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)})
 public class TranslationConfig{
 
-  /** Matches spring.profiles.active property in test/resource application.properties file */
-  public static final String ACTIVE_TEST_PROFILE = "test";
+  public static final String CONFIG_FOLDER = "/opt/app/config"; 
 
   @Value("${europeana.apikey.jwttoken.signaturekey:}")
   private String apiKeyPublicKey;
@@ -59,8 +58,6 @@ public class TranslationConfig{
   @Value("${translation.dummy.services:false}")
   private boolean useDummyServices;
   
-  public static final String CONFIG_FOLDER = "/opt/app/config"; 
-
   public TranslationConfig() {
     super();
   }
