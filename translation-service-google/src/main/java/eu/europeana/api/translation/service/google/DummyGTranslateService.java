@@ -20,7 +20,7 @@ public class DummyGTranslateService extends GoogleTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) {
     for(TranslationObj obj : translationObjs) {
       obj.setTranslation(obj.getText());
     }

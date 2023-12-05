@@ -14,10 +14,10 @@ public class DummyPangTranslationService extends PangeanicTranslationService{
 
   /**
    * Constructor using null as endpoint
-   * @throws TranslationServiceConfigurationException 
+   * @throws TranslationServiceConfigurationException is actually not thrown by the dummy implementation
    */
   public DummyPangTranslationService() throws TranslationServiceConfigurationException {
-    super(null, null, null);
+    super(null, null);
   }
   
   @Override

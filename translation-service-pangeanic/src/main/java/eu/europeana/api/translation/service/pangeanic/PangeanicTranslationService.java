@@ -1,9 +1,11 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -47,7 +49,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private String serviceId;
   
   
-  private final Map<PangeanicLanguages, Double> configuredThresholds = new HashMap<>();
+  private final EnumMap<PangeanicLanguages, Double> configuredThresholds = new EnumMap<>(PangeanicLanguages.class);
 
   
   public PangeanicTranslationService(String externalServiceEndpoint,
@@ -82,13 +84,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
     
     //fill thresholds map
-    Double threshold;
     String key;
     for(PangeanicLanguages language : PangeanicLanguages.values()) {
-      key = language.name().toLowerCase();
+      key = language.name().toLowerCase(Locale.ENGLISH);
       if(thresholds.containsKey(key)) {
-         threshold = Double.parseDouble(thresholds.getProperty(key));
-         configuredThresholds.put(language, threshold);
+         configuredThresholds.put(language, Double.valueOf(thresholds.getProperty(key)));
       }
     }
   }
@@ -302,7 +302,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
 
   double getThresholdForLanguage(String sourceLanguage) {
-    PangeanicLanguages language = PangeanicLanguages.valueOf(sourceLanguage.toUpperCase());
+    PangeanicLanguages language = PangeanicLanguages.valueOf(sourceLanguage.toUpperCase(Locale.ENGLISH));
     return configuredThresholds.getOrDefault(language, language.getTranslationThreshold());
   }
 

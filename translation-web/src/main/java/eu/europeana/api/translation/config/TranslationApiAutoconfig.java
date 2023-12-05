@@ -1,9 +1,10 @@
 package eu.europeana.api.translation.config;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
@@ -56,7 +57,7 @@ import io.lettuce.core.SslOptions;
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
-  
+
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
@@ -120,7 +121,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
   public PangeanicTranslationService getPangeanicTranslationService(
-      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService) throws TranslationServiceConfigurationException {
+      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService)
+      throws TranslationServiceConfigurationException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyPangTranslationService();
     } else {
@@ -129,41 +131,44 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
-  private Properties loadPangeanicThresholds()
-      throws TranslationServiceConfigurationException {
-    
+  private Properties loadPangeanicThresholds() throws TranslationServiceConfigurationException {
+
     Properties thresholds = new Properties();
-    
+
     File languageThresholdsFile = getConfigFile(FILE_PANGEANIC_LANGUAGE_THRESHOLDS);
-    if(languageThresholdsFile.exists()) {
-      //load thresholds from config file if available
-      try (InputStream input = new FileInputStream(languageThresholdsFile)){
+    if (languageThresholdsFile.exists()) {
+      // load thresholds from config file if available
+      try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
       } catch (IOException e) {
-        throw new TranslationServiceConfigurationException("Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile, e);
+        throw new TranslationServiceConfigurationException(
+            "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
+            e);
       }
-    }else{
-      //load thresholds from resources if available, need to search in the root folder of resources
-      try (InputStream input = TranslationApiAutoconfig.class.getResourceAsStream("/" + FILE_PANGEANIC_LANGUAGE_THRESHOLDS) ){
-        if(input != null) {
+    } else {
+      // load thresholds from resources if available, need to search in the root folder of resources
+      try (InputStream input = TranslationApiAutoconfig.class
+          .getResourceAsStream("/" + FILE_PANGEANIC_LANGUAGE_THRESHOLDS)) {
+        if (input != null) {
           thresholds.load(input);
         }
       } catch (IOException e) {
-        throw new TranslationServiceConfigurationException("Cannot load pangeanic languae thresholds from file: " + languageThresholdsFile, e);
+        throw new TranslationServiceConfigurationException(
+            "Cannot load pangeanic languae thresholds from file: " + languageThresholdsFile, e);
       }
     }
-    
-    //load properties
-    if(thresholds.isEmpty()) {
-      if(logger.isInfoEnabled()) {
+
+    // load properties
+    if (thresholds.isEmpty()) {
+      if (logger.isInfoEnabled()) {
         logger.info("No configurations found for pangeanic language thresholds available.");
       }
     }
-    
+
     return thresholds;
   }
-  
-  
+
+
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
@@ -211,9 +216,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     if (sslEnabled) {
       final File truststore = getTrustoreFile();
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
-          .truststore(truststore,
-              translationConfig.getTruststorePass())
-          .build();
+          .truststore(truststore, translationConfig.getTruststorePass()).build();
 
       ClientOptions clientOptions = ClientOptions.builder().sslOptions(sslOptions).build();
 
@@ -229,21 +232,24 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   private File getTrustoreFile() throws AppConfigurationException {
-    
+
     String truststorePathConfig = translationConfig.getTruststorePath();
-    if(truststorePathConfig == null) {
-      throw new AppConfigurationException("A trustore must be provided in configurations when confinguring redis ssl connection");
+    if (truststorePathConfig == null) {
+      throw new AppConfigurationException(
+          "A trustore must be provided in configurations when confinguring redis ssl connection");
     }
-    //allow configurations to use the full path, for backward compatibility
+    // allow configurations to use the full path, for backward compatibility
     final File trustoreFile = getConfigFile(truststorePathConfig);
-    if(!trustoreFile.exists()) {
-      throw new AppConfigurationException("Invalid config file location: " + trustoreFile.getAbsolutePath());
+    if (!trustoreFile.exists()) {
+      throw new AppConfigurationException(
+          "Invalid config file location: " + trustoreFile.getAbsolutePath());
     }
     return trustoreFile;
   }
 
   /**
-   * If the input is a full path, the filename will be extracted 
+   * If the input is a full path, the filename will be extracted
+   * 
    * @param configFile name of the config file
    * @return the File object for the configFile within the config folder
    */
@@ -256,7 +262,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
-    redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<CachedTranslation>(CachedTranslation.class));
+    redisTemplate.setValueSerializer(
+        new Jackson2JsonRedisSerializer<CachedTranslation>(CachedTranslation.class));
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }

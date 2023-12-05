@@ -59,8 +59,7 @@ public class TranslationConfig{
   @Value("${translation.dummy.services:false}")
   private boolean useDummyServices;
   
-  @Value("${translation.config.folder: /opt/app/config}")
-  private String configFolder; 
+  public static final String CONFIG_FOLDER = "/opt/app/config"; 
 
   public TranslationConfig() {
     super();
@@ -141,7 +140,7 @@ public class TranslationConfig{
   }
 
   public String getConfigFolder() {
-    return configFolder;
+    return CONFIG_FOLDER;
   }
   
 }
