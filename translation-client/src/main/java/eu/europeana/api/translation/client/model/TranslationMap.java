@@ -2,7 +2,7 @@ package eu.europeana.api.translation.client.model;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
-import eu.europeana.api.translation.client.web.TranslationApiClient;
+import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import eu.europeana.corelib.utils.ComparatorUtils;

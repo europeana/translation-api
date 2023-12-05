@@ -1,8 +1,7 @@
-package eu.europeana.api.translation.client.web;
+package eu.europeana.api.translation.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.client.BaseTranslationApiClient;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
 import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;

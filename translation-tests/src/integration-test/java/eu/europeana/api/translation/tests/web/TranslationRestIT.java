@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
@@ -162,9 +162,9 @@ public class TranslationRestIT extends BaseTranslationTest {
     String sourceLang=reqJsonObj.getString(TranslationAppConstants.SOURCE_LANG);
     String targetLang=reqJsonObj.getString(TranslationAppConstants.TARGET_LANG);
 
-    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
+    List<TranslationString> translObjs = new ArrayList<TranslationString>();
     for(int i=0;i<inputTexts.length();i++) {
-      TranslationObj newTranslObj = new TranslationObj();
+      TranslationString newTranslObj = new TranslationString();
       newTranslObj.setSourceLang(sourceLang);
       newTranslObj.setTargetLang(targetLang);
       newTranslObj.setText((String) inputTexts.get(i));
@@ -181,7 +181,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
+    final List<TranslationString> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
     //check if all are availble in the cache
     assertTrue(cachedTranslations.size() == translObjs.size());
     

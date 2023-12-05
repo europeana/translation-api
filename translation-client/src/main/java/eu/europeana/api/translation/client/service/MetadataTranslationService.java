@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.client.service;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.client.web.TranslationApiClient;
+import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.client.model.TranslationMap;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
@@ -73,7 +73,7 @@ public class MetadataTranslationService extends BaseService {
 
         // if there is no chosen language stop the translation workflow OR
         // If the chosen language matches pivot language (ie. English) then do nothing (stop the workflow)
-        if (chosenLanguage == null || StringUtils.equals(chosenLanguage, Language.ENGLISH)) {
+        if (chosenLanguage == null || StringUtils.equals(chosenLanguage, Language.PIVOT)) {
             LOG.debug("Stop the translation workflow for record {}", bean.getAbout());
             return bean;
         }
@@ -146,14 +146,14 @@ public class MetadataTranslationService extends BaseService {
                                          Set<String> otherProxyFieldsWithEnglishValues) {
 
         // Get the value only if there is NO "en" language tag already present for the field in any proxy and there is value present for the sourceLang
-        if (origFieldData != null && !origFieldData.isEmpty()  && !origFieldData.containsKey(Language.ENGLISH) && origFieldData.containsKey(sourceLang)) {
+        if (origFieldData != null && !origFieldData.isEmpty()  && !origFieldData.containsKey(Language.PIVOT) && origFieldData.containsKey(sourceLang)) {
             List<String> valuesToTranslateForField = getValuesToTranslate(origFieldData, sourceLang, bean);
             if (!valuesToTranslateForField.isEmpty()) {
                 map.add(field.getName(),valuesToTranslateForField);
             }
         }
         // if contains english add it in the list
-        if (origFieldData != null && !origFieldData.isEmpty()  && origFieldData.containsKey(Language.ENGLISH)) {
+        if (origFieldData != null && !origFieldData.isEmpty()  && origFieldData.containsKey(Language.PIVOT)) {
             otherProxyFieldsWithEnglishValues.add(field.getName());
         }
     }

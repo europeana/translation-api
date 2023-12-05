@@ -6,9 +6,8 @@ import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
-import com.google.cloud.translate.v3.Translation;
 import com.google.cloud.translate.v3.TranslationOrBuilder;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
@@ -44,25 +43,25 @@ public class GoogleTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
+  public void translate(List<TranslationString> translationStrings) throws TranslationException {
     try {
-      if(translationObjs.isEmpty()) {
+      if(translationStrings.isEmpty()) {
         return;
       }
       //build request
-      TranslateTextRequest request = buildTranslationRequest(translationObjs);
+      TranslateTextRequest request = buildTranslationRequest(translationStrings);
       //extract response
       TranslateTextResponse response = this.clientWrapper.getClient().translateText(request);
 
       //check if the translation is complete / successful
-      if(translationObjs.size() != response.getTranslationsCount()) {
+      if(translationStrings.size() != response.getTranslationsCount()) {
         throw new TranslationException("The translation is not completed successfully. Expected " 
-            + translationObjs.size() + " but received: " + response.getTranslationsCount());
+            + translationStrings.size() + " but received: " + response.getTranslationsCount());
       }
 
       //accumulate translation results
       for (int i = 0; i < response.getTranslationsCount(); i++) {
-        updateFromTranslation(translationObjs.get(i), response.getTranslations(i));
+        updateFromTranslation(translationStrings.get(i), response.getTranslations(i));
       }
     }
     catch (ApiException ex) {
@@ -72,36 +71,36 @@ public class GoogleTranslationService extends AbstractTranslationService {
     
   }
 
-  private void updateFromTranslation( TranslationObj translationObj, TranslationOrBuilder translation) {
-    if(translationObj.getSourceLang()==null) {
-      translationObj.setSourceLang(translation.getDetectedLanguageCode());
+  private void updateFromTranslation(TranslationString translationString, TranslationOrBuilder translation) {
+    if(translationString.getSourceLang()==null) {
+      translationString.setSourceLang(translation.getDetectedLanguageCode());
     }
-    translationObj.setTranslation(translation.getTranslatedText());
+    translationString.setTranslation(translation.getTranslatedText());
   }
 
-  private TranslateTextRequest buildTranslationRequest(List<TranslationObj> translationObjs) {
+  private TranslateTextRequest buildTranslationRequest(List<TranslationString> translationStrings) {
     //get texts to translate
-    List<String> texts = translationObjs.stream()
+    List<String> texts = translationStrings.stream()
         .map(to -> to.getText()).toList();
   
         
     //build request
-    String targetLang = translationObjs.get(0).getTargetLang();      
+    String targetLang = translationStrings.get(0).getTargetLang();
     Builder requestBuilder = TranslateTextRequest.newBuilder().setParent(locationName.toString())
         .setMimeType(MIME_TYPE_TEXT).setTargetLanguageCode(targetLang).addAllContents(texts);
     
     //multiple source languages might be a results of previously applied language detection
     //for the time being we do not rely on external language detection but allow google to detect the language
-    String sourceLanguage = getUniqueSourceLanguage(translationObjs);
+    String sourceLanguage = getUniqueSourceLanguage(translationStrings);
     if(sourceLanguage != null) {
       requestBuilder.setSourceLanguageCode(sourceLanguage);
     }
     return requestBuilder.build();
   }
 
-  private String getUniqueSourceLanguage(List<TranslationObj> translationObjs) {
+  private String getUniqueSourceLanguage(List<TranslationString> translationStrings) {
     //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
-    List<String> srcLanguages = translationObjs.stream()
+    List<String> srcLanguages = translationStrings.stream()
         .map(to -> to.getSourceLang()).toList();
     if(srcLanguages.size() == 1) {
       return srcLanguages.get(0);

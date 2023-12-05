@@ -23,7 +23,7 @@
 		<module>translation-web</module>
 		<module>translation-tests</module>
 		<module>translation-client</module>
-		<module>translation-service-apache-tika</module>
+		<module>translation-service-tika</module>
 	</modules>
 	
 	<repositories>

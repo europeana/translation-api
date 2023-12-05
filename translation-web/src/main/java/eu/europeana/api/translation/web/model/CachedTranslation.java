@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.model;
+package eu.europeana.api.translation.web.model;
 
 /**
  * object model for the cached translations 

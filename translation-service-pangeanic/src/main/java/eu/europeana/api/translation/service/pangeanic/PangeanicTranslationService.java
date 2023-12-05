@@ -20,7 +20,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -99,18 +99,18 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
+  public void translate(List<TranslationString> translationStrings) throws TranslationException {
     try {
-      if (translationObjs.isEmpty()) {
+      if (translationStrings.isEmpty()) {
         return;
       }
 
-      if (translationObjs.get(0).getSourceLang() == null) {
+      if (translationStrings.get(0).getSourceLang() == null) {
         // if the source language was not provided in the request, language detection needs to be called
-        detectLanguages(translationObjs);
+        detectLanguages(translationStrings);
       }
 
-      computeTranslations(translationObjs);
+      computeTranslations(translationStrings);
 
     } catch (JSONException e) {
       throw new TranslationException("Exception occured during Pangeanic translation!",
@@ -118,22 +118,22 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
   }
 
-  private void computeTranslations(List<TranslationObj> translationObjs)
+  private void computeTranslations(List<TranslationString> translationStrings)
       throws JSONException, TranslationException {
     
     //collect source languages, they might be multiple 
-    Set<String> sourceLanguages = new HashSet<>(translationObjs.stream().map(to -> to.getSourceLang()).toList());
+    Set<String> sourceLanguages = new HashSet<>(translationStrings.stream().map(to -> to.getSourceLang()).toList());
     
-    List<TranslationObj> toTranslatePerLanguage;
+    List<TranslationString> toTranslatePerLanguage;
     //the request has only one target language
-    String targetLang = translationObjs.get(0).getTargetLang(); 
+    String targetLang = translationStrings.get(0).getTargetLang();
         
     for (String sourceLanguage : sourceLanguages) {
       if(sourceLanguages.size() == 1) {
         //not needed to iterate if all are in the same language, it will be only one translation request for all objects
-        toTranslatePerLanguage = translationObjs;
+        toTranslatePerLanguage = translationStrings;
       }else {
-        toTranslatePerLanguage = getObjectsWithSourceLanguage(translationObjs, sourceLanguage); 
+        toTranslatePerLanguage = getObjectsWithSourceLanguage(translationStrings, sourceLanguage);
       }
       //perform translation and fill results, the translations are filled directly in the original TranslationObj 
       translateAndAccumulateResults(toTranslatePerLanguage, sourceLanguage, targetLang);
@@ -141,7 +141,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   }
 
 
-  private void translateAndAccumulateResults(List<TranslationObj> toTranslatePerLanguage,
+  private void translateAndAccumulateResults(List<TranslationString> toTranslatePerLanguage,
       String sourceLanguage, String targetLang) throws JSONException, TranslationException {
     
     if(sourceLanguage == null) {
@@ -158,14 +158,14 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     sendTranslateRequestAndFillTranslations(translateRequest, toTranslatePerLanguage, sourceLanguage);
   }
 
-  private List<TranslationObj> getObjectsWithSourceLanguage(List<TranslationObj> translationObjs,
-      String sourceLanguage) {
-    return translationObjs.stream()
+  private List<TranslationString> getObjectsWithSourceLanguage(List<TranslationString> translationStrings,
+                                                               String sourceLanguage) {
+    return translationStrings.stream()
         .filter(to -> sourceLanguage.equals(to.getSourceLang())).toList();
   }
 
 
-  private void detectLanguages(List<TranslationObj> translationObjs) throws TranslationException {
+  private void detectLanguages(List<TranslationString> translationStrings) throws TranslationException {
     if (langDetectService == null) {
       throw new TranslationException("No langDetectService configured!",
           HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -173,7 +173,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
     // detect languages
     List<String> texts =
-        translationObjs.stream().map(to -> to.getText()).toList();
+        translationStrings.stream().map(to -> to.getText()).toList();
     List<String> detectedLanguages = null;
     try {
       detectedLanguages = langDetectService.detectLang(texts, null);
@@ -183,7 +183,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
 
     // verify language detection response
-    if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
+    if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationStrings.size()) {
       throw new TranslationException(
           "The translation cannot be performed. A list of detected languages is null or contains nulls.");
     }
@@ -196,11 +196,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
     // update source language
     for (int i = 0; i < detectedLanguages.size(); i++) {
-      translationObjs.get(i).setSourceLang(detectedLanguages.get(i));
+      translationStrings.get(i).setSourceLang(detectedLanguages.get(i));
     }
   }
 
-  private void sendTranslateRequestAndFillTranslations(HttpPost post, List<TranslationObj> translationObjs, String sourceLanguage) throws TranslationException {
+  private void sendTranslateRequestAndFillTranslations(HttpPost post, List<TranslationString> translationStrings, String sourceLanguage) throws TranslationException {
     // initialize with unknown
     int remoteStatusCode = -1;
     try (CloseableHttpResponse response = translateClient.execute(post)) {
@@ -222,7 +222,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
           throw new TranslationException("Pangeanic Translation API returned empty response",
               remoteStatusCode);
         }
-        extractTranslations(obj, translationObjs, sourceLanguage, remoteStatusCode);
+        extractTranslations(obj, translationStrings, sourceLanguage, remoteStatusCode);
       }
     } catch (ClientProtocolException e) {
       throw new TranslationException("Remote service invocation error.", remoteStatusCode, e);
@@ -232,7 +232,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
   }
 
-  private void extractTranslations(JSONObject obj, List<TranslationObj> translationObjs,
+  private void extractTranslations(JSONObject obj, List<TranslationString> translationStrings,
       String sourceLanguage, int remoteStatusCode)
       throws JSONException, TranslationException {
     JSONArray translations = obj.getJSONArray(PangeanicTranslationUtils.TRANSLATIONS);
@@ -242,10 +242,10 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
     
     //ensure the size of the response is correct 
-    if(translations.length() != translationObjs.size()){
+    if(translations.length() != translationStrings.size()){
       throw new TranslationException(
           "The translation is incomplete for text with language: " + sourceLanguage
-          + ".  Expected " + translationObjs.size() + " but received: " + translations.length());
+          + ".  Expected " + translationStrings.size() + " but received: " + translations.length());
         
     }
     
@@ -256,7 +256,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
         // only if score returned by the translation service is greater the threshold value, we
         // will accept the translations
         if (score > PangeanicLanguages.getThresholdForLanguage(sourceLanguage)) {
-          translationObjs.get(i)
+          translationStrings.get(i)
               .setTranslation(object.getString(PangeanicTranslationUtils.TRANSLATE_TARGET));
         }
       }

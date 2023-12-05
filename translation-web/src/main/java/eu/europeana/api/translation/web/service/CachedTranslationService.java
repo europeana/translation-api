@@ -1,10 +1,9 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -39,15 +38,15 @@ public class CachedTranslationService extends AbstractTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
+  public void translate(List<TranslationString> translationStrings) throws TranslationException {
     //fill the non translatable texts, e.g. empty Strings
-    processNonTranslatable(translationObjs);
+    processNonTranslatable(translationStrings);
     
     if(isCachingEnabled()) {
-      redisCacheService.fillWithCachedTranslations(translationObjs);  
+      redisCacheService.fillWithCachedTranslations(translationStrings);
     }
 
-    List<TranslationObj> toTranslate = translationObjs.stream().filter(
+    List<TranslationString> toTranslate = translationStrings.stream().filter(
         t -> t.getTranslation() == null).toList();
     
     if(toTranslate.isEmpty()) {
@@ -63,10 +62,10 @@ public class CachedTranslationService extends AbstractTranslationService {
     }
   }
 
-  void processNonTranslatable(List<TranslationObj> translationObjs) {
-    for (TranslationObj translationObj : translationObjs) {
-      if(StringUtils.isEmpty(translationObj.getText())){
-        translationObj.setTranslation("");
+  void processNonTranslatable(List<TranslationString> translationStrings) {
+    for (TranslationString translationString : translationStrings) {
+      if(StringUtils.isEmpty(translationString.getText())){
+        translationString.setTranslation("");
       }
     }
   }

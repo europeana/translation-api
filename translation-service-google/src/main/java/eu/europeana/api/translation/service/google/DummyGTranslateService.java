@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -20,8 +20,8 @@ public class DummyGTranslateService extends GoogleTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
-    for(TranslationObj obj : translationObjs) {
+  public void translate(List<TranslationString> translationStrings) throws TranslationException {
+    for(TranslationString obj : translationStrings) {
       obj.setTranslation(obj.getText());
     }
   }
