@@ -72,8 +72,9 @@ public class MetadataTranslationService extends BaseService {
         String chosenLanguage = metadataChosenLanguageService.getMostRepresentativeLanguage(bean, targetLanguage);
 
         // if there is no chosen language stop the translation workflow OR
-        // If the chosen language matches pivot language (ie. English) then do nothing (stop the workflow)
-        if (chosenLanguage == null || StringUtils.equals(chosenLanguage, Language.PIVOT)) {
+        // If the chosen language matches target language then do nothing (stop the workflow)
+        // keep in mind during Ingestion we always translate the record to english. So target language is always en
+        if (chosenLanguage == null || StringUtils.equals(chosenLanguage, targetLanguage)) {
             LOG.debug("Stop the translation workflow for record {}", bean.getAbout());
             return bean;
         }
