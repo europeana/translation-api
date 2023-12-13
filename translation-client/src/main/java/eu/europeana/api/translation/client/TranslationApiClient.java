@@ -3,6 +3,7 @@ package eu.europeana.api.translation.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
+import eu.europeana.api.translation.client.exception.TranslationException;
 import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationRequest;
@@ -25,11 +26,11 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
     }
 
-    private <T> String getJsonString(T request) throws EuropeanaApiException {
+    private <T> String getJsonString(T request) throws TranslationException {
         try {
             return getObjectWriter().writeValueAsString(request);
         } catch (JsonProcessingException e) {
-            throw new EuropeanaApiException("Error parsing the request for Translation API");
+            throw new TranslationException("Error parsing the request for Translation API");
         }
 
     }

@@ -1,8 +1,8 @@
 package eu.europeana.api.translation.client.service;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.client.exception.InvalidParamValueException;
 import eu.europeana.api.translation.client.TranslationApiClient;
+import eu.europeana.api.translation.client.exception.TranslationException;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
@@ -54,7 +54,7 @@ public class BaseService {
         if (europeanaProxy.isPresent()) {
             return europeanaProxy.get();
         } else {
-            throw new InvalidParamValueException("Unexpected data - Europeana proxy not present! Record id - " +recordId);
+            throw new TranslationException("Unexpected data - Europeana proxy not present! Record id - " +recordId);
         }
     }
 

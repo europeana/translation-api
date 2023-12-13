@@ -1,7 +1,8 @@
 package eu.europeana.api.translation.client.service;
 
-import eu.europeana.api.translation.client.exception.InvalidParamValueException;
-import eu.europeana.api.translation.client.exception.TechnicalRuntimeException;
+import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.translation.client.exception.ResourceExhaustedException;
+import eu.europeana.api.translation.client.exception.TranslationException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
@@ -32,7 +33,7 @@ public class TranslationApiRestClient {
      * @param request
      * @return
      */
-    public TranslationResponse getTranslations(String request) {
+    public TranslationResponse getTranslations(String request) throws EuropeanaApiException {
        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false);
     }
 
@@ -41,7 +42,7 @@ public class TranslationApiRestClient {
      * @param request
      * @return
      */
-    public LangDetectResponse getDetectedLanguages(String request) {
+    public LangDetectResponse getDetectedLanguages(String request) throws EuropeanaApiException {
         return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true);
     }
 
@@ -55,7 +56,7 @@ public class TranslationApiRestClient {
      * @param <T>
      * @return
      */
-    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect) {
+    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect) throws EuropeanaApiException {
         try {
             WebClient.ResponseSpec result = executePost(webClient, uriBuilderURIFunction, jsonBody);
             if (langDetect) {
@@ -74,21 +75,17 @@ public class TranslationApiRestClient {
              * So we need to unwrap the underlying exception, for it to be handled by callers of this method
              **/
             Throwable t = Exceptions.unwrap(e);
-            if (t instanceof TechnicalRuntimeException) {
-                throw new TechnicalRuntimeException("User is not authorised to perform this action");
+            if ( t instanceof ResourceExhaustedException) {
+                throw new ResourceExhaustedException("No more translations available today. Resource is exhausted");
             }
-            if (t instanceof InvalidParamValueException) {
-                LOGGER.debug("Invalid request body - {} ", e.getMessage());
-                return null ;
-            }
-            // all other exception should be logged and null response should be returned
+            // all other exception should be logged
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
-            return null;
+            throw new TranslationException("Translation API Client call failed - "+ e.getMessage());
         }
     }
 
 
-    private WebClient.ResponseSpec executePost(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody) throws TechnicalRuntimeException {
+    private WebClient.ResponseSpec executePost(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody) {
         return webClient
                 .post()
                 .uri(uriBuilderURIFunction)
@@ -98,10 +95,8 @@ public class TranslationApiRestClient {
                 .body(BodyInserters.fromValue(jsonBody))
                 .retrieve()
                 .onStatus(
-                        HttpStatus.UNAUTHORIZED::equals,
-                        response -> response.bodyToMono(String.class).map(TechnicalRuntimeException::new))
-                .onStatus(HttpStatus.BAD_REQUEST:: equals,
-                        response -> response.bodyToMono(String.class).map(InvalidParamValueException::new));
+                        HttpStatus.GATEWAY_TIMEOUT:: equals,
+                        response -> response.bodyToMono(String.class).map(ResourceExhaustedException::new));
 
     }
 }
