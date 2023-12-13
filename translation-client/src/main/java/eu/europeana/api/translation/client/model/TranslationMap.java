@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.client.model;
 
 import eu.europeana.api.commons.error.EuropeanaApiException;
+import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
 import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.definitions.model.TranslationRequest;
@@ -56,7 +57,7 @@ public class TranslationMap extends LinkedHashMap<String, List<String>> {
      * @return translation map with target language and translations
      * @throws EuropeanaApiException thrown from the client
      */
-    public TranslationMap translate(TranslationApiClient translationApiClient, String targetLanguage) throws EuropeanaApiException {
+    public TranslationMap translate(TranslationApiClient translationApiClient, String targetLanguage) throws TranslationApiException {
         // save the field name and size per field (number of values associated with it)
         // to retain the order using LinkedHashmap and get all the texts for translations
         Map<String, Integer> textsPerField = new LinkedHashMap<>();
@@ -107,7 +108,7 @@ public class TranslationMap extends LinkedHashMap<String, List<String>> {
         translationRequest.setText(textsToTranslate);
         translationRequest.setSource(this.sourceLanguage);
         translationRequest.setTarget(targetLanguage);
-        //translationRequest.setService("GOOGLE");
+        translationRequest.setService("GOOGLE");
         return translationRequest;
     }
 

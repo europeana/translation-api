@@ -1,14 +1,11 @@
 package eu.europeana.api.translation.client.service;
 
-import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.translation.client.exception.ResourceExhaustedException;
-import eu.europeana.api.translation.client.exception.TranslationException;
+import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -33,7 +30,7 @@ public class TranslationApiRestClient {
      * @param request
      * @return
      */
-    public TranslationResponse getTranslations(String request) throws EuropeanaApiException {
+    public TranslationResponse getTranslations(String request) throws TranslationApiException {
        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false);
     }
 
@@ -42,7 +39,7 @@ public class TranslationApiRestClient {
      * @param request
      * @return
      */
-    public LangDetectResponse getDetectedLanguages(String request) throws EuropeanaApiException {
+    public LangDetectResponse getDetectedLanguages(String request) throws TranslationApiException {
         return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true);
     }
 
@@ -56,7 +53,7 @@ public class TranslationApiRestClient {
      * @param <T>
      * @return
      */
-    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect) throws EuropeanaApiException {
+    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect) throws TranslationApiException {
         try {
             WebClient.ResponseSpec result = executePost(webClient, uriBuilderURIFunction, jsonBody);
             if (langDetect) {
@@ -75,12 +72,8 @@ public class TranslationApiRestClient {
              * So we need to unwrap the underlying exception, for it to be handled by callers of this method
              **/
             Throwable t = Exceptions.unwrap(e);
-            if ( t instanceof ResourceExhaustedException) {
-                throw new ResourceExhaustedException("No more translations available today. Resource is exhausted");
-            }
-            // all other exception should be logged
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
-            throw new TranslationException("Translation API Client call failed - "+ e.getMessage());
+            throw new TranslationApiException("Translation API Client call failed - "+ e.getMessage());
         }
     }
 
@@ -93,10 +86,6 @@ public class TranslationApiRestClient {
                 // TODO need to figure out how we will pass token across API's
                 .header("Authorization", "")
                 .body(BodyInserters.fromValue(jsonBody))
-                .retrieve()
-                .onStatus(
-                        HttpStatus.GATEWAY_TIMEOUT:: equals,
-                        response -> response.bodyToMono(String.class).map(ResourceExhaustedException::new));
-
+                .retrieve();
     }
 }

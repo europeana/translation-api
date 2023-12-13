@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.client.service;
 
-import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.TranslationApiClient;
+import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
 import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
@@ -61,9 +61,9 @@ public class MetadataLangDetectionService extends BaseService {
      * Add all corrected language attributes to the Europeana Proxy (duplicating the value and assigning the new language attribute)
      *
      * @param bean
-     * @throws EuropeanaApiException
+     * @throws TranslationApiException
      */
-    public FullBean detectLanguageForProxy(FullBean bean) throws EuropeanaApiException {
+    public FullBean detectLanguageForProxy(FullBean bean) throws TranslationApiException {
         long start = System.currentTimeMillis();
         List<Proxy> proxies = new ArrayList<>(bean.getProxies()); // make sure we clone first so we can edit the list to our needs.
 
