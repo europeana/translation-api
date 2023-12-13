@@ -108,7 +108,7 @@ public class TranslationMap extends LinkedHashMap<String, List<String>> {
         translationRequest.setText(textsToTranslate);
         translationRequest.setSource(this.sourceLanguage);
         translationRequest.setTarget(targetLanguage);
-        translationRequest.setService("GOOGLE");
+       // translationRequest.setService("GOOGLE");
         return translationRequest;
     }
 
