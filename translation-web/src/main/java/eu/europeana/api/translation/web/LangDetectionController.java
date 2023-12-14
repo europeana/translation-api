@@ -2,9 +2,13 @@ package eu.europeana.api.translation.web;
 
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.LANG;
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.TEXT;
+import static eu.europeana.api.translation.schemavalidation.JsonSchemaLocation.JSON_SCHEMA;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
+
+import eu.europeana.api.translation.schemavalidation.ValidJson;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +36,12 @@ public class LangDetectionController extends BaseRest {
   @Tag(description = "Language detection", name = "detectLang")
   @PostMapping(value = {"/detect"},
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> detectLang(@RequestBody LangDetectRequest langDetectRequest,
+  public ResponseEntity<String> detectLang(@ValidJson(JSON_SCHEMA)  LangDetectRequest langDetectRequest,
       HttpServletRequest request) throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);
 
-    validateRequest(langDetectRequest);
+    //validateRequest(langDetectRequest);  - validation to be performed via Json schema validation annotation
 
     LangDetectResponse result = langDetectionService.detectLang(langDetectRequest);
 

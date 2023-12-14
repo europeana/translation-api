@@ -1,10 +1,16 @@
 package eu.europeana.api.translation.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europeana.api.translation.schemavalidation.JsonSchemaValidatingArgumentResolver;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -81,5 +87,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //  @Override
 //  public void addResourceHandlers(ResourceHandlerRegistry registry) {
 //    registry.addResourceHandler("/public/**").addResourceLocations("classpath:/public/");
-//  }  
+//  }
+
+
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private ResourcePatternResolver resourcePatternResolver;
+
+  @Override
+  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+    resolvers.add(new JsonSchemaValidatingArgumentResolver(objectMapper, resourcePatternResolver));
+  }
 }
