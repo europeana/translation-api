@@ -2,11 +2,9 @@ package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.translation.definitions.language.PangeanicLanguages;
+import eu.europeana.api.translation.definitions.language.PangeanicThresholds;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
@@ -49,7 +47,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private String serviceId;
   
   
-  private final EnumMap<PangeanicLanguages, Double> configuredThresholds = new EnumMap<>(PangeanicLanguages.class);
+  private final EnumMap<PangeanicThresholds, Double> configuredThresholds = new EnumMap<>(PangeanicThresholds.class);
 
   
   public PangeanicTranslationService(String externalServiceEndpoint,
@@ -85,7 +83,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     
     //fill thresholds map
     String key;
-    for(PangeanicLanguages language : PangeanicLanguages.values()) {
+    for(PangeanicThresholds language : PangeanicThresholds.values()) {
       key = language.name().toLowerCase(Locale.ENGLISH);
       if(thresholds.containsKey(key)) {
          configuredThresholds.put(language, Double.valueOf(thresholds.getProperty(key)));
@@ -128,11 +126,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       // automatic language detection
       return isTargetSupported(targetLanguage);
     }
-    return PangeanicLanguages.isLanguagePairSupported(srcLang, targetLanguage);
+    return PangeanicThresholds.isLanguagePairSupported(srcLang, targetLanguage);
   }
 
   private boolean isTargetSupported(String targetLanguage) {
-    return PangeanicLanguages.isTargetLanguageSupported(targetLanguage);
+    return PangeanicThresholds.isTargetLanguageSupported(targetLanguage);
   }
 
   @Override
@@ -302,7 +300,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
 
   double getThresholdForLanguage(String sourceLanguage) {
-    PangeanicLanguages language = PangeanicLanguages.valueOf(sourceLanguage.toUpperCase(Locale.ENGLISH));
+    PangeanicThresholds language = PangeanicThresholds.valueOf(sourceLanguage.toUpperCase(Locale.ENGLISH));
     return configuredThresholds.getOrDefault(language, language.getTranslationThreshold());
   }
 
