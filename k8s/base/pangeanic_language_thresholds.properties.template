@@ -1,0 +1,24 @@
+# template for overwriting translation thresholds
+# the configuration file needs to be placed in the config folder
+#bg=0.8678
+#cs=0.8410
+#da=0.7548
+#de=0.8288
+#el=0.8009
+#es=0.8213
+#et=0.7424
+#fi=0.7975
+#fr=0.8650
+#ga=0.8650
+#hr=0.8901
+#hu=0.7779
+#it=0.8246
+#lt=0.6538
+#lv=0.7884
+#nl=0.7757
+#pl=0.8710
+#pt=0.7243
+#ro=0.8545
+#sk=0.8740
+#sl=0.7514
+#sv=0.7850
