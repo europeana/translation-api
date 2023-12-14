@@ -44,7 +44,8 @@ truststore.password=
 translation.runtime=application
 
 translation.eTranslation.baseUrl=
-translation.eTranslation.credentials=
+translation.eTranslation.username=
+translation.eTranslation.password=
 # 	eTranslation domain could be "SPD" (for neural and speed-optimized statistical engines on the cloud. This is the default.) else "Europeana"
 translation.eTranslation.domain=
 translation.eTranslation.callback=

@@ -4,8 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.translation.service.eTranslation.ETranslationTranslationService;
@@ -24,16 +23,14 @@ public class ETranslationCallbackController {
   }
 
   @Tag(description = "ETranslation callback endpoint", name = "eTranslationCallback")
-  @RequestMapping(value = "/eTranslation/callback", method = {RequestMethod.POST}, produces = MediaType.TEXT_PLAIN_VALUE)
+  @PostMapping(value = "/eTranslation/callback", produces = MediaType.TEXT_PLAIN_VALUE)
   public void eTranslationCallback(
       @RequestParam(value = "target-language", required = false) String targetLanguage,
       @RequestParam(value = "translated-text", required = false) String translatedTextSnippet,
       @RequestParam(value = "request-id", required = false) String requestId,
-      @RequestParam(value = "external-reference", required = false) String externalReference) 
-  {
+      @RequestParam(value = "external-reference", required = false) String externalReference) {
     logger.info("eTranslation callback on translation api has been executed");
     eTranslationService.processCallback(targetLanguage,translatedTextSnippet,requestId,externalReference);
-  }
- 
+  } 
   
 }

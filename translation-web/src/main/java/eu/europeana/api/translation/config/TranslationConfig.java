@@ -55,8 +55,11 @@ public class TranslationConfig{
   @Value("${truststore.password:}")
   private String truststorePass;
 
-  @Value("${translation.eTranslation.credentials:}")
-  private String eTranslationCredentials;
+  @Value("${translation.eTranslation.username:}")
+  private String eTranslationUsername;
+
+  @Value("${translation.eTranslation.password:}")
+  private String eTranslationPassword;
 
   @Value("${translation.eTranslation.domain:}")
   private String eTranslationDomain;
@@ -155,8 +158,12 @@ public class TranslationConfig{
     return CONFIG_FOLDER;
   }
   
-  public String geteTranslationCredentials() {
-    return eTranslationCredentials;
+  public String geteTranslationUsername() {
+    return eTranslationUsername;
+  }
+
+  public String geteTranslationPassword() {
+    return eTranslationPassword;
   }
 
   public String geteTranslationDomain() {

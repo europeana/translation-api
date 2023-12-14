@@ -205,7 +205,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
         translationConfig.geteTranslationDomain(), 
         translationConfig.geteTranslationCallback(), 
         translationConfig.geteTranslationMaxWaitMillisec(), 
-        translationConfig.geteTranslationCredentials());
+        translationConfig.geteTranslationUsername(),
+        translationConfig.geteTranslationPassword());
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)

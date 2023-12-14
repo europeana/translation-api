@@ -1,7 +1,5 @@
 package eu.europeana.api.translation.service.eTranslation;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +25,6 @@ import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
-import eu.europeana.api.translation.service.util.GeneralUtils;
 
 public class ETranslationTranslationService extends AbstractTranslationService {
   
@@ -53,39 +50,16 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   private static Map<String, String> createdRequests = new HashMap<String, String>();
   private static Map<String, String> createdRequestsSynchronized = Collections.synchronizedMap(createdRequests);
 	
-  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, String credentialsFilePath) throws Exception {
+  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, String username, String password) throws Exception {
     this.baseUrl = baseUrl;
     this.domain = domain;
     this.callbackUrl=callbackUrl;
     this.maxWaitMillisec=maxWaitMillisec;
     externalReferenceCounter=0;
-    if(!StringUtils.isBlank(credentialsFilePath)) {
-      readCredentialsFile(credentialsFilePath);
-    }
+    this.credentialUsername=username;
+    this.credentialPwd=password;
   }
 	
-  /**
-   * Reading the eTranslation credentials 
-   * 
-   * @param path		the absolute path to the credential file
-   * @throws IOException 
-   * @throws Exception 
-   */
-  private void readCredentialsFile(String path) throws IOException  {	
-    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        String[] splitString = GeneralUtils.toArray(line,"=");
-        if (splitString[0].equals("user"))
-          credentialUsername = splitString[1];
-        else if (splitString[0].equals("pwd"))
-          credentialPwd = splitString[1];
-      }
-    } catch (IOException e) {
-	    throw e;
-    }
-  }
-
   @Override
   public void translate(List<TranslationObj> translationObjs) throws TranslationException {    
     List<String> externalRefsForCallbacks = new ArrayList<>();//this variable below captures only the external references of successfully created requests
@@ -129,11 +103,11 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     } 
     catch (JSONException e) {
       clearRequestsMapForExternalReferences(externalRefsAll);
-      throw new TranslationException("Exception during the eTranslation request body creation.");
+      throw new TranslationException("Exception during the eTranslation request body creation.", 0, e);
     } 
     catch (IOException e) {
       clearRequestsMapForExternalReferences(externalRefsAll);
-      throw new TranslationException("Exception during the eTranslation http request sending.");
+      throw new TranslationException("Exception during the eTranslation http request sending.", 0, e);
     }
     
     //waiting for the callbacks
@@ -235,8 +209,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     request.addHeader("content-type", "application/json");
     request.setEntity(params);
     CloseableHttpResponse result = httpClient.execute(request);
-    String responeString = EntityUtils.toString(result.getEntity(), "UTF-8");
-    return responeString;
+    return EntityUtils.toString(result.getEntity(), "UTF-8");
   }
   
   class eTranslationSimulatorThread implements Runnable {
@@ -252,8 +225,6 @@ public class ETranslationTranslationService extends AbstractTranslationService {
         Thread.sleep(1000);
         processCallback(null, translation, null, extRef);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
       }
     }
   }
