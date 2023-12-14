@@ -123,7 +123,30 @@ public class TranslationRestIT extends BaseTranslationTest {
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
-  
+
+  @Test
+  void translationETranslation() throws Exception {
+    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_E_TRANSLATION);
+    String result = mockMvc
+        .perform(
+            post(BASE_URL_TRANSLATE)
+              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .content(requestJson))
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    String langFieldValue = json.getString(TranslationAppConstants.LANG);
+    assertEquals(LANGUAGE_EN, langFieldValue);
+        
+    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
+    assertTrue(translations.size()>0);
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+  }
+
   @Test
   void translationPangeanicNoSrcMultipleLanguages() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_PANGEANIC_MULTIPLE_LANG);

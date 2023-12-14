@@ -33,6 +33,7 @@ import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.model.CachedTranslation;
+import eu.europeana.api.translation.service.eTranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -153,6 +154,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
     }
+  }
+
+  @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
+  public ETranslationTranslationService getETranslationService() throws Exception {
+    return new ETranslationTranslationService(
+        translationConfig.geteTranslationBaseUrl(), 
+        translationConfig.geteTranslationDomain(), 
+        translationConfig.geteTranslationCallback(), 
+        translationConfig.geteTranslationMaxWaitMillisec(), 
+        translationConfig.geteTranslationCredentials());
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)

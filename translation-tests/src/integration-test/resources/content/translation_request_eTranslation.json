@@ -1,0 +1,12 @@
+{
+  "source": "de",
+  "target": "en",
+  "service": "E_TRANSLATION",
+  "text": [
+    "Das ist ein Hund",
+    "Das ist eine Katze",
+    "Das ist ein Pferd",
+    "Das ist ein Löwe" 
+  ],
+  "caching": false
+}

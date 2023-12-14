@@ -130,6 +130,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
     registry.add("redis.connection.url", () -> "redis://localhost:" + redisPort + "/");
+    registry.add("translation.eTranslation.baseUrl", () -> "");
   }
 
   /**

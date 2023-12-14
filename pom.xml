@@ -24,6 +24,7 @@
 		<module>translation-tests</module>
 
 		<module>translation-service-apache-tika</module>
+		<module>translation-service-eTranslation</module>
 	</modules>
 	
 	<repositories>

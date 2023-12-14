@@ -78,6 +78,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>translation-service-eTranslation</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>		
+
+		<dependency>
 			<groupId>eu.europeana.api.commons</groupId>
 			<artifactId>commons-web</artifactId>
 			<version>${api-commons.version}</version>
