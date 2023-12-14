@@ -59,7 +59,9 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     this.callbackUrl=callbackUrl;
     this.maxWaitMillisec=maxWaitMillisec;
     externalReferenceCounter=0;
-    readCredentialsFile(credentialsFilePath);
+    if(!StringUtils.isBlank(credentialsFilePath)) {
+      readCredentialsFile(credentialsFilePath);
+    }
   }
 	
   /**
