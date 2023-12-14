@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Srishti Singh
  * @since 6 April 2023
  */
-public enum PangeanicLanguages {
+public enum PangeanicThresholds {
 
     SK(0.8740), RO(0.8545), BG(0.8678), PL(0.8710), HR(0.8901),
     SV(0.7850), FR(0.8650), IT(0.8246), ES(0.8213), CS(0.8410),
@@ -21,21 +21,21 @@ public enum PangeanicLanguages {
     DA(0.7548), SL(0.7514), HU(0.7779), PT(0.7243), ET(0.7424),
     LT(0.6538), GA(0.8650);
 
-    private final double translationThresholds;
-
-    PangeanicLanguages(double translationThresholds) {
-        this.translationThresholds = translationThresholds;
+    private final double translationThreshold;
+    
+    PangeanicThresholds(double translationThreshold) {
+        this.translationThreshold = translationThreshold;
     }
 
-    public double getTranslationThresholds() {
-        return translationThresholds;
+    public double getTranslationThreshold() {
+        return translationThreshold;
     }
 
-    private static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Stream.of(PangeanicLanguages.values())
+    private static final Set<String> SUPPORTED_LANGUAGES = new HashSet<>(Stream.of(PangeanicThresholds.values())
             .map(lang -> lang.name().toLowerCase())
             .collect(Collectors.toList()));
 
-    private static final Set<LanguagePair> TRANSLATION_PAIRS = new HashSet<>(Stream.of(PangeanicLanguages.values())
+    private static final Set<LanguagePair> TRANSLATION_PAIRS = new HashSet<>(Stream.of(PangeanicThresholds.values())
             .map(e -> new LanguagePair(e.name().toLowerCase(Locale.ROOT), Language.ENGLISH))
             .collect(Collectors.toList()));
 
@@ -46,9 +46,9 @@ public enum PangeanicLanguages {
      * @return
      */
     public static double getThresholdForLanguage(String lang) {
-        for (PangeanicLanguages e : values()) {
+        for (PangeanicThresholds e : values()) {
             if (StringUtils.equalsIgnoreCase(e.name(), lang)) {
-                return e.getTranslationThresholds();
+                return e.getTranslationThreshold();
             }
         }
         return 0.0;

@@ -50,6 +50,10 @@ spec:
               mountPath: "/opt/app/config/log4j2-spring.xml"
               readOnly: true
               subPath: log4j2-spring.xml
+            - name: pangeanic-tresholds
+              mountPath: "/opt/app/config/pangeanic_language_thresholds.properties"
+              readOnly: true
+              subPath: pangeanic_language_thresholds.properties  
       volumes:
         - name: secret
           secret:
@@ -60,3 +64,6 @@ spec:
         - name: log4j-config
           configMap:
             name: log4j2-properties
+        - name: pangeanic-tresholds
+          configMap:
+            name: pangeanic-tresholds-properties    

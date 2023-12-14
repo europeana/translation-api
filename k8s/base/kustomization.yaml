@@ -18,3 +18,6 @@ configMapGenerator:
   - name: log4j2-properties
     files:
       - log4j2-spring.xml
+  - name: pangeanic-tresholds-properties
+    files:
+      - pangeanic_language_thresholds.properties    
