@@ -27,11 +27,6 @@
             <artifactId>corelib-definitions</artifactId>
             <version>${corelib.version}</version>
         </dependency>
-        <dependency>
-            <groupId>eu.europeana.corelib</groupId>
-            <artifactId>corelib-storage</artifactId>
-            <version>${corelib.version}</version>
-        </dependency>
     </dependencies>
 
 </project>
