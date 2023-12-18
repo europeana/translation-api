@@ -73,7 +73,7 @@
 
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
-			<artifactId>translation-service-apache-tika</artifactId>
+			<artifactId>translation-service-tika</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
