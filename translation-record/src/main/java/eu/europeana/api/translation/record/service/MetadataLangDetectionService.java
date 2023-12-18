@@ -1,10 +1,10 @@
-package eu.europeana.api.translation.client.service;
+package eu.europeana.api.translation.record.service;
 
 import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
-import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
+import eu.europeana.api.translation.record.utils.LanguageDetectionUtils;
 import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
@@ -75,7 +75,7 @@ public class MetadataLangDetectionService extends BaseService {
         String langHint = getHintForLanguageDetect(bean);
 
         // remove europeana proxy from the list
-        eu.europeana.corelib.definitions.edm.entity.Proxy europeanaProxy = getEuropeanaProxy(proxies, bean.getAbout());
+        eu.europeana.corelib.definitions.edm.entity.Proxy europeanaProxy = BaseService.getEuropeanaProxy(proxies, bean.getAbout());
         proxies.remove(europeanaProxy);
 
         // 1. gather all the "def" values for the whitelisted fields
@@ -88,7 +88,7 @@ public class MetadataLangDetectionService extends BaseService {
                     langValueFieldMapForDetection.add(fieldValuesLanguageMap);
                 }
 
-            }, proxyFieldFilter);
+            }, BaseService.proxyFieldFilter);
 
             LOG.debug("For record {} gathered {} fields non-language tagged values for detection. ", bean.getAbout(), langValueFieldMapForDetection.size());
 
@@ -115,7 +115,7 @@ public class MetadataLangDetectionService extends BaseService {
             List<LanguageValueFieldMap> correctLangValueMap = LanguageDetectionUtils.getLangDetectedFieldValueMap(textsPerField, detectedLanguages, textsForDetection);
 
             // 6. add all the new language tagged values to europeana proxy
-            Proxy europeanProxy = getEuropeanaProxy(bean.getProxies(), bean.getAbout());
+            Proxy europeanProxy = BaseService.getEuropeanaProxy(bean.getProxies(), bean.getAbout());
             updateProxy(europeanProxy, correctLangValueMap);
             LOG.debug("Language detection for {} took {} ms", bean.getAbout(), (System.currentTimeMillis() - start));
         }
@@ -123,7 +123,7 @@ public class MetadataLangDetectionService extends BaseService {
     }
 
     private LanguageValueFieldMap getProxyFieldsValues(Proxy proxy, Field field, FullBean bean) {
-        HashMap<String, List<String>> origFieldData = (HashMap<String, List<String>>) getValueOfTheField(proxy, false).apply(field.getName());
+        HashMap<String, List<String>> origFieldData = (HashMap<String, List<String>>) BaseService.getValueOfTheField(proxy, false).apply(field.getName());
         return LanguageDetectionUtils.getValueFromLanguageMap(SerializationUtils.clone(origFieldData), field.getName(), bean);
     }
 
@@ -143,7 +143,7 @@ public class MetadataLangDetectionService extends BaseService {
      */
     private void updateProxy( Proxy proxy, List<LanguageValueFieldMap> correctLangMap) {
         correctLangMap.stream().forEach(value -> {
-            Map<String, List<String>> map = getValueOfTheField(proxy, true).apply(value.getFieldName());
+            Map<String, List<String>> map = BaseService.getValueOfTheField(proxy, true).apply(value.getFieldName());
             // Now add the new lang-value map in the proxy
             for (Map.Entry<String, List<String>> entry : value.entrySet()) {
                 if (!StringUtils.equals(entry.getKey(), Language.DEF)) {

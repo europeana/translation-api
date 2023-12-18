@@ -1,9 +1,9 @@
-package eu.europeana.api.translation.client.utils;
+package eu.europeana.api.translation.record.utils;
 
 import eu.europeana.api.commons.definitions.utils.ComparatorUtils;
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
-import eu.europeana.api.translation.client.service.BaseService;
+import eu.europeana.api.translation.record.service.BaseService;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.utils.EuropeanaUriUtils;

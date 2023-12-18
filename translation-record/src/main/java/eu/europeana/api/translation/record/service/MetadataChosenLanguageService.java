@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.client.service;
+package eu.europeana.api.translation.record.service;
 
 import eu.europeana.api.translation.definitions.language.Language;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static eu.europeana.api.translation.client.service.BaseService.*;
+import static eu.europeana.api.translation.record.service.BaseService.*;
 
 public class MetadataChosenLanguageService {
 
@@ -27,7 +27,7 @@ public class MetadataChosenLanguageService {
         List<? extends Proxy> proxies = bean.getProxies();
 
         for (Proxy proxy : proxies) {
-            ReflectionUtils.doWithFields(proxy.getClass(), field -> getLanguageAndCount(proxy, field, langCountMap, targetLanguage), proxyFieldFilter);
+            ReflectionUtils.doWithFields(proxy.getClass(), field -> getLanguageAndCount(proxy, field, langCountMap, targetLanguage), BaseService.proxyFieldFilter);
         }
 
         // if there is no language available for translation workflow, do nothing
@@ -46,7 +46,7 @@ public class MetadataChosenLanguageService {
 
         // if there is a tie between more than one language, choose based on the precedance list
         if (languagesWithMostvalues.size() > 1) {
-            Optional<String> langWithHigherPrecedance =  PRECENDANCE_LIST.stream().filter(languagesWithMostvalues :: contains).findFirst();
+            Optional<String> langWithHigherPrecedance =  BaseService.PRECENDANCE_LIST.stream().filter(languagesWithMostvalues :: contains).findFirst();
             if (langWithHigherPrecedance.isPresent()) {
                 return langWithHigherPrecedance.get();
             } else {
@@ -61,7 +61,7 @@ public class MetadataChosenLanguageService {
 
 
     private void getLanguageAndCount(Proxy proxy, Field field, Map<String, Integer> langCountMap, String targetLang) {
-        Map<String, List<String>> langValueMap = getValueOfTheField(proxy, false).apply(field.getName());
+        Map<String, List<String>> langValueMap = BaseService.getValueOfTheField(proxy, false).apply(field.getName());
         if (!langValueMap.isEmpty()) {
             for (Map.Entry<String, List<String>> langValue : langValueMap.entrySet()) {
                 String key = langValue.getKey();

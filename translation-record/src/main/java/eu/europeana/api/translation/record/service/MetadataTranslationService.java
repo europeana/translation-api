@@ -1,10 +1,13 @@
-package eu.europeana.api.translation.client.service;
+package eu.europeana.api.translation.record.service;
 
+import eu.europeana.api.commons.error.EuropeanaApiException;
 import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.Language;
-import eu.europeana.api.translation.client.model.TranslationMap;
-import eu.europeana.api.translation.client.utils.LanguageDetectionUtils;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
+import eu.europeana.api.translation.definitions.model.TranslationResponse;
+import eu.europeana.api.translation.record.model.TranslationMap;
+import eu.europeana.api.translation.record.utils.LanguageDetectionUtils;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
 import eu.europeana.corelib.utils.ComparatorUtils;
@@ -87,7 +90,7 @@ public class MetadataTranslationService extends BaseService {
         Set<String> otherProxyFieldsWithEnglishValues = new HashSet<>();
 
         for (Proxy proxy : proxies) {
-            ReflectionUtils.doWithFields(proxy.getClass(), field -> getProxyValuesToTranslateForField(proxy, field, chosenLanguage, bean, textToTranslate, otherProxyFieldsWithEnglishValues), proxyFieldFilter);
+            ReflectionUtils.doWithFields(proxy.getClass(), field -> getProxyValuesToTranslateForField(proxy, field, chosenLanguage, bean, textToTranslate, otherProxyFieldsWithEnglishValues), BaseService.proxyFieldFilter);
         }
 
         // remove the fields whose "en" values are present in other proxies
@@ -104,14 +107,14 @@ public class MetadataTranslationService extends BaseService {
         }
 
         // get the translation in the target language
-        TranslationMap translations = textToTranslate.translate(getTranslationApiClient(), targetLanguage);
+        TranslationMap translations = translate(textToTranslate, targetLanguage);
         if (translations.isEmpty()) {
             LOG.debug("Empty or null translation returned by the Translation API Client");
             return bean;
         }
 
         // add all the translated data to Europeana proxy
-        Proxy europeanaProxy = getEuropeanaProxy(bean.getProxies(), bean.getAbout());
+        Proxy europeanaProxy = BaseService.getEuropeanaProxy(bean.getProxies(), bean.getAbout());
         updateProxy(europeanaProxy, translations);
 
         LOG.debug("Translating record {} took {} ms", bean.getAbout(), (System.currentTimeMillis() - start));
@@ -127,7 +130,7 @@ public class MetadataTranslationService extends BaseService {
      * @return
      */
     private void getProxyValuesToTranslateForField(Proxy proxy, Field field, String sourceLang, FullBean bean, TranslationMap map, Set<String> otherProxyFieldsWithEnglishValues) {
-        HashMap<String, List<String>> origFieldData = (HashMap<String, List<String>>) getValueOfTheField(proxy, false).apply(field.getName());
+        HashMap<String, List<String>> origFieldData = (HashMap<String, List<String>>) BaseService.getValueOfTheField(proxy, false).apply(field.getName());
         getValueFromLanguageMap(SerializationUtils.clone(origFieldData), field, sourceLang, bean, map, otherProxyFieldsWithEnglishValues);
 
     }
@@ -174,7 +177,7 @@ public class MetadataTranslationService extends BaseService {
             // if the value is a URI get the contextual entity pref label in source lang.
             // Also, ignore the other uri values whose entity doesn't exist
             if (EuropeanaUriUtils.isUri(value)) {
-                ContextualClass entity = entityExistsWithUrl(bean, value);
+                ContextualClass entity = BaseService.entityExistsWithUrl(bean, value);
                 if (entity != null && entity.getPrefLabel() != null && entity.getPrefLabel().containsKey(sourceLang)) {
                     LOG.debug("Entity {} has preflabel in chosen language {} for translation  ", value, sourceLang);
                     valuesToTranslate.addAll(entity.getPrefLabel().get(sourceLang));
@@ -196,7 +199,7 @@ public class MetadataTranslationService extends BaseService {
      */
     private void updateProxy( Proxy proxy, TranslationMap translatedMap) {
         translatedMap.entrySet().stream().forEach(value -> {
-            Map<String, List<String>> existingMap = getValueOfTheField(proxy, true).apply(value.getKey());
+            Map<String, List<String>> existingMap = BaseService.getValueOfTheField(proxy, true).apply(value.getKey());
             // get the "en" values or default to empty list
             List<String> enValues = existingMap.getOrDefault(translatedMap.getSourceLanguage(), new ArrayList<>());
             enValues.addAll(value.getValue());
@@ -204,5 +207,83 @@ public class MetadataTranslationService extends BaseService {
             existingMap.compute(translatedMap.getSourceLanguage(), (key, val)-> enValues);
         });
     }
+
+    /**
+     * Translates the field value map using the translation service provided in the target Language
+     * We know already with the translation workflow, there is only one source language (chosen language)
+     * in which all the data for the fields is gathered
+     *
+     * @param targetLanguage       language in which values are to be translated
+     * @return translation map with target language and translations
+     * @throws EuropeanaApiException thrown from the client
+     */
+    private TranslationMap translate(TranslationMap map, String targetLanguage) throws TranslationApiException {
+        // save the field name and size per field (number of values associated with it)
+        // to retain the order using LinkedHashmap and get all the texts for translations
+        Map<String, Integer> textsPerField = new LinkedHashMap<>();
+        List<String> textsToTranslate = new ArrayList<>();
+        addTextsAndPerFieldCount(map, textsToTranslate, textsPerField);
+
+        // send request for translation
+        LOG.debug("Sending translate request with target language - {} and source language - {}", targetLanguage, map.getSourceLanguage());
+        TranslationResponse response = getTranslationApiClient().translate(createTranslationRequest(textsToTranslate, targetLanguage, map.getSourceLanguage()));
+        List<String> translations = response.getTranslations();
+        LOG.debug("Translation API service used for translations - {} ", response.getService());
+
+        // fail safe check
+        if (translations.size() != textsToTranslate.size()) {
+            throw new IllegalStateException("Expected " + textsToTranslate.size() + " lines of translated text, but received " + translations.size());
+        }
+
+        // create the target language - translated map from the translations received from the service
+        TranslationMap translatedMap = new TranslationMap(targetLanguage);
+
+        // if only nulls are returned no need to do anything further
+        if (LanguageDetectionUtils.onlyNulls(translations)) {
+            return translatedMap;
+        }
+
+        int fromIndex = 0;
+        for (Map.Entry<String, Integer> entry : textsPerField.entrySet()) {
+            int toIndex = fromIndex + entry.getValue();
+
+            // get the translation values for the field. We do not want to modify translation list hence deep copy
+            List<String> values = new ArrayList<>();
+            values.addAll(translations.subList(fromIndex, toIndex));
+            translatedMap.add(entry.getKey(), getTranslationsToAdd(values));
+            fromIndex += entry.getValue();
+        }
+        return translatedMap;
+    }
+
+    private void  addTextsAndPerFieldCount(TranslationMap map, List<String> textsToTranslate, Map<String, Integer> textsPerField) {
+        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+            textsToTranslate.addAll(entry.getValue());
+            textsPerField.put(entry.getKey(), entry.getValue().size());
+        }
+    }
+
+    private TranslationRequest createTranslationRequest(List<String> textsToTranslate, String targetLanguage, String sourceLanguage) {
+        TranslationRequest translationRequest = new TranslationRequest();
+        translationRequest.setText(textsToTranslate);
+        translationRequest.setSource(sourceLanguage);
+        translationRequest.setTarget(targetLanguage);
+        // translationRequest.setService("GOOGLE");
+        return translationRequest;
+    }
+
+    /**
+     * Returns translations for the specific field after removing null and duplicates
+     *
+     * @param translationsForField translations for that field
+     * @return
+     */
+    private List<String> getTranslationsToAdd(List<String> translationsForField) {
+        // remove null values for discarded translations due to lower thresholds or other reasons
+        translationsForField.removeIf(Objects::isNull);
+        ComparatorUtils.removeDuplicates(translationsForField);
+        return translationsForField;
+    }
+
 
 }

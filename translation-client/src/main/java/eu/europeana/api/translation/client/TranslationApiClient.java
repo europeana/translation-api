@@ -31,6 +31,5 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         } catch (JsonProcessingException e) {
             throw new TranslationApiException("Error parsing the request for Translation API");
         }
-
     }
 }

@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class TranslationClientConfiguration {
@@ -24,8 +25,9 @@ public class TranslationClientConfiguration {
     }
 
     private Properties loadProperties(String propertiesFile) {
-        try { properties = new Properties();
-            properties.load(getClass().getResourceAsStream(propertiesFile));
+        properties = new Properties();
+        try (InputStream stream = getClass().getResourceAsStream(propertiesFile)) {
+            properties.load(stream);
         } catch (IOException e) {
             LOGGER.error("Error loading the properties file {}", PROPERTIES_FILE);
         }

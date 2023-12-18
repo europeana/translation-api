@@ -1,16 +1,14 @@
 package eu.europeana.api.translation.client.exception;
 
-import eu.europeana.api.commons.error.EuropeanaApiException;
-import org.springframework.http.HttpStatus;
+public class TranslationApiException extends RuntimeException {
 
-public class TranslationApiException extends EuropeanaApiException {
+    private static final long serialVersionUID = 8281933808897246375L;
 
-    public TranslationApiException(String msg) {
-        super(msg);
+    public TranslationApiException(String message, Exception e) {
+        super(message, e);
     }
 
-    @Override
-    public HttpStatus getResponseStatus() {
-        return HttpStatus.INTERNAL_SERVER_ERROR;
+    public TranslationApiException(String message) {
+        super(message);
     }
 }
