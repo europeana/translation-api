@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Language Detection endoints", description = "Perform language detection")
 public class LangDetectionController extends BaseRest {
-  public static final String SCHEMA_NESTED_LOCATION = "";
+
   private final LangDetectionWebService langDetectionService;
 
   public LangDetectionController(@Autowired LangDetectionWebService langDetectionService) {
