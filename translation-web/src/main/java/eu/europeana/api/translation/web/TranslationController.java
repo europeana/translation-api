@@ -1,10 +1,9 @@
 package eu.europeana.api.translation.web;
 
-import static eu.europeana.api.translation.schemavalidation.JsonSchemaLocation.JSON_SCHEMA;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
 
-import eu.europeana.api.translation.schemavalidation.ValidJson;
+import eu.europeana.api.commons.ValidJson;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class TranslationController extends BaseRest {
   @Tag(description = "Translation", name = "translate")
   @PostMapping(value = {"/translate"},
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> translate(@ValidJson(JSON_SCHEMA) TranslationRequest translRequest,
+  public ResponseEntity<String> translate(@ValidJson(uri = TranslationSchemaLocation.JSON_SCHEMA_URI, nested = TranslationSchemaLocation.JSON_SCHEMA_NESTED) TranslationRequest translRequest,
       HttpServletRequest request) throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);

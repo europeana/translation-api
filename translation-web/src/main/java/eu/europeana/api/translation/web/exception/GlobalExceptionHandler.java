@@ -1,12 +1,11 @@
 package eu.europeana.api.translation.web.exception;
 
 import com.networknt.schema.ValidationMessage;
+import eu.europeana.api.commons.JsonValidationFailedException;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
 import eu.europeana.api.translation.config.BeanNames;
-import eu.europeana.api.translation.schemavalidation.JsonSchemaLoadingFailedException;
-import eu.europeana.api.translation.schemavalidation.JsonValidationFailedException;
 import eu.europeana.api.translation.web.service.RequestPathMethodService;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -2,11 +2,11 @@ package eu.europeana.api.translation.web;
 
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.LANG;
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.TEXT;
-import static eu.europeana.api.translation.schemavalidation.JsonSchemaLocation.JSON_SCHEMA;
+
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
 
-import eu.europeana.api.translation.schemavalidation.ValidJson;
+import eu.europeana.api.commons.ValidJson;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Language Detection endoints", description = "Perform language detection")
 public class LangDetectionController extends BaseRest {
-
+  public static final String SCHEMA_NESTED_LOCATION = "";
   private final LangDetectionWebService langDetectionService;
 
   public LangDetectionController(@Autowired LangDetectionWebService langDetectionService) {
@@ -36,7 +36,7 @@ public class LangDetectionController extends BaseRest {
   @Tag(description = "Language detection", name = "detectLang")
   @PostMapping(value = {"/detect"},
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> detectLang(@ValidJson(JSON_SCHEMA)  LangDetectRequest langDetectRequest,
+  public ResponseEntity<String> detectLang( @ValidJson(uri=TranslationSchemaLocation.JSON_SCHEMA_URI,nested = TranslationSchemaLocation.JSON_SCHEMA_NESTED)  LangDetectRequest langDetectRequest,
       HttpServletRequest request) throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);

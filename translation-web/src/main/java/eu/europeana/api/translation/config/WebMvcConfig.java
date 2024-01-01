@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.translation.schemavalidation.JsonSchemaValidatingArgumentResolver;
+import eu.europeana.api.commons.JsonSchemaValidatingArgumentResolver;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,14 +91,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 
 
-  @Autowired
-  private ObjectMapper objectMapper;
+
+  private ObjectMapper objectMapper = new ObjectMapper();
 
   @Autowired
   private ResourcePatternResolver resourcePatternResolver;
 
-  @Override
-  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-    resolvers.add(new JsonSchemaValidatingArgumentResolver(objectMapper, resourcePatternResolver));
+ @Override
+ public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+   resolvers.add(new JsonSchemaValidatingArgumentResolver(objectMapper, resourcePatternResolver));
   }
 }

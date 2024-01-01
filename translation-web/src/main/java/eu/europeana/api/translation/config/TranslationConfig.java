@@ -129,5 +129,5 @@ public class TranslationConfig{
   public String getTruststorePass() {
     return truststorePass;
   }
-  
+
 }
