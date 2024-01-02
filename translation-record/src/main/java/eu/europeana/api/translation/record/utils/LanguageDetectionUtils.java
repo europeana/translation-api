@@ -2,9 +2,11 @@ package eu.europeana.api.translation.record.utils;
 
 import eu.europeana.api.commons.definitions.utils.ComparatorUtils;
 import eu.europeana.api.translation.definitions.language.Language;
-import eu.europeana.api.translation.definitions.language.LanguageValueFieldMap;
+import eu.europeana.api.translation.record.model.LanguageValueFieldMap;
 import eu.europeana.api.translation.record.service.BaseService;
+import eu.europeana.corelib.definitions.edm.beans.BriefBean;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
+import eu.europeana.corelib.definitions.edm.beans.IdBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.utils.EuropeanaUriUtils;
 
@@ -35,13 +37,15 @@ public class LanguageDetectionUtils {
      * Default translation and filtering for non-official language
      * is not supported
      *
-     * @param bean the fullbean to inspect
-     * @return the default language as specified in Europeana Aggregation edmLanguage field (if the language found there
-     * is one of the EU languages we support in this application for translation)
+     * @param bean bean that extends IdBean See: {@link eu.europeana.corelib.definitions.edm.beans.IdBean}
+     *
+     * @return the default language as specified in Europeana Aggregation edmLanguage field OR in the Language field of the serach Results Brief beans
+     * (if the language found there is one of the EU languages we support in this application for translation)
      */
-    public static List<Language> getEdmLanguage(FullBean bean) {
+    public static <T extends IdBean> List<Language> getEdmLanguage(T bean, boolean searchResults) {
         List<Language> lang = new ArrayList<>();
-        Map<String, List<String>> edmLanguage = bean.getEuropeanaAggregation().getEdmLanguage();
+        Map<String, List<String>> edmLanguage = getLanguageFieldValue(bean, searchResults);
+
         for (Map.Entry<String, List<String>> entry : edmLanguage.entrySet()) {
             for (String languageAbbreviation : entry.getValue()) {
                 if (Language.isSupported(languageAbbreviation)) {
@@ -52,11 +56,30 @@ public class LanguageDetectionUtils {
             }
         }
         if (!lang.isEmpty()) {
-            LOG.debug("EDM language - {} fetched for record - {} ", lang, bean.getAbout());
+            LOG.debug("EDM language - {} fetched for record - {} ", lang, searchResults ? bean.getId() : ((FullBean) bean).getAbout());
         }
         return lang;
     }
 
+    /**
+     * Get the language from Bean.
+     * @param bean
+     * @param searchResults if true fetches the language value field from BriefBean.
+     *                      If false fetches the edmlanguage field from Fullbean
+     * @param <T> bean
+     * @return
+     */
+    private static <T extends IdBean>  Map<String, List<String>> getLanguageFieldValue(T bean, boolean searchResults) {
+        Map<String, List<String>> edmLanguage = new HashMap<>();
+        if (searchResults) {
+            if (((BriefBean) bean).getLanguage() != null) {
+                edmLanguage.put("", Arrays.asList(((BriefBean) bean).getLanguage()));
+            }
+        } else {
+            edmLanguage = ((FullBean)bean).getEuropeanaAggregation().getEdmLanguage();
+        }
+        return edmLanguage;
+    }
 
     /**
      * Method to get values of non-language tagged prefLabel (only if no other language tagged value doesn't exists)
@@ -143,7 +166,7 @@ public class LanguageDetectionUtils {
      * @param fieldName field name
      * @return
      */
-    public static LanguageValueFieldMap getValueFromLanguageMap(Map<String, List<String>> map, String fieldName, FullBean bean) {
+    public static <T extends IdBean> LanguageValueFieldMap getValueFromLanguageMap(Map<String, List<String>> map, String fieldName, T bean, boolean onlyLiterals) {
         // get non-language tagged values only
         List<String> defValues = new ArrayList<>();
         if (!map.isEmpty() && map.containsKey(Language.DEF)) {
@@ -157,8 +180,9 @@ public class LanguageDetectionUtils {
             }
         }
 
-        // resolve the uri's and if contextual entity present get the preflabel
-        List<String> resolvedNonLangTaggedValues = checkForUrisAndGetPrefLabel(bean, defValues);
+        // For search results - only gather literals
+        // For record - resolve the uri's and if contextual entity present get the preflabel
+        List<String> resolvedNonLangTaggedValues = onlyLiterals ? filterOutUris(defValues) : checkForUrisAndGetPrefLabel((FullBean) bean, defValues);
 
         //  Check if the value contains at least 1 unicode letter or number (otherwise ignore)
         List<String> cleanDefValues = filterValuesWithAtleastOneUnicodeOrNumber(resolvedNonLangTaggedValues);
@@ -167,6 +191,13 @@ public class LanguageDetectionUtils {
             return new LanguageValueFieldMap(fieldName, Language.DEF, cleanDefValues);
         }
         return null;
+    }
+
+    public static List<String> filterOutUris(List<String> values) {
+        if (values != null && !values.isEmpty())  {
+            return values.stream().filter(v -> !EuropeanaUriUtils.isUri(v)).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     public static List<String> filterValuesWithAtleastOneUnicodeOrNumber(List<String> valuesToFilter) {

@@ -61,7 +61,7 @@
 		<git-commit-id.version>5.0.0</git-commit-id.version>
 		<git-code-format.version>3.1</git-code-format.version>
 		<surefire.version>3.0.0-M5</surefire.version>
-		<corelib.version>2.16.2</corelib.version>
+		<corelib.version>2.16.7-SNAPSHOT</corelib.version>
 		<!-- sonar plugins -->
 		<jacoco-plugin.version>0.8.7</jacoco-plugin.version>
 		<pmd-plugin.version>3.15.0</pmd-plugin.version>

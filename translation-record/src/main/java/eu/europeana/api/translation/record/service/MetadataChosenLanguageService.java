@@ -1,8 +1,10 @@
 package eu.europeana.api.translation.record.service;
 
 import eu.europeana.api.translation.definitions.language.Language;
+import eu.europeana.corelib.definitions.edm.beans.BriefBean;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
+import eu.europeana.corelib.edm.utils.EdmUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,31 +18,48 @@ public class MetadataChosenLanguageService {
 
     private static final Logger LOG = LogManager.getLogger(MetadataChosenLanguageService.class);
 
-    /**
-     * Will fetch the most representative langiuage from all the proxies,  aka - chosen language
-     * @param bean
-     */
-    public String getMostRepresentativeLanguage(FullBean bean, String targetLanguage) {
+    public String getMostRepresentativeLanguageForSearch(List<BriefBean> beans, String targetLanguage) {
+        Map<String, Integer> langCountMap = new HashMap<>();
+        for (BriefBean bean : beans) {
+            ReflectionUtils.doWithFields(bean.getClass(), field -> getLanguageAndCount(bean, field, langCountMap, targetLanguage, true), BaseService.searchFieldFilter);
+        }
+        // if there is no language available for translation workflow, do nothing
+        if (langCountMap.isEmpty()) {
+            LOG.error("Most representative languages NOT present for search results. " +
+                    "Languages present are either zxx or def or not-supported by the translation engine");
+            return null;
+        }
+        return getMostRepresentativeLanguage(langCountMap);
+    }
+
+    public String getMostRepresentativeLanguageForProxy(FullBean bean, String targetLanguage) {
         Map<String, Integer> langCountMap = new HashMap<>();
         List<? extends Proxy> proxies = bean.getProxies();
-
         for (Proxy proxy : proxies) {
-            ReflectionUtils.doWithFields(proxy.getClass(), field -> getLanguageAndCount(proxy, field, langCountMap, targetLanguage), BaseService.proxyFieldFilter);
+            ReflectionUtils.doWithFields(proxy.getClass(), field -> getLanguageAndCount(proxy, field, langCountMap, targetLanguage, false), BaseService.proxyFieldFilter);
         }
-
         // if there is no language available for translation workflow, do nothing
         if (langCountMap.isEmpty()) {
             LOG.error("Most representative languages NOT present for record {}. " +
                     "Languages present are either zxx or def or not-supported by the translation engine", bean.getAbout());
             return null;
         }
+        return getMostRepresentativeLanguage(langCountMap);
+    }
 
+    /**
+     * Will fetch the most representative language
+     * @param langCountMap
+     */
+    private String getMostRepresentativeLanguage(Map<String, Integer> langCountMap) {
         //reverse map - as values might not be unique so using grouping method
         Map<Integer, List<String>> reverseMap =
                 langCountMap.entrySet()
                         .stream()
                         .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
         List<String> languagesWithMostvalues = reverseMap.get(Collections.max(reverseMap.keySet()));
+
+        LOG.debug("Language with most values {}" , languagesWithMostvalues);
 
         // if there is a tie between more than one language, choose based on the precedance list
         if (languagesWithMostvalues.size() > 1) {
@@ -57,9 +76,25 @@ public class MetadataChosenLanguageService {
         return languagesWithMostvalues.get(0);
     }
 
+    /**
+     * Fetches the Language value map for the field for Proxy OR
+     *  search result bean map.
+     *  NOTE -  Map keys we get from Solr have compound names with a dot (e.g. {proxy_dc_title.ro=[Happy-end]})
+     *         The EdmUtils.cloneMap functionality makes sure that is transformed into something we can use (e.g. {ro=[Happy-end]})
+     * @param object
+     * @param field
+     * @return
+     */
+    private  Map<String, List<String>> getLanguageValueMap(Object object, Field field, boolean searchResults) {
+        if (searchResults) {
+            return EdmUtils.cloneMap(BaseService.getValueOfTheField(object, false).apply(field.getName()));
+        } else{
+            return BaseService.getValueOfTheField(object, false).apply(field.getName());
+        }
+    }
 
-    private void getLanguageAndCount(Proxy proxy, Field field, Map<String, Integer> langCountMap, String targetLang) {
-        Map<String, List<String>> langValueMap = BaseService.getValueOfTheField(proxy, false).apply(field.getName());
+    private void getLanguageAndCount(Object object, Field field, Map<String, Integer> langCountMap, String targetLang, boolean searchResults) {
+        Map<String, List<String>> langValueMap = getLanguageValueMap(object, field, searchResults);
         if (!langValueMap.isEmpty()) {
             for (Map.Entry<String, List<String>> langValue : langValueMap.entrySet()) {
                 String key = langValue.getKey();

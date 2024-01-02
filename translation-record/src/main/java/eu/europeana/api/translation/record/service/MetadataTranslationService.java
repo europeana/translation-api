@@ -8,8 +8,10 @@ import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import eu.europeana.api.translation.record.model.TranslationMap;
 import eu.europeana.api.translation.record.utils.LanguageDetectionUtils;
+import eu.europeana.corelib.definitions.edm.beans.BriefBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
+import eu.europeana.corelib.edm.utils.EdmUtils;
 import eu.europeana.corelib.utils.ComparatorUtils;
 import eu.europeana.corelib.utils.EuropeanaUriUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -31,6 +33,8 @@ import java.util.*;
 public class MetadataTranslationService extends BaseService {
 
     private static final Logger LOG = LogManager.getLogger(MetadataTranslationService.class);
+    private static final String FIELD_SEPARATOR = ".";
+    private static final String FIELD_SEPARATOR_REGEX = "\\.";
 
     private final MetadataChosenLanguageService metadataChosenLanguageService;
 
@@ -38,6 +42,62 @@ public class MetadataTranslationService extends BaseService {
         super(translationApiClient);
         this.metadataChosenLanguageService = metadataChosenLanguageService;
     }
+
+    public List<BriefBean> searchResultsTranslations(List<BriefBean> beans, String targetLanguage) throws TranslationApiException {
+        long start = System.currentTimeMillis();
+
+        String chosenLanguage = metadataChosenLanguageService.getMostRepresentativeLanguageForSearch(beans, targetLanguage);
+
+        // if there is no chosen language stop the translation workflow OR
+        // If the chosen language matches target language then do nothing (stop the workflow)
+        // keep in mind during Ingestion we always translate the record to english. So target language is always en
+        if (chosenLanguage == null || StringUtils.equals(chosenLanguage, targetLanguage)) {
+            LOG.debug("Stop the translation workflow for search results ..." );
+            return beans;
+        }
+
+        LOG.debug("Most representative language chosen for translations is  {}", chosenLanguage);
+
+        TranslationMap textToTranslate = new TranslationMap(chosenLanguage);
+
+        int index = 0;
+        for (BriefBean bean : beans) {
+            LOG.debug("Check search result {}...", index);
+            int finalIndex = index;
+            ReflectionUtils.doWithFields(bean.getClass(), field ->  getSearchValueToTranslateForField(bean, field, chosenLanguage, textToTranslate, finalIndex), BaseService.searchFieldFilter);
+            index++;
+        }
+
+        // if no translation gathered return
+        if (textToTranslate.isEmpty()) {
+            LOG.debug("No values gathered for translations. Stopping the translation workflow for search results");
+            return beans;
+        }
+
+        LOG.debug("Text to translate - {}", textToTranslate);
+
+        // get the translation in the target language
+        TranslationMap translations = translate(textToTranslate, targetLanguage);
+        if (translations.isEmpty()) {
+            LOG.debug("Empty or null translation returned by the Translation API Client");
+            return beans;
+        }
+
+        // add all the translated data to respective bean result
+        translations.entrySet().stream().forEach(value -> {
+            String[] parts = value.getKey().split(FIELD_SEPARATOR_REGEX);
+            int i = Integer.parseInt(parts[0]);
+            String fieldName = parts[1];
+            LOG.trace("Updating {} index result for field..", i, fieldName);
+
+            addTranslationToObject(beans.get(i), fieldName, value.getValue(), translations.getSourceLanguage());
+        });
+
+        LOG.debug("Translating search results took {} ms", (System.currentTimeMillis() - start));
+        return beans;
+    }
+
+
 
     /**
      * Iterate over all the proxies fields and returns a translated updated bean in the target lanaguge
@@ -68,11 +128,11 @@ public class MetadataTranslationService extends BaseService {
      *
      */
 
-    public FullBean translationWorkflow(FullBean bean, String targetLanguage) throws TranslationApiException {
+    public FullBean proxyTranslation(FullBean bean, String targetLanguage) throws TranslationApiException {
         long start = System.currentTimeMillis();
         List<Proxy> proxies = new ArrayList<>(bean.getProxies()); // make sure we clone first so we can edit the list to our needs.
 
-        String chosenLanguage = metadataChosenLanguageService.getMostRepresentativeLanguage(bean, targetLanguage);
+        String chosenLanguage = metadataChosenLanguageService.getMostRepresentativeLanguageForProxy(bean, targetLanguage);
 
         // if there is no chosen language stop the translation workflow OR
         // If the chosen language matches target language then do nothing (stop the workflow)
@@ -115,7 +175,7 @@ public class MetadataTranslationService extends BaseService {
 
         // add all the translated data to Europeana proxy
         Proxy europeanaProxy = BaseService.getEuropeanaProxy(bean.getProxies(), bean.getAbout());
-        updateProxy(europeanaProxy, translations);
+        translations.entrySet().stream().forEach(value -> addTranslationToObject(europeanaProxy, value.getKey(), value.getValue(), translations.getSourceLanguage()));
 
         LOG.debug("Translating record {} took {} ms", bean.getAbout(), (System.currentTimeMillis() - start));
         return bean;
@@ -136,6 +196,30 @@ public class MetadataTranslationService extends BaseService {
     }
 
     /**
+     * Returns Serach result values to translate for the given field in the map
+     *
+     *  Map keys we get from Solr have compound names with a dot (e.g. {proxy_dc_title.ro=[Happy-end]})
+     *  The EdmUtils.cloneMap functionality makes sure that is transformed into something we can use (e.g. def)
+     * @param bean
+     * @param field
+     * @param sourceLang
+     * @param bean
+     * @return
+     */
+    private void getSearchValueToTranslateForField(BriefBean bean, Field field, String sourceLang, TranslationMap map, int index) {
+        HashMap<String, List<String>> origFieldData = (HashMap<String, List<String>>) BaseService.getValueOfTheField(bean, false).apply(field.getName());
+        Map<String, List<String>> fieldData = EdmUtils.cloneMap(origFieldData);
+
+        // Get the value only if there is NO "en" language tag already present for the field and there is value present for the sourceLang
+        if (fieldData != null && !fieldData.isEmpty()  && !fieldData.containsKey(Language.PIVOT) && fieldData.containsKey(sourceLang)) {
+            List<String> valuesToTranslateForField = getValuesToTranslate((HashMap<String, List<String>>) fieldData, sourceLang, null, true);
+            if (!valuesToTranslateForField.isEmpty()) {
+                map.add(index + FIELD_SEPARATOR + field.getName(), valuesToTranslateForField);
+            }
+        }
+    }
+
+    /**
      * Returns the language qualified values matching the chosen language
      * If there is already a English value for a property then skip this property (do not select any value from it)
      * For contextual entities, consider only the value from the skos:prefLabel
@@ -146,12 +230,10 @@ public class MetadataTranslationService extends BaseService {
      * @param bean          record
      * @return
      */
-    private void getValueFromLanguageMap(HashMap<String, List<String>> origFieldData, Field field, String sourceLang, FullBean bean, TranslationMap map,
-                                         Set<String> otherProxyFieldsWithEnglishValues) {
-
+    private void getValueFromLanguageMap(HashMap<String, List<String>> origFieldData, Field field, String sourceLang, FullBean bean, TranslationMap map, Set<String> otherProxyFieldsWithEnglishValues) {
         // Get the value only if there is NO "en" language tag already present for the field in any proxy and there is value present for the sourceLang
         if (origFieldData != null && !origFieldData.isEmpty()  && !origFieldData.containsKey(Language.PIVOT) && origFieldData.containsKey(sourceLang)) {
-            List<String> valuesToTranslateForField = getValuesToTranslate(origFieldData, sourceLang, bean);
+            List<String> valuesToTranslateForField = getValuesToTranslate(origFieldData, sourceLang, bean, false);
             if (!valuesToTranslateForField.isEmpty()) {
                 map.add(field.getName(),valuesToTranslateForField);
             }
@@ -171,19 +253,24 @@ public class MetadataTranslationService extends BaseService {
      * @param bean          record
      * @return
      */
-    private List<String> getValuesToTranslate(HashMap<String, List<String>> origFieldData, String sourceLang, FullBean bean) {
+    private List<String> getValuesToTranslate(HashMap<String, List<String>> origFieldData, String sourceLang, FullBean bean, boolean onlyLiterals) {
         List<String> valuesToTranslate = new ArrayList<>();
-        for (String value : origFieldData.get(sourceLang)) {
-            // if the value is a URI get the contextual entity pref label in source lang.
-            // Also, ignore the other uri values whose entity doesn't exist
-            if (EuropeanaUriUtils.isUri(value)) {
-                ContextualClass entity = BaseService.entityExistsWithUrl(bean, value);
-                if (entity != null && entity.getPrefLabel() != null && entity.getPrefLabel().containsKey(sourceLang)) {
-                    LOG.debug("Entity {} has preflabel in chosen language {} for translation  ", value, sourceLang);
-                    valuesToTranslate.addAll(entity.getPrefLabel().get(sourceLang));
+        // for search translations we only need literal values
+        if (onlyLiterals) {
+            valuesToTranslate = LanguageDetectionUtils.filterOutUris(origFieldData.get(sourceLang));
+        } else {
+            for (String value : origFieldData.get(sourceLang)) {
+                // if the value is a URI get the contextual entity pref label in source lang.
+                // Also, ignore the other uri values whose entity doesn't exist
+                if (EuropeanaUriUtils.isUri(value)) {
+                    ContextualClass entity = BaseService.entityExistsWithUrl(bean, value);
+                    if (entity != null && entity.getPrefLabel() != null && entity.getPrefLabel().containsKey(sourceLang)) {
+                        LOG.debug("Entity {} has preflabel in chosen language {} for translation  ", value, sourceLang);
+                        valuesToTranslate.addAll(entity.getPrefLabel().get(sourceLang));
+                    }
+                } else {
+                    valuesToTranslate.add(value); // add non uri values
                 }
-            } else {
-                valuesToTranslate.add(value); // add non uri values
             }
         }
         // remove duplicate values and also filter values with atleast 1 unicode or number
@@ -191,21 +278,18 @@ public class MetadataTranslationService extends BaseService {
     }
 
 
-
     /**
-     * Updates the proxy object field values by adding the new map values
-     * @param proxy
-     * @param translatedMap
+     * Updates the object with translations results
+     * @param object object to be updated
+     * @param fieldName field to be updated in the object
+     * @param translatedValues list of translated values to be added
+     * @param targetLanguage language for the translated values
      */
-    private void updateProxy( Proxy proxy, TranslationMap translatedMap) {
-        translatedMap.entrySet().stream().forEach(value -> {
-            Map<String, List<String>> existingMap = BaseService.getValueOfTheField(proxy, true).apply(value.getKey());
-            // get the "en" values or default to empty list
-            List<String> enValues = existingMap.getOrDefault(translatedMap.getSourceLanguage(), new ArrayList<>());
-            enValues.addAll(value.getValue());
-            // update the "en" map
-            existingMap.compute(translatedMap.getSourceLanguage(), (key, val)-> enValues);
-        });
+    private void addTranslationToObject(Object object, String fieldName, List<String> translatedValues, String targetLanguage) {
+        Map<String, List<String>> existingMap = BaseService.getValueOfTheField(object, true).apply(fieldName);
+        List<String> targetLangValues = existingMap.getOrDefault(targetLanguage, new ArrayList<>());
+        targetLangValues.addAll(translatedValues);
+        existingMap.compute(targetLanguage, (key, val)-> targetLangValues);
     }
 
     /**
@@ -263,15 +347,6 @@ public class MetadataTranslationService extends BaseService {
         }
     }
 
-    private TranslationRequest createTranslationRequest(List<String> textsToTranslate, String targetLanguage, String sourceLanguage) {
-        TranslationRequest translationRequest = new TranslationRequest();
-        translationRequest.setText(textsToTranslate);
-        translationRequest.setSource(sourceLanguage);
-        translationRequest.setTarget(targetLanguage);
-        // translationRequest.setService("GOOGLE");
-        return translationRequest;
-    }
-
     /**
      * Returns translations for the specific field after removing null and duplicates
      *
@@ -284,6 +359,4 @@ public class MetadataTranslationService extends BaseService {
         ComparatorUtils.removeDuplicates(translationsForField);
         return translationsForField;
     }
-
-
 }

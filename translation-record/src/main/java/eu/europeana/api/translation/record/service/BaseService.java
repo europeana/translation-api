@@ -2,6 +2,7 @@ package eu.europeana.api.translation.record.service;
 
 import eu.europeana.api.translation.client.TranslationApiClient;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import eu.europeana.corelib.definitions.edm.beans.FullBean;
 import eu.europeana.corelib.definitions.edm.entity.ContextualClass;
 import eu.europeana.corelib.definitions.edm.entity.Proxy;
@@ -27,10 +28,15 @@ public class BaseService {
             "dctermsIsFormatOf", "dctermsIsPartOf", "dctermsIsReferencedBy", "dctermsIsReplacedBy", "dctermsIsRequiredBy", "dctermsIssued", "dctermsMedium", "dctermsProvenance",
             "dctermsReferences", "dctermsSpatial", "dctermsTemporal", "edmCurrentLocation", "edmHasMet");
 
+    private static final Set<String> SEARCH_FIELDS_TO_TRANSLATE = Set.of("dcTitleLangAware", "dcDescriptionLangAware", "dcCreatorLangAware");
+
     private static final List<String> ENTITIES = List.of("agents", "concepts", "places", "timespans");
 
     public static final ReflectionUtils.FieldFilter proxyFieldFilter = field -> field.getType().isAssignableFrom(Map.class) &&
             INCLUDE_PROXY_MAP_FIELDS.contains(field.getName());
+
+    public static final ReflectionUtils.FieldFilter searchFieldFilter = field -> field.getType().isAssignableFrom(Map.class) &&
+            SEARCH_FIELDS_TO_TRANSLATE.contains(field.getName());
 
     public BaseService(TranslationApiClient translationApiClient) {
         this.translationApiClient = translationApiClient;
@@ -58,22 +64,22 @@ public class BaseService {
     }
 
     /**
-     * Function to get the lang-value map of the field from the proxy Object
-     * @param proxy
+     * Function to get the lang-value map of the field from the Object
+     * @param object Could be any object. Usually for record - proxy and for search - BriefBean
      * @param update if true, and the value is null for the field - It sets the empty map in the proxy object
      *               for that field.
      * @return
      */
-    public static Function<String, Map<String, List<String>>> getValueOfTheField(Proxy proxy, boolean update) {
+    public static Function<String, Map<String, List<String>>> getValueOfTheField(Object object, boolean update) {
         return e -> {
-            Field field = ReflectionUtils.findField(proxy.getClass(), e);
+            Field field = ReflectionUtils.findField(object.getClass(), e);
             ReflectionUtils.makeAccessible(field);
-            Object value = ReflectionUtils.getField(field, proxy);
+            Object value = ReflectionUtils.getField(field, object);
             // If we are updating the proxy value, then for the field we must set an empty map
             // if it doesn't exist already. When we are just fetching the values, we need not alter anything in the proxy object
             if (value == null && update) {
-                ReflectionUtils.setField(field, proxy, new LinkedHashMap<>());
-                value = ReflectionUtils.getField(field, proxy);
+                ReflectionUtils.setField(field, object, new LinkedHashMap<>());
+                value = ReflectionUtils.getField(field, object);
             }
             if (value instanceof Map) {
                 return (Map<String, List<String>>) value;
@@ -83,7 +89,6 @@ public class BaseService {
             return new LinkedHashMap<>(); // default return an empty map
         };
     }
-
 
     /**
      * Finds the Contextual entity from the bean matching the uri
@@ -120,6 +125,16 @@ public class BaseService {
 
         // return Contextual Class if found or else null
         return matchingEntity.isEmpty() ? null : matchingEntity.get(0);
+    }
+
+    public static TranslationRequest createTranslationRequest(List<String> textsToTranslate, String targetLanguage, String sourceLanguage) {
+        TranslationRequest translationRequest = new TranslationRequest();
+        translationRequest.setText(textsToTranslate);
+        translationRequest.setSource(sourceLanguage);
+        translationRequest.setTarget(targetLanguage);
+        // TODO remove , don't commit this. only for testing
+        translationRequest.setService("GOOGLE");
+        return translationRequest;
     }
 }
 

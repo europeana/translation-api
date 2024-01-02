@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.definitions.language;
+package eu.europeana.api.translation.record.model;
 
 import java.util.LinkedHashMap;
 import java.util.List;
