@@ -23,8 +23,8 @@ public class TranslationUtils {
     public static final String FIELD_SEPARATOR = ".";
     public static final String FIELD_SEPARATOR_REGEX = "\\.";
 
-    public static String getPharseOrNewLine = "^.*?(?=[.|?|!|\\n])";
-    public  static final Pattern getValuesBeforePhraseOrNewLinePattern = Pattern.compile(getPharseOrNewLine);
+    private static String getPharse = "^.*?(?=[.|?|!])";
+    public  static final Pattern getValuesBeforePhrasePattern = Pattern.compile(getPharse);
     public static final String TRUNCATED_INDICATOR = "...";
 
 
@@ -84,7 +84,6 @@ public class TranslationUtils {
      */
     public static List<String> getValuesToTranslate(HashMap<String, List<String>> origFieldData, String sourceLang, FullBean bean, boolean onlyLiterals,
                                                     Integer translationCharLimit, Integer translationCharTolerance) {
-        System.out.println(origFieldData);
         List<String> valuesToTranslate = new ArrayList<>();
         // for search translations we only need literal values
         if (onlyLiterals) {
@@ -111,9 +110,6 @@ public class TranslationUtils {
         if (translationCharLimit != null && translationCharTolerance != null) {
             return truncate(cleanValues, translationCharLimit, translationCharTolerance);
         }
-
-        System.out.println(cleanValues);
-
         return cleanValues;
     }
 
@@ -142,7 +138,7 @@ public class TranslationUtils {
                 String valueAfterLimit = StringUtils.substring(value, charLimitIndex, value.length());
 
                 //  check if the string has a phrase or new line
-                Matcher m = getValuesBeforePhraseOrNewLinePattern.matcher(valueAfterLimit);
+                Matcher m = getValuesBeforePhrasePattern.matcher(valueAfterLimit);
                 if (m.find()) {
                     truncatedValues.add(StringUtils.substring(value, 0,  charLimitIndex) + m.group(0) + TRUNCATED_INDICATOR) ;
                 } else {
