@@ -97,7 +97,7 @@ public class MetadataChosenLanguageService {
         Map<String, List<String>> langValueMap = getLanguageValueMap(object, field, searchResults);
         if (!langValueMap.isEmpty()) {
             for (Map.Entry<String, List<String>> langValue : langValueMap.entrySet()) {
-                String key = langValue.getKey();
+                String key = Language.stripLangStringIfRegionPresent(langValue.getKey()); // if region codes present get the first two ISO letters
                 if (languageToBeChosen(key, targetLang)) {
                     Integer value = langValue.getValue().size();
                     if (langCountMap.containsKey(key)) {

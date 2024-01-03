@@ -126,15 +126,5 @@ public class BaseService {
         // return Contextual Class if found or else null
         return matchingEntity.isEmpty() ? null : matchingEntity.get(0);
     }
-
-    public static TranslationRequest createTranslationRequest(List<String> textsToTranslate, String targetLanguage, String sourceLanguage) {
-        TranslationRequest translationRequest = new TranslationRequest();
-        translationRequest.setText(textsToTranslate);
-        translationRequest.setSource(sourceLanguage);
-        translationRequest.setTarget(targetLanguage);
-        // TODO remove , don't commit this. only for testing
-        translationRequest.setService("GOOGLE");
-        return translationRequest;
-    }
 }
 

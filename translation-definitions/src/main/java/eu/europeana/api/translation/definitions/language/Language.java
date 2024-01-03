@@ -112,7 +112,7 @@ public enum Language {
      * @param lang
      * @return
      */
-    private static String stripLangStringIfRegionPresent(String lang) {
+    public static String stripLangStringIfRegionPresent(String lang) {
         if (isLanguageWithRegionLocales(lang)) {
             return StringUtils.substringBefore(lang, "-");
         }
