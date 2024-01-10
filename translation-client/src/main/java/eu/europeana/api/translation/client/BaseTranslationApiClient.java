@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class BaseTranslationApiClient {
 
     private static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
-    private static final int maxInMemSizeMb = 10;
+    private static final int MAXIN_MEM_SIZE_MB = 10;
 
     private final TranslationClientConfiguration configuration;
     private final ObjectWriter objectWriter;
@@ -37,7 +37,7 @@ public class BaseTranslationApiClient {
                 .exchangeStrategies(ExchangeStrategies.builder()
                         .codecs(configurer -> configurer
                                 .defaultCodecs()
-                                .maxInMemorySize(maxInMemSizeMb * 1024 * 1024))
+                                .maxInMemorySize(MAXIN_MEM_SIZE_MB * 1024 * 1024))
                         .build())
                 .build();
     }
