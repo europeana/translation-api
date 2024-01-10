@@ -2,15 +2,18 @@ package eu.europeana.api.translation.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Properties;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -20,19 +23,18 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.web.model.CachedTranslation;
-import eu.europeana.api.translation.serialization.JsonRedisSerializer;
+import eu.europeana.api.translation.model.CachedTranslation;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -44,6 +46,7 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.service.RedisCacheService;
 import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
 import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
@@ -51,12 +54,9 @@ import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
 @Configuration()
-@PropertySource("classpath:translation.properties")
-@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
-  @Value("${translation.dummy.services:false}")
-  private boolean useDummyServices;
+  final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
@@ -103,7 +103,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
   public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
-    if (useDummyServices) {
+    if (translationConfig.isUseDummyServices()) {
       return new DummyApacheTikaLangDetectService();
     } else {
       return new ApacheTikaLangDetectService();
@@ -112,7 +112,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
-    if (useDummyServices) {
+    if (translationConfig.isUseDummyServices()) {
       return new DummyPangLangDetectService();
     } else {
       return new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint());
@@ -121,19 +121,64 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
   public PangeanicTranslationService getPangeanicTranslationService(
-      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService) {
-    if (useDummyServices) {
+      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService)
+      throws TranslationServiceConfigurationException {
+    if (translationConfig.isUseDummyServices()) {
       return new DummyPangTranslationService();
     } else {
       return new PangeanicTranslationService(translationConfig.getPangeanicTranslateEndpoint(),
-          pangeanicLangDetectService);
+          pangeanicLangDetectService, loadPangeanicThresholds());
     }
   }
+
+  private Properties loadPangeanicThresholds() throws TranslationServiceConfigurationException {
+
+    Properties thresholds = new Properties();
+
+    File languageThresholdsFile = getConfigFile(FILE_PANGEANIC_LANGUAGE_THRESHOLDS);
+    if (languageThresholdsFile.exists()) {
+      // load thresholds from config file if available
+      try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
+        thresholds.load(input);
+        if(logger.isInfoEnabled()) {
+          logger.info("Successfully loaded pangeanic thresholds from config file, Values: {}", thresholds);
+        }
+      } catch (IOException e) {
+        throw new TranslationServiceConfigurationException(
+            "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
+            e);
+      }
+    } else {
+      // load thresholds from resources if available, need to search in the root folder of resources
+      try (InputStream input = TranslationApiAutoconfig.class
+          .getResourceAsStream("/" + FILE_PANGEANIC_LANGUAGE_THRESHOLDS)) {
+        if (input != null) {
+          thresholds.load(input);
+          if(logger.isInfoEnabled()) {
+            logger.info("Successfully loaded pangeanic thresholds from resources, Values: {}", thresholds);
+          }
+        }
+      } catch (IOException e) {
+        throw new TranslationServiceConfigurationException(
+            "Cannot load pangeanic languae thresholds from file: " + languageThresholdsFile, e);
+      }
+    }
+
+    // load properties
+    if (thresholds.isEmpty()) {
+      if (logger.isInfoEnabled()) {
+        logger.info("No configurations found for pangeanic language thresholds available.");
+      }
+    }
+
+    return thresholds;
+  }
+
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    if (useDummyServices) {
+    if (translationConfig.isUseDummyServices()) {
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
@@ -144,7 +189,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    if (useDummyServices) {
+    if (translationConfig.isUseDummyServices()) {
       return new DummyGTranslateService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(),
@@ -168,20 +213,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
-  @SuppressWarnings({"external_findsecbugs:PATH_TRAVERSAL_IN", "findsecbugs:PATH_TRAVERSAL_IN"}) // the trustore path is not user input but application config
-  private LettuceConnectionFactory getRedisConnectionFactory() {
+  private LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
         LettuceClientConfiguration.builder();
     // if redis secure protocol is used (rediss vs. redis)
     boolean sslEnabled = translationConfig.getRedisConnectionUrl().startsWith("rediss");
     if (sslEnabled) {
-      @SuppressWarnings("external_findsecbugs:PATH_TRAVERSAL_IN") // the trustore path is not user input but application config
-      final File truststore = new File(FilenameUtils.normalize(translationConfig.getTruststorePath()));
+      final File truststore = getTrustoreFile();
       SslOptions sslOptions = SslOptions.builder().jdkSslProvider()
-          .truststore(truststore,
-              translationConfig.getTruststorePass())
-          .build();
+          .truststore(truststore, translationConfig.getTruststorePass()).build();
 
       ClientOptions clientOptions = ClientOptions.builder().sslOptions(sslOptions).build();
 
@@ -196,19 +237,46 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return new LettuceConnectionFactory(redisConf, lettuceClientConfiguration);
   }
 
+  private File getTrustoreFile() throws AppConfigurationException {
+
+    String truststorePathConfig = translationConfig.getTruststorePath();
+    if (truststorePathConfig == null) {
+      throw new AppConfigurationException(
+          "A trustore must be provided in configurations when confinguring redis ssl connection");
+    }
+    // allow configurations to use the full path, for backward compatibility
+    final File trustoreFile = getConfigFile(truststorePathConfig);
+    if (!trustoreFile.exists()) {
+      throw new AppConfigurationException(
+          "Invalid config file location: " + trustoreFile.getAbsolutePath());
+    }
+    return trustoreFile;
+  }
+
+  /**
+   * If the input is a full path, the filename will be extracted
+   * 
+   * @param configFile name of the config file
+   * @return the File object for the configFile within the config folder
+   */
+  private File getConfigFile(String configFile) {
+    return new File(translationConfig.getConfigFolder(), FilenameUtils.getName(configFile));
+  }
+
   private RedisTemplate<String, CachedTranslation> getRedisTemplate(
       RedisConnectionFactory redisConnectionFactory) {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
-    redisTemplate.setValueSerializer(new JsonRedisSerializer());
+    redisTemplate.setValueSerializer(
+        new Jackson2JsonRedisSerializer<CachedTranslation>(CachedTranslation.class));
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
 
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
-  public RedisCacheService getRedisCacheService() {
+  public RedisCacheService getRedisCacheService() throws AppConfigurationException {
     LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
     redisConnectionFactory.afterPropertiesSet();
     RedisTemplate<String, CachedTranslation> redisTemplate =
