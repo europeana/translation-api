@@ -1,6 +1,6 @@
 package eu.europeana.api.translation.client.exception;
 
-public class TranslationApiException extends RuntimeException {
+public class TranslationApiException extends Exception {
 
     private static final long serialVersionUID = 8281933808897246375L;
 
