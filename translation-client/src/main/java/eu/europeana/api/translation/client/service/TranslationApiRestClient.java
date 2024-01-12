@@ -76,11 +76,11 @@ public class TranslationApiRestClient {
             Throwable t = Exceptions.unwrap(e);
 
             if (t instanceof ExternalServiceException) {
-                throw new ExternalServiceException(e.getMessage());
+                throw new ExternalServiceException(e.getMessage(), e);
             }
 
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
-            throw new TranslationApiException("Translation API Client call failed - "+ e.getMessage());
+            throw new TranslationApiException("Translation API Client call failed - "+ e.getMessage(), e);
         }
     }
 
