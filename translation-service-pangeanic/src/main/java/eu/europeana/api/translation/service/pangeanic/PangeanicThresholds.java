@@ -1,10 +1,13 @@
-package eu.europeana.api.translation.definitions.language;
+package eu.europeana.api.translation.service.pangeanic;
 
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import eu.europeana.api.translation.definitions.language.Language;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import org.apache.commons.lang3.StringUtils;
 
 /**
