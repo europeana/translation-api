@@ -44,6 +44,7 @@
 			<url>https://artifactory.eanadev.org/artifactory/plugins-release</url>
 		</repository>
 		<!-- repo for google dependencies -->
+		<!-- should be available in maven global settings, but can be enabled for local development -->
 		<!--
 		<repository>
 			<id>apache-maven2</id>
