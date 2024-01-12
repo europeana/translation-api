@@ -44,13 +44,14 @@
 			<url>https://artifactory.eanadev.org/artifactory/plugins-release</url>
 		</repository>
 		<!-- repo for google dependencies -->
+		<!--
 		<repository>
 			<id>apache-maven2</id>
 			<name>apache maven2 repository</name>
 			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
+		-->
 
-		
 	</repositories>
 
 	<properties>
