@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationString;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
@@ -21,8 +21,8 @@ public class DummyPangTranslationService extends PangeanicTranslationService{
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
-    for(TranslationObj obj : translationObjs) {
+  public void translate(List<TranslationString> translationStrings) throws TranslationException {
+    for(TranslationString obj : translationStrings) {
       obj.setTranslation(obj.getText());
     }
   }

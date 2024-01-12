@@ -1,13 +1,13 @@
 package eu.europeana.api.translation.definitions.model;
 
-public class TranslationObj {
+public class TranslationString {
   private String text;
   private String sourceLang;
   private String targetLang;
   private String translation;
   private String cacheKey;
   private boolean isCached;
-  
+
   public String getText() {
     return text;
   }
@@ -44,5 +44,5 @@ public class TranslationObj {
   public void setIsCached(boolean cached) {
     this.isCached = cached;
   }
-  
+
 }
