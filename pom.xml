@@ -45,7 +45,7 @@
 		</repository>
 		<!-- repo for google dependencies -->
 		<repository>
-			<id>apache maven 2</id>
+			<id>apache-maven2</id>
 			<name>apache maven2 repository</name>
 			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
