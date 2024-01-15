@@ -53,9 +53,11 @@ public class TranslationApiRestClient {
      * @param uriBuilderURIFunction
      * @param jsonBody
      * @param langDetect
+     * @param authToken - the JWT token used for invocation of translation API
      * @param <T>
      * @return
      */
+    @SuppressWarnings("unchecked")
     public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect, String authToken) throws TranslationApiException {
         try {
             WebClient.ResponseSpec result = executePost(webClient, uriBuilderURIFunction, jsonBody, authToken);

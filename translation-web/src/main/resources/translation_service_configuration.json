@@ -14,7 +14,7 @@
             },
             {
                 "id": "APACHE-TIKA"
-              , "classname": "eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService"
+              , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
             }          
         ],
         "default": "PANGEANIC"

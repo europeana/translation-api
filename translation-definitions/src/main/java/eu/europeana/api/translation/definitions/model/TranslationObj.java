@@ -1,6 +1,9 @@
 package eu.europeana.api.translation.definitions.model;
 
-public class TranslationString {
+/**
+ * The Data Model class used for holding information used during the processing of translation requests  
+ */
+public class TranslationObj {
   private String text;
   private String sourceLang;
   private String targetLang;
@@ -38,6 +41,8 @@ public class TranslationString {
   public void setCacheKey(String cacheKey) {
     this.cacheKey = cacheKey;
   }
+  
+  @SuppressWarnings({"java:S1309", "PMD.BooleanGetMethodName"})
   public boolean getIsCached() {
     return isCached;
   }

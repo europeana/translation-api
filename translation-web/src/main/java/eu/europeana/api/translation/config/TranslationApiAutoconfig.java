@@ -25,6 +25,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -47,14 +48,15 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
+import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.service.RedisCacheService;
-import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
-import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
 @Configuration()
+@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";

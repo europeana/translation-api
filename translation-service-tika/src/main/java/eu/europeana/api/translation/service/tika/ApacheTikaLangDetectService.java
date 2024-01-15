@@ -1,4 +1,4 @@
-package eu.europeana.translation.service.apachetika;
+package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,10 +16,10 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public class ApacheTikaLangDetectService implements LanguageDetectionService {
 
   protected static final Logger LOG = LogManager.getLogger(ApacheTikaLangDetectService.class);
-  private LanguageDetector detector; 
+  private final LanguageDetector detector; 
   private String serviceId;
 
-  private Set<String> supportedLanguages = Set.of("af", "an", "ar", "ast", "be", "br", "ca", "bg",
+  private static final Set<String> supportedLanguages = Set.of("af", "an", "ar", "ast", "be", "br", "ca", "bg",
       "bn", "cs", "cy", "da", "de", "el", "en", "es", "et", "eu", "fa", "fi", "fr", "ga", "gl", "gu", "he", "hi",
       "hr", "ht", "hu", "id", "is", "it", "ja", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ms", "mt",
       "ne", "nl", "no", "oc", "pa", "pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sr", "sv", "sw", "ta", "te", "th", "tl",

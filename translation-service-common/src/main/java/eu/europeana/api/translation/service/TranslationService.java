@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.model.TranslationString;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 /**
@@ -32,7 +32,7 @@ public interface TranslationService {
    * @param translationStrings
    * @throws TranslationException
    */
-  void translate(List<TranslationString> translationStrings) throws TranslationException;
+  void translate(List<TranslationObj> translationStrings) throws TranslationException;
     
   /**
    * to close the engine

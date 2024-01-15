@@ -7,7 +7,7 @@ import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextRequest.Builder;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.TranslationOrBuilder;
-import eu.europeana.api.translation.definitions.model.TranslationString;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
@@ -43,7 +43,7 @@ public class GoogleTranslationService extends AbstractTranslationService {
   }
 
   @Override
-  public void translate(List<TranslationString> translationStrings) throws TranslationException {
+  public void translate(List<TranslationObj> translationStrings) throws TranslationException {
     try {
       if(translationStrings.isEmpty()) {
         return;
@@ -71,14 +71,14 @@ public class GoogleTranslationService extends AbstractTranslationService {
     
   }
 
-  private void updateFromTranslation(TranslationString translationString, TranslationOrBuilder translation) {
+  private void updateFromTranslation(TranslationObj translationString, TranslationOrBuilder translation) {
     if(translationString.getSourceLang()==null) {
       translationString.setSourceLang(translation.getDetectedLanguageCode());
     }
     translationString.setTranslation(translation.getTranslatedText());
   }
 
-  private TranslateTextRequest buildTranslationRequest(List<TranslationString> translationStrings) {
+  private TranslateTextRequest buildTranslationRequest(List<TranslationObj> translationStrings) {
     //get texts to translate
     List<String> texts = translationStrings.stream()
         .map(to -> to.getText()).toList();
@@ -98,7 +98,7 @@ public class GoogleTranslationService extends AbstractTranslationService {
     return requestBuilder.build();
   }
 
-  private String getUniqueSourceLanguage(List<TranslationString> translationStrings) {
+  private String getUniqueSourceLanguage(List<TranslationObj> translationStrings) {
     //NOTE: for the time being all texts are expected to be in the same language and translated in the same target language
     List<String> srcLanguages = translationStrings.stream()
         .map(to -> to.getSourceLang()).toList();

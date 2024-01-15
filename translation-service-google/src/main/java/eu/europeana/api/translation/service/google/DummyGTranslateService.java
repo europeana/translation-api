@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-import eu.europeana.api.translation.definitions.model.TranslationString;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 
 /**
  * Dummy implementation preventing invocation of remote google service
@@ -19,8 +19,8 @@ public class DummyGTranslateService extends GoogleTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationString> translationObjs) {
-    for(TranslationString obj : translationObjs) {
+  public void translate(List<TranslationObj> translationObjs) {
+    for(TranslationObj obj : translationObjs) {
       obj.setTranslation(obj.getText());
     }
   }

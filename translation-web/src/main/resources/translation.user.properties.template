@@ -17,28 +17,32 @@
 #  See the Licence for the specific language governing permissions and limitations under 
 #  the Licence.
 #
+## Pangeanic service config
 translation.pangeanic.endpoint.detect=http://<host>:<port>/NexRelay/v1/detect_language
 translation.pangeanic.endpoint.translate=http://<host>:<port>/NexRelay/v1/translate
 
+## google translate config
 translation.google.projectId=
 
-
+## Authorization configs
 auth.write.enabled=true
 auth.read.enabled=true
-
 
 #the signature key used to verify JWT tokens
 europeana.apikey.jwttoken.siganturekey=
 
 europeana.apikey.serviceurl=
 
-
-# For using dummy services
+## For using dummy services
 #translation.dummy.services=false
 
+##Caching config
+#configure the connection URL to enable redis caching
 redis.connection.url=
+
 
 truststore.path=
 truststore.password=
 
+## ?? redundant
 translation.runtime=application
