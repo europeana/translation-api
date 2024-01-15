@@ -42,7 +42,7 @@ public class TranslationObj {
     this.cacheKey = cacheKey;
   }
   
-  @SuppressWarnings("PMD.BooleanGetMethodName")
+  @SuppressWarnings({"java:S1309", "PMD.BooleanGetMethodName"})
   public boolean getIsCached() {
     return isCached;
   }
