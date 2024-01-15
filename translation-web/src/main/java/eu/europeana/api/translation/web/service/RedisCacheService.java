@@ -83,7 +83,7 @@ public class RedisCacheService {
       // update set key and translation, the the reference is to the same object as in the input
       // list
       translationString.setTranslation(cachedTranslation.getTranslation());
-      translationString.setIsCached(true);
+      translationString.setAvailableInCache(true);
       translationString.setCacheKey(cacheKey);
     }
   }
@@ -125,7 +125,7 @@ public class RedisCacheService {
     Map<String, CachedTranslation> valueMap = new HashMap<>();
     String key;
     for (TranslationObj translObj : translationStrings) {
-      if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.getIsCached()) {
+      if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.isAvailableInCache()) {
         // String key = translObj.getCacheKey();
         key = generateRedisKey(translObj.getText(), translObj.getSourceLang(),
             translObj.getTargetLang());

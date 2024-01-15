@@ -9,7 +9,7 @@ public class TranslationObj {
   private String targetLang;
   private String translation;
   private String cacheKey;
-  private boolean isCached;
+  private boolean availableInCache;
 
   public String getText() {
     return text;
@@ -42,12 +42,11 @@ public class TranslationObj {
     this.cacheKey = cacheKey;
   }
   
-  @SuppressWarnings({"java:S1309", "PMD.BooleanGetMethodName"})
-  public boolean getIsCached() {
-    return isCached;
+  public boolean isAvailableInCache() {
+    return availableInCache;
   }
-  public void setIsCached(boolean cached) {
-    this.isCached = cached;
+  public void setAvailableInCache(boolean cached) {
+    this.availableInCache = cached;
   }
 
 }
