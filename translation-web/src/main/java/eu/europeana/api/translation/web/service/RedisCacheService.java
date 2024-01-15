@@ -32,7 +32,9 @@ public class RedisCacheService {
 
   /**
    * Fills the translation texts and cache keys if the are available in redis cache
-   * @param translationStrings the list of objects for which the translations will be searched in the cache
+   * 
+   * @param translationStrings the list of objects for which the translations will be searched in
+   *        the cache
    */
   public void fillWithCachedTranslations(List<TranslationObj> translationStrings) {
     // generate keys and list of cacheable translations
@@ -54,7 +56,7 @@ public class RedisCacheService {
     if (redisResponse == null || redisResponse.size() != cacheableTranslations.size()) {
       // ensure that the response size corresponds to request size
       // this should not happen, but better use defensive programming
-      int redisSize=redisResponse==null ? 0 : redisResponse.size();
+      int redisSize = redisResponse == null ? 0 : redisResponse.size();
       logger.warn("Redis response size {} doesn't match the request size{}, for keys: {}",
           redisSize, cacheableTranslations.size(), cacheKeys);
       return;
@@ -68,13 +70,15 @@ public class RedisCacheService {
   }
 
   /**
-   * Update with translation object with the values of the cached translation corresponding to the given cache key
+   * Update with translation object with the values of the cached translation corresponding to the
+   * given cache key
+   * 
    * @param translationString the object to cumulate the cached translation
    * @param cachedTranslation translation found in the cache
    * @param cacheKey the redis key of the cached translations
    */
   private void updateFromCachedTranslation(TranslationObj translationString,
-                                           CachedTranslation cachedTranslation, final String cacheKey) {
+      CachedTranslation cachedTranslation, final String cacheKey) {
     if (cachedTranslation != null && cachedTranslation.getTranslation() != null) {
       // update set key and translation, the the reference is to the same object as in the input
       // list
@@ -85,12 +89,14 @@ public class RedisCacheService {
   }
 
   /**
-   * verifies is the source language and text are available in the object
-   * This method is used both for for verifying the cacheability for retrieval and for storage  
-   * NOTE: currently we rely that the calling methods are verifying the availability of the target language and original text 
+   * verifies is the source language and text are available in the object This method is used both
+   * for for verifying the cacheability for retrieval and for storage NOTE: currently we rely that
+   * the calling methods are verifying the availability of the target language and original text
+   * 
    * @param translationString the translation object to verify if it should be cached
-   * @param checkTranslationAvailable indicate if the availability of the translation needs to be checked (use true when storing and false ) 
-   * @return true is source language and text are available 
+   * @param checkTranslationAvailable indicate if the availability of the translation needs to be
+   *        checked (use true when storing and false )
+   * @return true is source language and text are available
    */
   private boolean isCacheable(TranslationObj translationString) {
     return translationString.getSourceLang() != null
@@ -99,6 +105,7 @@ public class RedisCacheService {
 
   /**
    * This method indicates if the object has the target language and the translation available
+   * 
    * @param translationString object to verify
    * @return true is both the target language and the translation are available
    */
@@ -106,9 +113,12 @@ public class RedisCacheService {
     return translationString.getTargetLang() != null
         && StringUtils.isNotEmpty(translationString.getTranslation());
   }
-  
+
   /**
-   * Method to store translations into the cache. Only objects that are not marked as existing in the cache and fullfiling the {@link #isCacheable(TranslationObj)} criteria will be written into the cache
+   * Method to store translations into the cache. Only objects that are not marked as existing in
+   * the cache and fullfiling the {@link #isCacheable(TranslationObj)} criteria will be written into
+   * the cache
+   * 
    * @param translationStrings the translations to be written into the cache
    */
   public void store(List<TranslationObj> translationStrings) {
@@ -123,9 +133,9 @@ public class RedisCacheService {
         valueMap.put(key, toCachedTranslation(translObj));
       }
     }
-    
-    //write values to redis cache
-    if(!valueMap.isEmpty()){
+
+    // write values to redis cache
+    if (!valueMap.isEmpty()) {
       redisTemplate.opsForValue().multiSet(valueMap);
     }
   }
@@ -138,13 +148,13 @@ public class RedisCacheService {
     return cachedTranslation;
   }
 
-  
+
   /**
    * evict redis cache
    */
   public void deleteAll() {
-    RedisConnectionFactory connFact=redisTemplate.getConnectionFactory();
-    if(connFact!=null) {
+    RedisConnectionFactory connFact = redisTemplate.getConnectionFactory();
+    if (connFact != null) {
       connFact.getConnection().flushAll();
     }
   }
@@ -159,7 +169,8 @@ public class RedisCacheService {
    */
   public String generateRedisKey(String inputText, String sourceLang, String targetLang) {
     StringBuilder builder = (new StringBuilder()).append(sourceLang).append(targetLang);
-    byte[] hash = Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
+    byte[] hash =
+        Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
     builder.append(new String(hash, StandardCharsets.UTF_8));
     return builder.toString();
   }
