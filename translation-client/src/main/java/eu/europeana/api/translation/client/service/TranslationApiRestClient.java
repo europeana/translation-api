@@ -55,6 +55,7 @@ public class TranslationApiRestClient {
      * @param <T>
      * @return
      */
+    @SuppressWarnings("unchecked")
     public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect) throws TranslationApiException {
         try {
             WebClient.ResponseSpec result = executePost(webClient, uriBuilderURIFunction, jsonBody);
