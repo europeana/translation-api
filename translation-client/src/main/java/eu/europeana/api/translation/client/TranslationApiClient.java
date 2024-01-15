@@ -15,13 +15,13 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         super(configuration);
     }
 
-    public TranslationResponse translate(TranslationRequest request) throws TranslationApiException {
-        return getTranslationApiRestClient().getTranslations(getJsonString(request));
+    public TranslationResponse translate(TranslationRequest request, String authToken) throws TranslationApiException {
+        return getTranslationApiRestClient().getTranslations(getJsonString(request), authToken);
     }
 
 
-    public LangDetectResponse detectLang(LangDetectRequest langDetectRequest) throws TranslationApiException {
-        return getTranslationApiRestClient().getDetectedLanguages(getJsonString(langDetectRequest));
+    public LangDetectResponse detectLang(LangDetectRequest langDetectRequest, String authToken) throws TranslationApiException {
+        return getTranslationApiRestClient().getDetectedLanguages(getJsonString(langDetectRequest), authToken);
 
     }
 
