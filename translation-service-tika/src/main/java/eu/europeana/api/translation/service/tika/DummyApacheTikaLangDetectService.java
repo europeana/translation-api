@@ -1,4 +1,4 @@
-package eu.europeana.translation.service.apachetika;
+package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.List;

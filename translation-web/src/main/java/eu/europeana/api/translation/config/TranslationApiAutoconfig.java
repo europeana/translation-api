@@ -48,10 +48,10 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
+import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.service.RedisCacheService;
-import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
-import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 

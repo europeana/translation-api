@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.tests.web;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
-import eu.europeana.api.translation.definitions.model.TranslationString;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
@@ -143,11 +143,13 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertEquals(LANGUAGE_EN, langFieldValue);
         
     final JSONArray translations = json.optJSONArray(TranslationAppConstants.TRANSLATIONS);
-    assertTrue(translations.length()==3);
+    assertEquals(4, translations.length());
     assertEquals("This is a dog", translations.getString(0));
     assertEquals("In the courtyard is played a puppy and a cat", translations.getString(1));
     //there is a MOCKMvc issue that doesn't deliver correct encoding, therefore we check only the end of the string
     assertTrue(translations.getString(2).endsWith("another cat"));
+    //translation is set to null for texts where the language detection returns null
+    assertTrue(translations.isNull(3));
     
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
@@ -162,9 +164,9 @@ public class TranslationRestIT extends BaseTranslationTest {
     String sourceLang=reqJsonObj.getString(TranslationAppConstants.SOURCE_LANG);
     String targetLang=reqJsonObj.getString(TranslationAppConstants.TARGET_LANG);
 
-    List<TranslationString> translObjs = new ArrayList<TranslationString>();
+    List<TranslationObj> translObjs = new ArrayList<TranslationObj>();
     for(int i=0;i<inputTexts.length();i++) {
-      TranslationString newTranslObj = new TranslationString();
+      TranslationObj newTranslObj = new TranslationObj();
       newTranslObj.setSourceLang(sourceLang);
       newTranslObj.setTargetLang(targetLang);
       newTranslObj.setText((String) inputTexts.get(i));
@@ -181,7 +183,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    final List<TranslationString> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
+    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
     //check if all are availble in the cache
     assertTrue(cachedTranslations.size() == translObjs.size());
     

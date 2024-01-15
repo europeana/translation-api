@@ -1,6 +1,6 @@
 package eu.europeana.api.translation.definitions.model;
 
-public class TranslationString {
+public class TranslationObj {
   private String text;
   private String sourceLang;
   private String targetLang;

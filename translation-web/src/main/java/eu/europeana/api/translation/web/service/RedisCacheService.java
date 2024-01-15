@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import com.google.common.primitives.Ints;
-import eu.europeana.api.translation.definitions.model.TranslationString;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import io.micrometer.core.instrument.util.StringUtils;
 
@@ -34,12 +34,12 @@ public class RedisCacheService {
    * Fills the translation texts and cache keys if the are available in redis cache
    * @param translationStrings the list of objects for which the translations will be searched in the cache
    */
-  public void fillWithCachedTranslations(List<TranslationString> translationStrings) {
+  public void fillWithCachedTranslations(List<TranslationObj> translationStrings) {
     // generate keys and list of cacheable translations
     List<String> cacheKeys = new ArrayList<>();
-    List<TranslationString> cacheableTranslations = new ArrayList<>();
+    List<TranslationObj> cacheableTranslations = new ArrayList<>();
     String redisKey;
-    for (TranslationString translationString : translationStrings) {
+    for (TranslationObj translationString : translationStrings) {
       if (translationString.getTranslation() == null && isCacheable(translationString)) {
         // generate redis key and add translation to the list of cacheable objects
         redisKey = generateRedisKey(translationString.getText(), translationString.getSourceLang(),
@@ -73,7 +73,7 @@ public class RedisCacheService {
    * @param cachedTranslation translation found in the cache
    * @param cacheKey the redis key of the cached translations
    */
-  private void updateFromCachedTranslation(TranslationString translationString,
+  private void updateFromCachedTranslation(TranslationObj translationString,
                                            CachedTranslation cachedTranslation, final String cacheKey) {
     if (cachedTranslation != null && cachedTranslation.getTranslation() != null) {
       // update set key and translation, the the reference is to the same object as in the input
@@ -92,7 +92,7 @@ public class RedisCacheService {
    * @param checkTranslationAvailable indicate if the availability of the translation needs to be checked (use true when storing and false ) 
    * @return true is source language and text are available 
    */
-  private boolean isCacheable(TranslationString translationString) {
+  private boolean isCacheable(TranslationObj translationString) {
     return translationString.getSourceLang() != null
         && StringUtils.isNotEmpty(translationString.getText());
   }
@@ -102,19 +102,19 @@ public class RedisCacheService {
    * @param translationString object to verify
    * @return true is both the target language and the translation are available
    */
-  private boolean hasTranslation(TranslationString translationString) {
+  private boolean hasTranslation(TranslationObj translationString) {
     return translationString.getTargetLang() != null
         && StringUtils.isNotEmpty(translationString.getTranslation());
   }
   
   /**
-   * Method to store translations into the cache. Only objects that are not marked as existing in the cache and fullfiling the {@link #isCacheable(TranslationString)} criteria will be written into the cache
+   * Method to store translations into the cache. Only objects that are not marked as existing in the cache and fullfiling the {@link #isCacheable(TranslationObj)} criteria will be written into the cache
    * @param translationStrings the translations to be written into the cache
    */
-  public void store(List<TranslationString> translationStrings) {
+  public void store(List<TranslationObj> translationStrings) {
     Map<String, CachedTranslation> valueMap = new HashMap<>();
     String key;
-    for (TranslationString translObj : translationStrings) {
+    for (TranslationObj translObj : translationStrings) {
       if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.getIsCached()) {
         // String key = translObj.getCacheKey();
         key = generateRedisKey(translObj.getText(), translObj.getSourceLang(),
@@ -130,7 +130,7 @@ public class RedisCacheService {
     }
   }
 
-  private CachedTranslation toCachedTranslation(TranslationString translObj) {
+  private CachedTranslation toCachedTranslation(TranslationObj translObj) {
     CachedTranslation cachedTranslation;
     cachedTranslation = new CachedTranslation();
     cachedTranslation.setOriginal(translObj.getText());
