@@ -11,7 +11,7 @@ import eu.europeana.api.translation.definitions.model.TranslationResponse;
 public class TranslationApiClient extends BaseTranslationApiClient {
 
 
-    public TranslationApiClient(TranslationClientConfiguration configuration) {
+    public TranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
         super(configuration);
     }
 

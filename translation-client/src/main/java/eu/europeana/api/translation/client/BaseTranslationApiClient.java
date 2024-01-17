@@ -3,6 +3,7 @@ package eu.europeana.api.translation.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
+import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.service.TranslationApiRestClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,13 +21,16 @@ public class BaseTranslationApiClient {
 
     private TranslationApiRestClient translationApiRestClient;
 
-    public BaseTranslationApiClient(TranslationClientConfiguration configuration) {
+    public BaseTranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
         this.configuration = configuration;
+        if (this.configuration.getTranslationApiUrl() == null || this.configuration.getTranslationApiUrl().isEmpty()) {
+            throw new TranslationApiException("Translation api endpoint not configured !!!");
+        }
         this.translationApiRestClient = new TranslationApiRestClient(getApiClient(this.configuration.getTranslationApiUrl()));
         this.objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
     }
 
-    protected BaseTranslationApiClient() {
+    protected BaseTranslationApiClient() throws TranslationApiException {
         this(new TranslationClientConfiguration());
     }
 
