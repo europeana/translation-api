@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")
 public class ETranslationCallbackController {
 
-  private static final Logger logger = LogManager.getLogger(ETranslationCallbackController.class);
+  private static final Logger LOGGER = LogManager.getLogger(ETranslationCallbackController.class);
   
   RedisTemplate<String, CachedTranslation> redisTemplate;
 
@@ -29,7 +29,7 @@ public class ETranslationCallbackController {
       @RequestParam(value = "translated-text", required = false) String translatedTextSnippet,
       @RequestParam(value = "request-id", required = false) String requestId,
       @RequestParam(value = "external-reference", required = false) String externalReference) {
-    logger.info("eTranslation callback on translation api has been received");
+    LOGGER.debug("eTranslation callback on translation api has been received");
     if(externalReference!=null && translatedTextSnippet!=null) {
       redisTemplate.convertAndSend(externalReference, translatedTextSnippet);
     }

@@ -45,7 +45,7 @@
             },
             {
                 "id": "E_TRANSLATION", 
-                "classname": "eu.europeana.api.translation.service.eTranslation.ETranslationTranslationService"
+                "classname": "eu.europeana.api.translation.service.etranslation.ETranslationTranslationService"
             }
         ],
 	 	"mappings": [

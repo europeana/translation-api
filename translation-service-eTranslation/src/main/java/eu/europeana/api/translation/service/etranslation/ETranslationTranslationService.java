@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service.eTranslation;
+package eu.europeana.api.translation.service.etranslation;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,19 +30,20 @@ import eu.europeana.api.translation.service.exception.TranslationException;
 
 public class ETranslationTranslationService extends AbstractTranslationService {
   
-  protected static final Logger logger = LogManager.getLogger(ETranslationTranslationService.class);
+  private static final Logger LOGGER = LogManager.getLogger(ETranslationTranslationService.class);
 
   private String serviceId;
-  private String baseUrl;
-  private String domain;
+  private final String baseUrl;
+  private final String domain;
   //this is the base url of the translation api (without the request handler (or the controller) endpoint)
-  private String callbackUrl;
-  private String credentialUsername;
-  private String credentialPwd;
-  private int maxWaitMillisec;
-  private RedisMessageListenerContainer redisMessageListenerContainer;
-	
-  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, String username, String password, RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
+  private final String callbackUrl;
+  private final String credentialUsername;
+  private final String credentialPwd;
+  private final int maxWaitMillisec;
+  private final RedisMessageListenerContainer redisMessageListenerContainer;
+  
+  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, 
+      String username, String password, RedisMessageListenerContainer redisMessageListenerContainer) {
     this.baseUrl = baseUrl;
     this.domain = domain;
     this.callbackUrl=callbackUrl;
@@ -51,7 +52,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     this.credentialPwd=password;
     this.redisMessageListenerContainer=redisMessageListenerContainer;
   }
-	
+
   @Override
   public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     //base64 encoded string, which will not be translated from eTransaltion, used as a markup delimiter
@@ -64,14 +65,16 @@ public class ETranslationTranslationService extends AbstractTranslationService {
      * The publisher will publish to the same channel using the external reference from the eTransl callback.
      */
     if(StringUtils.isNotBlank(eTranslJointStr)) {
+      //create external reference for eTransl service
       byte[] eTranslExtRefBase64 = null;
       try {
         eTranslExtRefBase64 = Base64.encodeBase64(eTranslJointStr.getBytes(StandardCharsets.UTF_8.name()));
       } catch (UnsupportedEncodingException e) {
         throw new TranslationException("Exception during the eTranslation base64 encoding for the external reference.", 0, e);
       }
-      String eTranslExtRef = new String(eTranslExtRefBase64);
+      String eTranslExtRef = new String(eTranslExtRefBase64, StandardCharsets.UTF_8);
 
+      //create and send the eTransl request
       //baseUrl is empty for the integration tests, where the eTranslation service will not be called
       if(!StringUtils.isBlank(baseUrl)) {
         try {
@@ -85,40 +88,47 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       }    
       
       //create a redis message listener obj, and wait on that obj until it get notified from the redis publisher
-      RedisMessageListener redisMessageListener = new RedisMessageListener();
-      MessageListenerAdapter redisMessageListenerAdapter = new MessageListenerAdapter(redisMessageListener);
-      redisMessageListenerContainer.addMessageListener(redisMessageListenerAdapter, ChannelTopic.of(eTranslExtRef));
-      synchronized (redisMessageListener) {
+      createRedisMessageListenerAndWaitForResults(translationObjs, eTranslExtRef, markupDelimit);
+      
+    }
+  }
+  
+  private void createRedisMessageListenerAndWaitForResults(List<TranslationObj> translationObjs, String eTranslExtRef, String markupDelimit) throws TranslationException {
+    RedisMessageListener redisMessageListener = new RedisMessageListener();
+    MessageListenerAdapter redisMessageListenerAdapter = new MessageListenerAdapter(redisMessageListener);
+    redisMessageListenerContainer.addMessageListener(redisMessageListenerAdapter, ChannelTopic.of(eTranslExtRef));
+    synchronized (redisMessageListener) {
+      //while loop as a good practice to ensure spurious wake-ups (https://www.baeldung.com/java-wait-notify)
+      while(redisMessageListener.getMessage()==null) {
         try {
           redisMessageListener.wait(maxWaitMillisec);
-          String response=redisMessageListener.getMessage();
-          //message received, populate the translations
-          logger.debug("Received message from redis message listener is: " + response);
-          if(response!=null) {
-            //remove double quotes at the beginning and at the end of the response, from some reason they are duplicated
-            String responseWithoutQuotes = response.replaceAll("^\"|\"$", "");
-            String[] respTexts = responseWithoutQuotes.split(markupDelimit);
-            if(respTexts.length!=translationObjs.size()) {
-              redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
-              throw new TranslationException("The eTranslation response and the input texts have different size.");
-            }
-            for(int i=0;i<respTexts.length;i++) {
-              translationObjs.get(i).setTranslation(respTexts[i]);
-            }
-          }
-          /* unsubscibe this listener which automatically deletes the created pub/sub channel,
-           * which also gets deleted if the app is stopped or anyhow broken.
-           */
-          redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
+          break;
         } catch (InterruptedException e) {
-          redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
-          throw new TranslationException("Redis message listener got unexpectedly interrupted.", 0, e);
         }
       }
+      
+      String response=redisMessageListener.getMessage();
+      //message received, populate the translations
+      LOGGER.debug("Received message from redis message listener is: " + response);
+      if(response!=null) {
+        //remove double quotes at the beginning and at the end of the response, from some reason they are duplicated
+        String responseWithoutQuotes = response.replaceAll("^\"|\"$", "");
+        String[] respTexts = responseWithoutQuotes.split(markupDelimit);
+        if(respTexts.length!=translationObjs.size()) {
+          redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
+          throw new TranslationException("The eTranslation response and the input texts have different size.");
+        }
+        for(int i=0;i<respTexts.length;i++) {
+          translationObjs.get(i).setTranslation(respTexts[i]);
+        }
+      }
+      /* unsubscibe this listener which automatically deletes the created pub/sub channel,
+       * which also gets deleted if the app is stopped or anyhow broken.
+       */
+      redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
     }
-	
   }
-
+  
   private String generateJointStringForTranslation(List<TranslationObj> translationObjs, String markupDelimit) {
     /*generate one eTranslation string to be sent for translation, as a combination of all input texts 
      * separated with a given markup.

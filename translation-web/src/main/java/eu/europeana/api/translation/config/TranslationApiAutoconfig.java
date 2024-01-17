@@ -35,7 +35,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.service.eTranslation.ETranslationTranslationService;
+import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
