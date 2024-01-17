@@ -18,5 +18,7 @@ public interface BeanNames {
   String BEAN_SERVICE_PROVIDER = "translationServiceProvider";
   String BEAN_SERVICE_CONFIG_INFO_CONTRIBUTOR =
       "translationServiceConfigInfoContributor";
+  String BEAN_REDIS_TEMPLATE = "redisTemplate";
   String BEAN_REDIS_CACHE_SERVICE = "redisCacheService";
+  String BEAN_REDIS_MESSAGE_LISTENER_CONTAINER = "redisCacheMessageListenerContainer";
 }

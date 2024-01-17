@@ -1,11 +1,10 @@
 package eu.europeana.api.translation.service.eTranslation;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -22,6 +21,9 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -38,142 +40,102 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   private String credentialUsername;
   private String credentialPwd;
   private int maxWaitMillisec;
-  private static long externalReferenceCounter;
+  private RedisMessageListenerContainer redisMessageListenerContainer;
 	
-  /**
-   * This is a Map that represents the created requests for translation. For each request, 
-   * the key is an "external-reference" (see eTranslation documentation), which is used as a unique identifier
-   * of the text to be translated, and the value is the translated text. This map is used to check if the 
-   * translation has been completed (over asynchronous calls) in which case the map should contain a NOT null
-   * value for the given key.
-   */	
-  private static Map<String, String> createdRequests = new HashMap<String, String>();
-  private static Map<String, String> createdRequestsSynchronized = Collections.synchronizedMap(createdRequests);
-	
-  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, String username, String password) throws Exception {
+  public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, String username, String password, RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
     this.baseUrl = baseUrl;
     this.domain = domain;
     this.callbackUrl=callbackUrl;
     this.maxWaitMillisec=maxWaitMillisec;
-    externalReferenceCounter=0;
     this.credentialUsername=username;
     this.credentialPwd=password;
+    this.redisMessageListenerContainer=redisMessageListenerContainer;
   }
 	
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {    
-    List<String> externalRefsForCallbacks = new ArrayList<>();//this variable below captures only the external references of successfully created requests
-    List<String> externalRefsAll = new ArrayList<>();
-    List<Integer> indexesTranslated = new ArrayList<>();
-    //create eTransaltion requests and send them
-    try {
-      for(int i=0;i<translationObjs.size();i++) {
-        String sourceLang = translationObjs.get(i).getSourceLang();
-        String targetLang = translationObjs.get(i).getTargetLang();
-        String text = translationObjs.get(i).getText();
-        if(sourceLang!=null && targetLang!=null && !StringUtils.isBlank(text)) {
-          String extRef = generateExternalReferenceAndSaveToMap();
-          externalRefsAll.add(extRef);
-          String reponseCode=null;
-          if(!StringUtils.isBlank(baseUrl)) {
-            String requstBody = createTranslationBody(text,sourceLang,targetLang,extRef);
-            /*
-             * For simulating the eTranslation callbacks for the local testing, please use the method 
-             * createHttpRequestSimulator(extRef), instead of the createHttpRequest(requestBody), like this:
-             * String reponseCode = createHttpRequestSimulator(extRef, text);
-             * and comment out the last catch block (catch (IOException e)). The simulator method executes 
-             * in a new thread and calls back the same method as the eTranslation callback.
-             */
-            reponseCode = createHttpRequest(requstBody);
-          }
-          else {
-            reponseCode = createHttpRequestSimulator(extRef, text);
-          }
-           
-          //in case of the successfull request, the return code number is positive, otherwise negative  
-          if(Integer.valueOf(reponseCode) >= 0) {
-            externalRefsForCallbacks.add(extRef);
-            indexesTranslated.add(i);
-          }
-          if(logger.isDebugEnabled()) {
-            logger.debug("Sent eTranslation request. Response code: " + reponseCode + ". External reference: " + extRef);
-          }
-        }
-      }
-    } 
-    catch (JSONException e) {
-      clearRequestsMapForExternalReferences(externalRefsAll);
-      throw new TranslationException("Exception during the eTranslation request body creation.", 0, e);
-    } 
-    catch (IOException e) {
-      clearRequestsMapForExternalReferences(externalRefsAll);
-      throw new TranslationException("Exception during the eTranslation http request sending.", 0, e);
-    }
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
+    //base64 encoded string, which will not be translated from eTransaltion, used as a markup delimiter
+    String markupDelimit=" ZXd3ZHdld2U= ";
+    String eTranslJointStr = generateJointStringForTranslation(translationObjs, markupDelimit);
     
-    //waiting for the callbacks
-    if(externalRefsForCallbacks.size()>0) {
-      long waitingTime = 0;
-      long sleepingTimeMillisec = 500;
-      while(!allCallbacksReceived(externalRefsForCallbacks) && waitingTime < maxWaitMillisec)
-      {
-          try {
-            Thread.sleep(sleepingTimeMillisec);
-          } catch (InterruptedException e) {
-          }
-          waitingTime += sleepingTimeMillisec;
+    /* create an eTransl request with an external reference and send it. The same external reference is received
+     * in the eTransl callback. That reference is used for the name of the channel for the redis message subscriber 
+     * listener created below, which will be notified from the redis publisher after the eTransl callback comes.
+     * The publisher will publish to the same channel using the external reference from the eTransl callback.
+     */
+    if(StringUtils.isNotBlank(eTranslJointStr)) {
+      byte[] eTranslExtRefBase64 = null;
+      try {
+        eTranslExtRefBase64 = Base64.encodeBase64(eTranslJointStr.getBytes(StandardCharsets.UTF_8.name()));
+      } catch (UnsupportedEncodingException e) {
+        throw new TranslationException("Exception during the eTranslation base64 encoding for the external reference.", 0, e);
       }
+      String eTranslExtRef = new String(eTranslExtRefBase64);
+
+      //baseUrl is empty for the integration tests, where the eTranslation service will not be called
+      if(!StringUtils.isBlank(baseUrl)) {
+        try {
+          String body = createTranslationBody(eTranslJointStr,translationObjs.get(0).getSourceLang(),translationObjs.get(0).getTargetLang(),eTranslExtRef);
+          createHttpRequest(body);
+        } catch (JSONException e) {
+          throw new TranslationException("Exception during the eTranslation http request body creation.", 0, e);
+        } catch (IOException e) {
+          throw new TranslationException("Exception during sending the eTranslation http request.", 0, e);
+        }  
+      }    
       
-      if(waitingTime >= maxWaitMillisec)
-      {
-        if(logger.isInfoEnabled()) {
-          logger.info("Maximum waiting time of: " + String.valueOf(maxWaitMillisec) + " for the eTranslation callback has elapsed!");
+      //create a redis message listener obj, and wait on that obj until it get notified from the redis publisher
+      RedisMessageListener redisMessageListener = new RedisMessageListener();
+      MessageListenerAdapter redisMessageListenerAdapter = new MessageListenerAdapter(redisMessageListener);
+      redisMessageListenerContainer.addMessageListener(redisMessageListenerAdapter, ChannelTopic.of(eTranslExtRef));
+      synchronized (redisMessageListener) {
+        try {
+          redisMessageListener.wait(maxWaitMillisec);
+          String response=redisMessageListener.getMessage();
+          //message received, populate the translations
+          logger.debug("Received message from redis message listener is: " + response);
+          if(response!=null) {
+            //remove double quotes at the beginning and at the end of the response, from some reason they are duplicated
+            String responseWithoutQuotes = response.replaceAll("^\"|\"$", "");
+            String[] respTexts = responseWithoutQuotes.split(markupDelimit);
+            if(respTexts.length!=translationObjs.size()) {
+              redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
+              throw new TranslationException("The eTranslation response and the input texts have different size.");
+            }
+            for(int i=0;i<respTexts.length;i++) {
+              translationObjs.get(i).setTranslation(respTexts[i]);
+            }
+          }
+          /* unsubscibe this listener which automatically deletes the created pub/sub channel,
+           * which also gets deleted if the app is stopped or anyhow broken.
+           */
+          redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
+        } catch (InterruptedException e) {
+          redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
+          throw new TranslationException("Redis message listener got unexpectedly interrupted.", 0, e);
         }
       }
-      
-      //populate the responses
-      for(int index : indexesTranslated) {
-        translationObjs.get(index).setTranslation(createdRequestsSynchronized.get(externalRefsForCallbacks.get(index)));
-      }
     }
-
-    //clear all external references added to the map
-	clearRequestsMapForExternalReferences(externalRefsAll);
-		
-  }
-  
-  private void clearRequestsMapForExternalReferences(List<String> externalRefs) {
-    for(String extRef : externalRefs) {
-      createdRequestsSynchronized.remove(extRef);
-    }
-  }
-  
-  private boolean allCallbacksReceived(List<String> externalRefs) {
-    for(String extRef : externalRefs) {
-      if(createdRequestsSynchronized.get(extRef)==null) {
-        return false;
-      }
-    }
-    return true;
+	
   }
 
-  /**
-   * The generation of the external references is synchronized among all requests,
-   * so that each translation request (a single request to the eTranslation service)
-   * receives a unique external reference number as string.
-   * 
-   * @return
-   */
-  private static synchronized String generateExternalReferenceAndSaveToMap() {
-    while(true) {
-      externalReferenceCounter = externalReferenceCounter + 1;
-      String extRefString = String.valueOf(externalReferenceCounter);
-      if(! createdRequestsSynchronized.containsKey(extRefString)) {
-        createdRequestsSynchronized.put(extRefString, null);
-        return extRefString;
+  private String generateJointStringForTranslation(List<TranslationObj> translationObjs, String markupDelimit) {
+    /*generate one eTranslation string to be sent for translation, as a combination of all input texts 
+     * separated with a given markup.
+     */
+    String translJointString="";
+    String sourceLang = translationObjs.get(0).getSourceLang();
+    String targetLang = translationObjs.get(0).getTargetLang();
+    if(sourceLang!=null && targetLang!=null) {
+      for(int i=0;i<translationObjs.size();i++) {
+        translJointString += translationObjs.get(i).getText();
+        if(i<translationObjs.size()-1) {
+          translJointString += markupDelimit;
+        }
       }
     }
+    return translJointString;
   }
-  
   /**
    * This method creates the translation request body with the text to translate. 
    * The response is sent back to the application over a specified callback URL 
@@ -212,40 +174,6 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     return EntityUtils.toString(result.getEntity(), "UTF-8");
   }
   
-  class eTranslationSimulatorThread implements Runnable {
-    private String extRef;
-    private String translation;
-    public eTranslationSimulatorThread(String extRef, String translation) {
-      this.extRef = extRef;
-      this.translation=translation;
-    }
-    @Override
-    public void run() {
-      try {
-        Thread.sleep(1000);
-        processCallback(null, translation, null, extRef);
-      } catch (InterruptedException e) {
-      }
-    }
-  }
-  
-  private String createHttpRequestSimulator(String externalReference, String translation) {
-    Thread thread = new Thread(new eTranslationSimulatorThread(externalReference, translation));
-    thread.start();
-    return "1";//it should return the positive number as string
-  }
-		
-  public void processCallback(String targetLanguage, String translatedText, String requestId, String externalReference) {
-    if(logger.isDebugEnabled()) {
-      logger.debug("eTranslation response has been received with the following parameters: targetLanguage="+ targetLanguage + ", translatedText="+ translatedText + ", requestId=" + requestId + ", externalReference="+externalReference);
-    }
-   
-    if(createdRequestsSynchronized.containsKey(externalReference))
-    {
-      createdRequestsSynchronized.put(externalReference, translatedText);
-    }
-  }
-
   @Override
   public String getServiceId() {
     return serviceId;

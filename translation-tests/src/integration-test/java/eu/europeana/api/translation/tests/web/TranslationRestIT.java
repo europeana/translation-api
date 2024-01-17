@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -25,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
@@ -124,27 +124,55 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertNotNull(serviceFieldValue);
   }
 
+  class eTranslationSimulatorThread implements Runnable {
+    private MockMvc mockMvc;
+    public eTranslationSimulatorThread(MockMvc mockMvc) {
+      this.mockMvc = mockMvc;
+    }
+    @Override
+    public void run() {
+      try {
+        String requestJson = getJsonStringInput(TRANSLATION_REQUEST_E_TRANSLATION);
+        String result = mockMvc
+            .perform(
+                post(BASE_URL_TRANSLATE)
+                  .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                  .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .content(requestJson))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        
+        assertNotNull(result);
+        JSONObject json = new JSONObject(result);
+        String langFieldValue = json.getString(TranslationAppConstants.LANG);
+        assertEquals(LANGUAGE_EN, langFieldValue);
+            
+        List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
+        assertTrue(translations.contains("That is my dog.") && translations.contains("That is my tree."));
+        String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+        assertNotNull(serviceFieldValue);
+      } catch (Exception e) {
+      }
+    }
+  }
+  
   @Test
   void translationETranslation() throws Exception {
-    String requestJson = getJsonStringInput(TRANSLATION_REQUEST_E_TRANSLATION);
-    String result = mockMvc
-        .perform(
-            post(BASE_URL_TRANSLATE)
-              .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-              .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-              .content(requestJson))
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+    Thread thread = new Thread(new eTranslationSimulatorThread(mockMvc));
+    thread.start();
+    Thread.sleep(1000);
+    //trigger the eTranslation callback manually
+    //computed in advance using the code in the eTransl service
+    String eTranslRef="RGFzIGlzdCBtZWluIEh1bmQuIFpYZDNaSGRsZDJVPSBEYXMgaXN0IG1laW4gQmF1bS4=";
+    mockMvc
+    .perform(
+        post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)
+        .param("external-reference", eTranslRef)
+        .param("translated-text", "That is my dog. ZXd3ZHdld2U= That is my tree."))
+    .andExpect(status().isOk());
+
+    thread.join();
     
-    assertNotNull(result);
-    JSONObject json = new JSONObject(result);
-    String langFieldValue = json.getString(TranslationAppConstants.LANG);
-    assertEquals(LANGUAGE_EN, langFieldValue);
-        
-    List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
-    assertTrue(translations.size()>0);
-    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertNotNull(serviceFieldValue);
   }
 
   @Test

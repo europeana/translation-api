@@ -25,10 +25,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.redis.connection.RedisConfiguration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
@@ -199,14 +199,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
   
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
-  public ETranslationTranslationService getETranslationService() throws Exception {
+  public ETranslationTranslationService getETranslationService(
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
     return new ETranslationTranslationService(
         translationConfig.geteTranslationBaseUrl(), 
         translationConfig.geteTranslationDomain(), 
         translationConfig.geteTranslationCallback(), 
         translationConfig.geteTranslationMaxWaitMillisec(), 
         translationConfig.geteTranslationUsername(),
-        translationConfig.geteTranslationPassword());
+        translationConfig.geteTranslationPassword(),
+        redisMessageListenerContainer);
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
@@ -275,9 +277,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return new File(translationConfig.getConfigFolder(), FilenameUtils.getName(configFile));
   }
 
-  private RedisTemplate<String, CachedTranslation> getRedisTemplate(
-      RedisConnectionFactory redisConnectionFactory) {
+  @Bean(BeanNames.BEAN_REDIS_TEMPLATE)
+  public RedisTemplate<String, CachedTranslation> getRedisTemplate() throws AppConfigurationException {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
+    LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
+    redisConnectionFactory.afterPropertiesSet();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
     redisTemplate.setValueSerializer(
@@ -288,13 +292,18 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
-  public RedisCacheService getRedisCacheService() throws AppConfigurationException {
-    LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
-    redisConnectionFactory.afterPropertiesSet();
-    RedisTemplate<String, CachedTranslation> redisTemplate =
-        getRedisTemplate(redisConnectionFactory);
-
+  public RedisCacheService getRedisCacheService(@Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
     return new RedisCacheService(redisTemplate);
+  }
+  
+  @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
+  RedisMessageListenerContainer getRedisMessageListenerContainer() throws AppConfigurationException {
+      RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
+      LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
+      redisConnectionFactory.afterPropertiesSet();
+      container.setConnectionFactory(redisConnectionFactory); 
+//      container.addMessageListener(messageListener(), topic()); 
+      return container; 
   }
 
   @Override
