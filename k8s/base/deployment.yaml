@@ -42,6 +42,14 @@ spec:
               mountPath: "/opt/app/config/translation.user.properties"
               readOnly: true
               subPath: translation.user.properties
+            - name: translation-services-config
+              mountPath: "/opt/app/config/translation_service_configuration.json"
+              readOnly: true
+              subPath: translation_service_configuration.json
+            - name: pangeanic-tresholds
+              mountPath: "/opt/app/config/pangeanic_language_thresholds.properties"
+              readOnly: true
+              subPath: pangeanic_language_thresholds.properties  
             - name: google-secret
               mountPath: "/opt/app/config/google-auth.json"
               readOnly: true
@@ -50,20 +58,21 @@ spec:
               mountPath: "/opt/app/config/log4j2-spring.xml"
               readOnly: true
               subPath: log4j2-spring.xml
-            - name: pangeanic-tresholds
-              mountPath: "/opt/app/config/pangeanic_language_thresholds.properties"
-              readOnly: true
-              subPath: pangeanic_language_thresholds.properties  
+              
       volumes:
         - name: secret
           secret:
             secretName: translation-api-secret
+        - name: translation-services-config
+          configMap:
+            name: translation-services-config-json
+        - name: pangeanic-tresholds
+          configMap:
+            name: pangeanic-tresholds-properties    
         - name: google-secret
           secret:
             secretName: google-auth-secret
         - name: log4j-config
           configMap:
             name: log4j2-properties
-        - name: pangeanic-tresholds
-          configMap:
-            name: pangeanic-tresholds-properties    
+            
