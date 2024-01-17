@@ -1,10 +1,13 @@
-package eu.europeana.api.translation.definitions.language;
+package eu.europeana.api.translation.service.pangeanic;
 
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import eu.europeana.api.translation.definitions.language.Language;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -36,7 +39,7 @@ public enum PangeanicThresholds {
             .collect(Collectors.toList()));
 
     private static final Set<LanguagePair> TRANSLATION_PAIRS = new HashSet<>(Stream.of(PangeanicThresholds.values())
-            .map(e -> new LanguagePair(e.name().toLowerCase(Locale.ROOT), Language.ENGLISH))
+            .map(e -> new LanguagePair(e.name().toLowerCase(Locale.ROOT), Language.PIVOT))
             .collect(Collectors.toList()));
 
     /**
@@ -71,7 +74,7 @@ public enum PangeanicThresholds {
      * @return
      */
     public static boolean isTargetLanguageSupported(String language) {
-        return Language.ENGLISH.equals(language);
+        return Language.PIVOT.equals(language);
     }
 
     /**
@@ -82,7 +85,7 @@ public enum PangeanicThresholds {
      * @return
      */
     public static boolean isLanguagePairSupported(String sourceLang, String targetLang) {
-        if (!StringUtils.equals(targetLang, Language.ENGLISH)) {
+        if (!StringUtils.equals(targetLang, Language.PIVOT)) {
             return false;
         }
         return TRANSLATION_PAIRS.contains(new LanguagePair(sourceLang, targetLang));

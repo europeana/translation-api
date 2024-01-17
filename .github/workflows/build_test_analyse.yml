@@ -16,7 +16,7 @@ jobs:
           distribution: 'temurin' #should use the same as in the docker file
           java-version: 17
           cache: 'maven'
-          cache-dependency-path: 'sub-project/pom.xml' # optional
+          # cache-dependency-path: 'sub-project/pom.xml' # optional - seems to be deprecated
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:

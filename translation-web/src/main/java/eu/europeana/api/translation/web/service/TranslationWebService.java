@@ -15,8 +15,8 @@ import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
-import eu.europeana.api.translation.model.TranslationRequest;
-import eu.europeana.api.translation.model.TranslationResponse;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
+import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
@@ -86,7 +86,7 @@ public class TranslationWebService extends BaseWebService {
 
 
   private TranslationResponse buildTranslationResponse(TranslationRequest translationRequest,
-      List<TranslationObj> translObjs, String serviceId) {
+                                                       List<TranslationObj> translObjs, String serviceId) {
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(
         translObjs.stream().map(el -> el.getTranslation()).collect(Collectors.toList()));

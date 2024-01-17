@@ -29,10 +29,10 @@ public interface TranslationService {
 
   /**
    * Translates a list of texts from a list of TranslationObj and saves the results back to the objects.
-   * @param translationObjs
+   * @param translationStrings
    * @throws TranslationException
    */
-  void translate(List<TranslationObj> translationObjs) throws TranslationException;
+  void translate(List<TranslationObj> translationStrings) throws TranslationException;
     
   /**
    * to close the engine

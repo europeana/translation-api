@@ -23,6 +23,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -34,7 +35,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.model.CachedTranslation;
 import eu.europeana.api.translation.service.eTranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
@@ -47,14 +47,16 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
+import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
+import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.RedisCacheService;
-import eu.europeana.translation.service.apachetika.ApacheTikaLangDetectService;
-import eu.europeana.translation.service.apachetika.DummyApacheTikaLangDetectService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
 @Configuration()
+@PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
@@ -197,7 +199,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
           googleTranslationServiceClientWrapper);
     }
   }
-  
+
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
   public ETranslationTranslationService getETranslationService(
       @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
@@ -289,13 +291,13 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
-
+  
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
   public RedisCacheService getRedisCacheService(@Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
     return new RedisCacheService(redisTemplate);
   }
-  
+
   @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
   RedisMessageListenerContainer getRedisMessageListenerContainer() throws AppConfigurationException {
       RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
@@ -305,7 +307,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 //      container.addMessageListener(messageListener(), topic()); 
       return container; 
   }
-
+  
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
     // log beans for debuging purposes

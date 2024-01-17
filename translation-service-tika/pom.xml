@@ -5,8 +5,8 @@
     <artifactId>translation-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>translation-service-apache-tika</artifactId>
-  <name>translation-service-apache-tika</name>
+  <artifactId>translation-service-tika</artifactId>
+  <name>translation-service-tika</name>
   <description>The Java APIs for the Apache Tika language detection services (part of Translation API)</description>
 
   <properties>

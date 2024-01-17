@@ -1,12 +1,18 @@
-package eu.europeana.translation.service.apachetika;
+package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
+/**
+ * Dummy implementation returning original text in translations
+ */
 public class DummyApacheTikaLangDetectService extends ApacheTikaLangDetectService {
 
+  /**
+   * enable default constructor
+   */
   public DummyApacheTikaLangDetectService() {
     super();
   }

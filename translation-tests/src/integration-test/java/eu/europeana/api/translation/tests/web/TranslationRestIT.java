@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.tests.web;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -194,11 +195,13 @@ public class TranslationRestIT extends BaseTranslationTest {
     assertEquals(LANGUAGE_EN, langFieldValue);
         
     final JSONArray translations = json.optJSONArray(TranslationAppConstants.TRANSLATIONS);
-    assertTrue(translations.length()==3);
+    assertEquals(4, translations.length());
     assertEquals("This is a dog", translations.getString(0));
     assertEquals("In the courtyard is played a puppy and a cat", translations.getString(1));
     //there is a MOCKMvc issue that doesn't deliver correct encoding, therefore we check only the end of the string
     assertTrue(translations.getString(2).endsWith("another cat"));
+    //translation is set to null for texts where the language detection returns null
+    assertTrue(translations.isNull(3));
     
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
@@ -232,7 +235,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.getIsCached()).toList();
+    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.isAvailableInCache()).toList();
     //check if all are availble in the cache
     assertTrue(cachedTranslations.size() == translObjs.size());
     

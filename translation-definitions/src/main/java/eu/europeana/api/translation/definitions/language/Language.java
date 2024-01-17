@@ -28,7 +28,9 @@ public enum Language {
 
     public static final String DEF = "def";
     public static final String NO_LINGUISTIC_CONTENT = "zxx";
-    public static final String ENGLISH = Language.EN.name().toLowerCase(Locale.ROOT);
+
+    // pivot language - "en"
+    public static final String PIVOT = Language.EN.name().toLowerCase(Locale.ROOT);
 
     /**
      * Validate if the provided string is a single 2-letter ISO-code language abbreviation
@@ -110,7 +112,7 @@ public enum Language {
      * @param lang
      * @return
      */
-    private static String stripLangStringIfRegionPresent(String lang) {
+    public static String stripLangStringIfRegionPresent(String lang) {
         if (isLanguageWithRegionLocales(lang)) {
             return StringUtils.substringBefore(lang, "-");
         }

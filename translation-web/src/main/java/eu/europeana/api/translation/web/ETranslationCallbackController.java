@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import eu.europeana.api.translation.model.CachedTranslation;
+import eu.europeana.api.translation.web.model.CachedTranslation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")

@@ -21,8 +21,8 @@ public class DummyPangTranslationService extends PangeanicTranslationService{
   }
   
   @Override
-  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
-    for(TranslationObj obj : translationObjs) {
+  public void translate(List<TranslationObj> translationStrings) throws TranslationException {
+    for(TranslationObj obj : translationStrings) {
       obj.setTranslation(obj.getText());
     }
   }

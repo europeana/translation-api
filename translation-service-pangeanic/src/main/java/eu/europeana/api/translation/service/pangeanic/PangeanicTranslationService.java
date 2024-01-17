@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.translation.definitions.language.PangeanicThresholds;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
@@ -196,7 +196,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   private List<TranslationObj> getObjectsWithSourceLanguage(List<TranslationObj> translationObjs,
       String sourceLanguage) {
     return translationObjs.stream()
-        .filter(to -> sourceLanguage.equals(to.getSourceLang())).toList();
+        .filter(to -> Objects.equals(sourceLanguage, to.getSourceLang())).toList();
   }
 
 
@@ -218,7 +218,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
 
     // verify language detection response
-    if (detectedLanguages == null || detectedLanguages.contains(null) || detectedLanguages.size() != translationObjs.size()) {
+    if (detectedLanguages == null || detectedLanguages.size() != translationObjs.size()) {
       throw new TranslationException(
           "The translation cannot be performed. A list of detected languages is null or contains nulls.");
     }
