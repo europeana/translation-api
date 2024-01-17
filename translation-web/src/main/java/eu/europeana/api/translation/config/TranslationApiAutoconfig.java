@@ -8,14 +8,13 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
-
-import eu.europeana.api.translation.web.model.CachedTranslation;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -51,6 +50,7 @@ import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationServic
 import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
+import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.RedisCacheService;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
@@ -60,11 +60,14 @@ import io.lettuce.core.SslOptions;
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
+  private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
-  private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
-
+  
+  @Value("${translation.service.config.file:}")
+  private String serviceConfigFile;
+  
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
   }
@@ -204,8 +207,13 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE,
       BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
   public TranslationServiceProvider getTranslationServiceProvider() {
-    this.translationServiceConfigProvider = new TranslationServiceProvider();
-    return this.translationServiceConfigProvider;
+    if(StringUtils.isNotEmpty(serviceConfigFile)) {
+      translationServiceConfigProvider = new TranslationServiceProvider(getConfigFile(serviceConfigFile));
+    } else {
+      translationServiceConfigProvider = new TranslationServiceProvider();  
+    }
+    
+    return translationServiceConfigProvider;
   }
 
   /*

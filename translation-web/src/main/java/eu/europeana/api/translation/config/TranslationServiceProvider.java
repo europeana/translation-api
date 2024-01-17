@@ -1,16 +1,23 @@
 package eu.europeana.api.translation.config;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
@@ -24,7 +31,7 @@ import eu.europeana.api.translation.service.exception.LangDetectionServiceConfig
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 /**
- * Class used to read the traslation service configurations, validate them, initialize mapping for
+ * Class used to read the translation service configurations, validate them, initialize mapping for
  * language detection and translation services
  * 
  * @author GordeaS
@@ -32,11 +39,15 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
  */
 public class TranslationServiceProvider {
 
-  @Autowired
-  ApplicationContext applicationContext;
   public static final String DEFAULT_SERVICE_CONFIG_FILE =
       "/translation_service_configuration.json";
-  private final String serviceConfigFile;
+  private final Logger logger = LogManager.getLogger(TranslationServiceProvider.class);
+
+  private final String serviceConfigLocation;
+  private final File serviceConfigFile;
+
+  @Autowired
+  ApplicationContext applicationContext;
 
   TranslationServicesConfiguration translationServicesConfig;
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
@@ -51,12 +62,23 @@ public class TranslationServiceProvider {
   }
 
   /**
-   * Construtor using an atenitive config file
+   * Constructor using a config file available in resources
+   * 
+   * @param serviceConfigLocation a config file available in classpath
+   */
+  public TranslationServiceProvider(String serviceConfigLocation) {
+    this.serviceConfigLocation = serviceConfigLocation;
+    this.serviceConfigFile = null;
+  }
+
+  /**
+   * Constructor using a file available on file system
    * 
    * @param serviceConfigFile a config file available in classpath
    */
-  public TranslationServiceProvider(String serviceConfigFile) {
+  public TranslationServiceProvider(File serviceConfigFile) {
     this.serviceConfigFile = serviceConfigFile;
+    this.serviceConfigLocation = null;
   }
 
   public TranslationServicesConfiguration getTranslationServicesConfig() {
@@ -87,24 +109,59 @@ public class TranslationServiceProvider {
   }
 
   /**
-   * Method for reading and parsing service configurations 
+   * Method for reading and parsing service configurations
+   * 
    * @throws TranslationServiceConfigurationException
    */
   void readServiceConfigurations() throws TranslationServiceConfigurationException {
-    try (InputStream inputStream = getClass().getResourceAsStream(getServiceConfigFile())) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-      String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-      translationServicesConfig =
-          new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
-    } catch (IOException e) {
-      throw new TranslationServiceConfigurationException("Cannot read serviceConfigfile!", e);
+    if (serviceConfigFile != null) {
+      readServiceConfigurationsFromConfigFile();
+    } else {
+      readServiceConfigurationsFromClassPath();
     }
+  }
+
+  private void readServiceConfigurationsFromClassPath()
+      throws TranslationServiceConfigurationException {
+    try (InputStream inputStream = getClass().getResourceAsStream(getServiceConfigLocation())) {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+      parseTranslationServicesConfig(reader);
+
+      if (logger.isInfoEnabled()) {
+        logger.info("Successfully loaded service configurations from classpath resources.");
+      }
+    } catch (IOException e) {
+      throw new TranslationServiceConfigurationException(
+          "Cannot read service configurations from classpath resources!", e);
+    }
+  }
+
+  private void readServiceConfigurationsFromConfigFile()
+      throws TranslationServiceConfigurationException {
+    try (BufferedReader input = Files.newBufferedReader(serviceConfigFile.toPath())) {
+      parseTranslationServicesConfig(input);
+      if (logger.isInfoEnabled()) {
+        logger.info("Successfully loaded service configurations from external config file.");
+      }
+    } catch (IOException e) {
+      throw new TranslationServiceConfigurationException(
+          "Cannot load service configurations from external config file: "
+              + serviceConfigFile.toPath(),
+          e);
+    }
+  }
+
+  private void parseTranslationServicesConfig(BufferedReader reader)
+      throws JsonProcessingException, JsonMappingException {
+    String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+    translationServicesConfig =
+        new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
   }
 
   private void validateAndInitServices()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-      validateDetectServiceCfg();
-      validateTranslationServiceCfg();
+    validateDetectServiceCfg();
+    validateTranslationServiceCfg();
   }
 
   private void validateTranslationServiceCfg() throws TranslationServiceConfigurationException {
@@ -134,19 +191,13 @@ public class TranslationServiceProvider {
     }
   }
 
-  private void validateSupportedLanguagePair(String srcLang, String trgLang)
+  private void validateSupportedLanguagePair(@NotNull String srcLang, @NotNull String trgLang)
       throws TranslationServiceConfigurationException {
-    // src and taret language must be different
-    if (srcLang.equals(trgLang)) {
-      throw new TranslationServiceConfigurationException(
-          "Invalid configuration for supported language pairs by translation service! Target language must be different from the source language: "
-              + srcLang);
-    }
 
     // check if available in language mappings
     boolean isSupported =
-        langMappings4TranslateServices.containsKey(LanguagePair.generateKey(srcLang, trgLang));
-    if (!isSupported) {
+        getLangMappings4TranslateServices().containsKey(LanguagePair.generateKey(srcLang, trgLang));
+    if (!isSupported && getDefaultTranslationService() != null) {
       // check if supported by default service
       isSupported = getDefaultTranslationService().isSupported(srcLang, trgLang);
     }
@@ -195,7 +246,11 @@ public class TranslationServiceProvider {
 
   private void validateAndInitLanguageMappings() throws TranslationServiceConfigurationException {
     // validate that each service supports the languages declared in the mappings section
-    // List<String> allMappingsLangPairs = new ArrayList<>();
+    if (translationServicesConfig.getTranslationConfig().getMappings() == null) {
+      // nothing to validate
+      return;
+    }
+
     for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslationConfig()
         .getMappings()) {
       final String serviceId = translMapping.getServiceId();
@@ -304,8 +359,8 @@ public class TranslationServiceProvider {
   }
 
 
-  public String getServiceConfigFile() {
-    return serviceConfigFile;
+  public String getServiceConfigLocation() {
+    return serviceConfigLocation;
   }
 
   public Map<String, TranslationService> getLangMappings4TranslateServices() {
