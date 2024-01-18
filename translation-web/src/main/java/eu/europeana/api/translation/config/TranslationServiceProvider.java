@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
@@ -114,9 +115,11 @@ public class TranslationServiceProvider {
    * @throws TranslationServiceConfigurationException
    */
   void readServiceConfigurations() throws TranslationServiceConfigurationException {
-    if (serviceConfigFile != null) {
+    if (Objects.nonNull(serviceConfigFile != null)) {
+      //deployments should provide config files in the external configurations folder
       readServiceConfigurationsFromConfigFile();
     } else {
+      //mainly for integration testing purposes
       readServiceConfigurationsFromClassPath();
     }
   }
@@ -152,7 +155,7 @@ public class TranslationServiceProvider {
   }
 
   private void parseTranslationServicesConfig(BufferedReader reader)
-      throws JsonProcessingException, JsonMappingException {
+      throws JsonProcessingException {
     String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
     translationServicesConfig =
         new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
