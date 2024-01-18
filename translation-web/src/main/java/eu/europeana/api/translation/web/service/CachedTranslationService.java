@@ -2,7 +2,6 @@ package eu.europeana.api.translation.web.service;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
 import eu.europeana.api.translation.service.TranslationService;
@@ -38,15 +37,19 @@ public class CachedTranslationService extends AbstractTranslationService {
   }
   
   @Override
-  public void translate(List<TranslationObj> translationStrings) throws TranslationException {
+  public void translate(List<TranslationObj> translationObjs) throws TranslationException {
     //fill the non translatable texts, e.g. empty Strings
-    processNonTranslatable(translationStrings);
+    processNonTranslatable(translationObjs);
+    
+     
+    fillTranslationForSameLanguage(translationObjs);
+    
     
     if(isCachingEnabled()) {
-      redisCacheService.fillWithCachedTranslations(translationStrings);
+      redisCacheService.fillWithCachedTranslations(translationObjs);
     }
-
-    List<TranslationObj> toTranslate = translationStrings.stream().filter(
+    
+    List<TranslationObj> toTranslate = translationObjs.stream().filter(
         t -> t.getTranslation() == null).toList();
     
     if(toTranslate.isEmpty()) {
@@ -62,13 +65,6 @@ public class CachedTranslationService extends AbstractTranslationService {
     }
   }
 
-  void processNonTranslatable(List<TranslationObj> translationStrings) {
-    for (TranslationObj translationString : translationStrings) {
-      if(StringUtils.isEmpty(translationString.getText())){
-        translationString.setTranslation("");
-      }
-    }
-  }
 
   @Override
   public void close() {

@@ -13,7 +13,7 @@
               , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             },
             {
-                "id": "APACHE-TIKA"
+                "id": "TIKA"
               , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
             }          
         ],
