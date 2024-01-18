@@ -29,7 +29,7 @@ build/
 
 ### Translation API transient configs and secret files
 # NOTE: mark locally backuped files with .bk extension
-**/*.bk
+**/**.bk
 **/*.user.properties
 **/*auth.json
 # NOTE: use externalized log4j2.xml
