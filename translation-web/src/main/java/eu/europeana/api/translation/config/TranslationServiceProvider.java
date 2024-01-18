@@ -115,7 +115,7 @@ public class TranslationServiceProvider {
    * @throws TranslationServiceConfigurationException
    */
   void readServiceConfigurations() throws TranslationServiceConfigurationException {
-    if (Objects.nonNull(serviceConfigFile != null)) {
+    if (Objects.nonNull(serviceConfigFile)) {
       //deployments should provide config files in the external configurations folder
       readServiceConfigurationsFromConfigFile();
     } else {
