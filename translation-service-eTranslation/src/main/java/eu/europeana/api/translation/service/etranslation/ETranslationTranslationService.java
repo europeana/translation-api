@@ -98,12 +98,12 @@ public class ETranslationTranslationService extends AbstractTranslationService {
        * While loop as a good practice to ensure spurious wake-ups (https://www.baeldung.com/java-wait-notify).
        * In addition, time is measured to not wait again and again the same max time, in case of spurious wake-ups
        */
-      long sleepTime=0;
+      long sleepTimeMillisec=0;
       while(redisMessageListener.getMessage()==null) {
         try {
-          long goSleepTime=System.currentTimeMillis();
-          if(sleepTime < maxWaitMillisec) {
-            redisMessageListener.wait(maxWaitMillisec - sleepTime);
+          long goSleepTimeNanosec=System.nanoTime();
+          if(sleepTimeMillisec < maxWaitMillisec) {
+            redisMessageListener.wait(maxWaitMillisec - sleepTimeMillisec);
           }
           else {
             if(LOGGER.isDebugEnabled()) {
@@ -111,8 +111,8 @@ public class ETranslationTranslationService extends AbstractTranslationService {
             }
             break;
           }
-          long wakeUpTime = System.currentTimeMillis();
-          sleepTime += wakeUpTime-goSleepTime;
+          long wakeUpTimeNanosec = System.nanoTime();
+          sleepTimeMillisec += (wakeUpTimeNanosec-goSleepTimeNanosec)/1000000.0;
         } catch (InterruptedException e) {
         }
       }
