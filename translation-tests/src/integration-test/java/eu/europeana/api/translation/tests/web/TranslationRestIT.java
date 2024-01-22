@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.tests.web;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +30,7 @@ import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
+import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
@@ -164,12 +164,12 @@ public class TranslationRestIT extends BaseTranslationTest {
     Thread.sleep(1000);
     //trigger the eTranslation callback manually
     //computed in advance using the code in the eTransl service
-    String eTranslRef="RGFzIGlzdCBtZWluIEh1bmQuIFpYZDNaSGRsZDJVPSBEYXMgaXN0IG1laW4gQmF1bS4=";
+    String eTranslRef="deenYxH4ww";
     mockMvc
     .perform(
         post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)
         .param("external-reference", eTranslRef)
-        .param("translated-text", "That is my dog. ZXd3ZHdld2U= That is my tree."))
+        .param("translated-text", "That is my dog." + ETranslationTranslationService.markupDelimit + "That is my tree."))
     .andExpect(status().isOk());
 
     thread.join();

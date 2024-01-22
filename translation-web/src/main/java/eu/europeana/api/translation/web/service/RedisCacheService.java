@@ -1,8 +1,6 @@
 package eu.europeana.api.translation.web.service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import com.google.common.primitives.Ints;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.service.util.UtilityMethods;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import io.micrometer.core.instrument.util.StringUtils;
 
@@ -44,7 +42,7 @@ public class RedisCacheService {
     for (TranslationObj translationString : translationStrings) {
       if (translationString.getTranslation() == null && isCacheable(translationString)) {
         // generate redis key and add translation to the list of cacheable objects
-        redisKey = generateRedisKey(translationString.getText(), translationString.getSourceLang(),
+        redisKey = UtilityMethods.generateRedisKey(translationString.getText(), translationString.getSourceLang(),
             translationString.getTargetLang());
         cacheKeys.add(redisKey);
         cacheableTranslations.add(translationString);
@@ -127,7 +125,7 @@ public class RedisCacheService {
     for (TranslationObj translObj : translationStrings) {
       if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.isAvailableInCache()) {
         // String key = translObj.getCacheKey();
-        key = generateRedisKey(translObj.getText(), translObj.getSourceLang(),
+        key = UtilityMethods.generateRedisKey(translObj.getText(), translObj.getSourceLang(),
             translObj.getTargetLang());
         translObj.setCacheKey(key);
         valueMap.put(key, toCachedTranslation(translObj));
@@ -157,22 +155,6 @@ public class RedisCacheService {
     if (connFact != null) {
       connFact.getConnection().flushAll();
     }
-  }
-
-  /**
-   * generate redis keys
-   * 
-   * @param inputText the original text
-   * @param sourceLang language of the original text
-   * @param targetLang language of the translation
-   * @return generated redis key
-   */
-  public String generateRedisKey(String inputText, String sourceLang, String targetLang) {
-    StringBuilder builder = (new StringBuilder()).append(sourceLang).append(targetLang);
-    byte[] hash =
-        Base64.getEncoder().withoutPadding().encode(Ints.toByteArray(inputText.hashCode()));
-    builder.append(new String(hash, StandardCharsets.UTF_8));
-    return builder.toString();
   }
 
 }

@@ -14,7 +14,11 @@ public class RedisMessageListener implements MessageListener {
     @Override
     public synchronized void onMessage(Message message, byte[] pattern) {
       LOGGER.debug("New message received from RedisMessageListener: {}", message);
-      this.message=new String(message.getBody(), StandardCharsets.UTF_8);
+      String messageBody=new String(message.getBody(), StandardCharsets.UTF_8);
+      
+      //remove double quotes at the beginning and at the end of the response, from some reason they are duplicated
+      this.message = messageBody.replaceAll("^\"|\"$", "");
+
       //notify all threads waiting on this object
       notifyAll();
     }

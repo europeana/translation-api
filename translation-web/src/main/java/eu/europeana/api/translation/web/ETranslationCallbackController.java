@@ -26,10 +26,12 @@ public class ETranslationCallbackController {
   @PostMapping(value = "/eTranslation/callback")
   public void eTranslationCallback(
       @RequestParam(value = "target-language", required = false) String targetLanguage,
-      @RequestParam(value = "translated-text", required = false) String translatedTextSnippet,
+      @RequestParam(value = "translated-text", required = true) String translatedTextSnippet,
       @RequestParam(value = "request-id", required = false) String requestId,
-      @RequestParam(value = "external-reference", required = false) String externalReference) {
-    LOGGER.debug("eTranslation callback on translation api has been received");
+      @RequestParam(value = "external-reference", required = true) String externalReference) {
+    if(LOGGER.isDebugEnabled()) {
+      LOGGER.debug("eTranslation callback on translation api has been received");
+    }
     if(externalReference!=null && translatedTextSnippet!=null) {
       redisTemplate.convertAndSend(externalReference, translatedTextSnippet);
     }

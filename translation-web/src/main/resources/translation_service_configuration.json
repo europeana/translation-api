@@ -44,7 +44,7 @@
                 "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService"
             },
             {
-                "id": "E_TRANSLATION", 
+                "id": "E-TRANSLATION", 
                 "classname": "eu.europeana.api.translation.service.etranslation.ETranslationTranslationService"
             }
         ],

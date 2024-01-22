@@ -67,7 +67,7 @@ public class TranslationConfig{
   @Value("${translation.eTranslation.callback:}")
   private String eTranslationCallback;
 
-  @Value("${translation.eTranslation.maxWaitMillisec:}")
+  @Value("${translation.eTranslation.maxWaitMillisec:30000}")
   private int eTranslationMaxWaitMillisec;
 
   @Value("${translation.eTranslation.baseUrl:}")
