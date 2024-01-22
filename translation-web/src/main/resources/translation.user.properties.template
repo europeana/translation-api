@@ -17,6 +17,8 @@
 #  See the Licence for the specific language governing permissions and limitations under 
 #  the Licence.
 #
+translation.service.config.file=
+
 ## Pangeanic service config
 translation.pangeanic.endpoint.detect=http://<host>:<port>/NexRelay/v1/detect_language
 translation.pangeanic.endpoint.translate=http://<host>:<port>/NexRelay/v1/translate
@@ -39,7 +41,6 @@ europeana.apikey.serviceurl=
 ##Caching config
 #configure the connection URL to enable redis caching
 redis.connection.url=
-
 
 truststore.path=
 truststore.password=

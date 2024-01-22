@@ -184,6 +184,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
       return;  
     }
     
+    if(sourceLanguage.equals(targetLang)) {
+      //not needed to send a translation request, when source=target 
+      fillTranslationForSameLanguage(toTranslatePerLanguage);
+      return;
+    }
+    
     // send the translation request
     List<String> translTexts = toTranslatePerLanguage.stream().map(to -> to.getText()).toList();
     HttpPost translateRequest = PangeanicTranslationUtils.createTranslateRequest(

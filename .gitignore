@@ -27,6 +27,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Translation API transient configs and secret files
+# NOTE: mark locally backuped files with .bk extension
+**/**.bk
 **/*.user.properties
 **/*auth.json
 # NOTE: use externalized log4j2.xml
