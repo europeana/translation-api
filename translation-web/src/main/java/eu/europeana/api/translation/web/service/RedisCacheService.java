@@ -52,6 +52,11 @@ public class RedisCacheService {
       }
     }
 
+    if(cacheKeys.isEmpty()) {
+      //no translations to be searched in the cache, no request to the caching service required
+      return;
+    }
+      
     // get cached translations
     List<CachedTranslation> redisResponse = redisTemplate.opsForValue().multiGet(cacheKeys);
     if (redisResponse == null || redisResponse.size() != cacheableTranslations.size()) {
