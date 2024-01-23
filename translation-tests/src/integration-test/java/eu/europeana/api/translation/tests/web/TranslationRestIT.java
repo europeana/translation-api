@@ -164,7 +164,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     Thread.sleep(1000);
     //trigger the eTranslation callback manually
     //computed in advance using the code in the eTransl service
-    String eTranslRef="deenYxH4ww";
+    String eTranslRef="deenHohN/A";
     mockMvc
     .perform(
         post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)

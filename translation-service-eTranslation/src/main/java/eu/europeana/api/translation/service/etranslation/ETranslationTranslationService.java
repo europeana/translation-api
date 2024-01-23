@@ -41,8 +41,8 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   private final RedisMessageListenerContainer redisMessageListenerContainer;
   public static final String baseUrlTests="base-url-for-testing";
   //base64 encoded string, which will not be translated from eTransaltion, used as a markup delimiter
-  public static final String markupDelimit=" ZXd3ZHdld2U= ";
-
+//  public static final String markupDelimit=" ZXd3ZHdld2U= ";
+  public static final String markupDelimit=" \n###==###\n ";
   
   public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, 
       String username, String password, RedisMessageListenerContainer redisMessageListenerContainer) throws TranslationException {

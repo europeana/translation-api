@@ -88,7 +88,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     assertTrue(langs.length()==3 && "hr".equals(langs.getString(0)) && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertEquals("TIKA", serviceFieldValue);
+    assertEquals("APACHE-TIKA", serviceFieldValue);
   }
 
   @Test

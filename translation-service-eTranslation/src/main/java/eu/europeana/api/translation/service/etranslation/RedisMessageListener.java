@@ -16,8 +16,13 @@ public class RedisMessageListener implements MessageListener {
       LOGGER.debug("New message received from RedisMessageListener: {}", message);
       String messageBody=new String(message.getBody(), StandardCharsets.UTF_8);
       
+      /* 
+       * the received message is treated as a json object and we need some adjustments for the escaped characters
+       */
       //remove double quotes at the beginning and at the end of the response, from some reason they are duplicated
-      this.message = messageBody.replaceAll("^\"|\"$", "");
+      String messageRemDuplQuotes = messageBody.replaceAll("^\"|\"$", "");
+      //replace a double backslash with a single backslash
+      this.message = messageRemDuplQuotes.replace("\\n", "\n");
 
       //notify all threads waiting on this object
       notifyAll();

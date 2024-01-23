@@ -4,5 +4,5 @@
     "Das ist ein deutscher Text",
     "This is an English text"
   ],
-  "service": "TIKA"
+  "service": "APACHE-TIKA"
 }
