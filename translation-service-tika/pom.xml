@@ -4,7 +4,7 @@
   <parent>
     <groupId>eu.europeana.api</groupId>
     <artifactId>translation-api</artifactId>
-    <version>0.1</version>
+    <version>0.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>translation-service-tika</artifactId>
   <name>translation-service-tika</name>
@@ -18,7 +18,7 @@
 	<dependency>
 		<groupId>eu.europeana.api</groupId>
 		<artifactId>translation-service-common</artifactId>
-		<version>0.1</version>
+		<version>0.1.1-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	    <groupId>org.apache.tika</groupId>
