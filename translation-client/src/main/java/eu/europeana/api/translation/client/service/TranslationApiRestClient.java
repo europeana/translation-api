@@ -3,6 +3,7 @@ package eu.europeana.api.translation.client.service;
 import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +17,9 @@ import org.springframework.web.util.UriBuilder;
 import reactor.core.Exceptions;
 
 import java.net.URI;
+import java.util.Set;
 import java.util.function.Function;
+
 import static eu.europeana.api.translation.client.utils.TranslationClientUtils.*;
 
 public class TranslationApiRestClient {
@@ -30,15 +33,17 @@ public class TranslationApiRestClient {
 
     /**
      * Returns the Translation api translate endpoint response
+     *
      * @param request
      * @return
      */
     public TranslationResponse getTranslations(String request, String authToken) throws TranslationApiException {
-       return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false, authToken);
+        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false, authToken);
     }
 
     /**
      * Retruns the translation api lang detection response
+     *
      * @param request
      * @return
      */
@@ -46,14 +51,48 @@ public class TranslationApiRestClient {
         return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true, authToken);
     }
 
+    /**
+     * Get the supported languages for detection and supported language pairs for translations
+     * @param supportedLanguagesForDetection
+     * @param supportedLanguagesForTranslation
+     * @throws TranslationApiException
+     */
+    public void getSupportedLanguages(Set<String> supportedLanguagesForDetection, Set<LanguagePair> supportedLanguagesForTranslation) throws TranslationApiException {
+        String json = getInfoEndpointResponse();
+        TranslationClientUtils.getDetectionLanguages(json, supportedLanguagesForDetection);
+        TranslationClientUtils.getTranslationLanguagePairs(json, supportedLanguagesForTranslation);
+    }
+
+    /**
+     * Executes the get request for the info endpoint of translation api
+     *
+     * @return
+     */
+    private String getInfoEndpointResponse() throws TranslationApiException {
+        try {
+            WebClient.ResponseSpec result = executeGet(webClient, TranslationClientUtils.buildUrl(INFO_ENDPOINT_URL), null);
+            return result
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception e) {
+            /*
+             * Spring WebFlux wraps exceptions in ReactiveError (see Exceptions.propagate())
+             * So we need to unwrap the underlying exception, for it to be handled by callers of this method
+             **/
+            Throwable t = Exceptions.unwrap(e);
+            LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
+            throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
+        }
+    }
 
     /**
      * Executes the post request for both endpoint "translate" and "detect"
+     *
      * @param webClient
      * @param uriBuilderURIFunction
      * @param jsonBody
      * @param langDetect
-     * @param authToken - the JWT token used for invocation of translation API
+     * @param authToken             - the JWT token used for invocation of translation API
      * @param <T>
      * @return
      */
@@ -83,7 +122,7 @@ public class TranslationApiRestClient {
             }
 
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
-            throw new TranslationApiException("Translation API Client call failed - "+ e.getMessage(), e);
+            throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
         }
     }
 
@@ -93,12 +132,20 @@ public class TranslationApiRestClient {
                 .post()
                 .uri(uriBuilderURIFunction)
                 .contentType(MediaType.APPLICATION_JSON)
-                // TODO need to figure out how we will pass token across API's
                 .header(HttpHeaders.AUTHORIZATION, authToken)
                 .body(BodyInserters.fromValue(jsonBody))
                 .retrieve()
                 .onStatus(
                         HttpStatus.BAD_GATEWAY::equals,
                         response -> response.bodyToMono(String.class).map(ExternalServiceException::new));
+    }
+
+    private WebClient.ResponseSpec executeGet(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String authToken) {
+        return webClient
+                .get()
+                .uri(uriBuilderURIFunction)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, authToken)
+                .retrieve();
     }
 }

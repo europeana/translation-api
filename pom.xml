@@ -61,7 +61,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<maven.compiler.release>${java.version}</maven.compiler.release>
-		<api-commons.version>0.3.22</api-commons.version>
+		<api-commons.version>0.3.23-SNAPSHOT</api-commons.version>
 		<jettison.version>1.3</jettison.version>
 		<spring-boot.version>2.5.14</spring-boot.version>
 		<springdoc.version>1.6.14</springdoc.version>
