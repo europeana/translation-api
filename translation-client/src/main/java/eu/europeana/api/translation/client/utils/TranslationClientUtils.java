@@ -86,27 +86,22 @@ public class TranslationClientUtils {
                 Iterator<JsonNode> iterator = translate.get(SUPPORTED).iterator();
                 while (iterator.hasNext()) {
                     JsonNode object = iterator.next();
-                    Iterator<JsonNode> sources = object.get(SOURCE).iterator();
-                    Iterator<JsonNode> targets = object.get(TARGET).iterator();
-
-                    List<String> source = new ArrayList<>();
-                    List<String> target = new ArrayList<>();
-
-                    // get all sources from the object
-                    while (sources.hasNext()) {
-                        source.add(sources.next().asText());
-                    }
-                    //  get all target from the object
-                    while (targets.hasNext()) {
-                        target.add(targets.next().asText());
-                    }
+                    List<String> source = getIteratorValue(object.get(SOURCE).iterator());
+                    List<String> target = getIteratorValue(object.get(TARGET).iterator());
                     // make pairs
                     source.stream().forEach(v -> target.stream().forEach(t -> translationLanguages.add(new LanguagePair(v, t))));
-                    source.clear();
-                    target.clear();
                 }
             }
         }
         return translationLanguages;
+    }
+
+    private static List<String> getIteratorValue(Iterator<JsonNode> jsonNodeIterator) {
+        List<String> values = new ArrayList<>();
+        // get all sources from the object
+        while (jsonNodeIterator.hasNext()) {
+            values.add(jsonNodeIterator.next().asText());
+        }
+        return values;
     }
 }
