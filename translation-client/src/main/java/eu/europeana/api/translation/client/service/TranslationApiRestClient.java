@@ -2,7 +2,6 @@ package eu.europeana.api.translation.client.service;
 
 import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
-import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
