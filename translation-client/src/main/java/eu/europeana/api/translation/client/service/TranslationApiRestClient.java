@@ -75,7 +75,9 @@ public class TranslationApiRestClient {
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
-            LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
+            }
             throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
         }
     }

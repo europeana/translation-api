@@ -102,6 +102,8 @@ public class TranslationClientUtils {
                     }
                     // make pairs
                     source.stream().forEach(v -> target.stream().forEach(t -> translationLanguages.add(new LanguagePair(v, t))));
+                    source.clear();
+                    target.clear();
                 }
             }
         }
