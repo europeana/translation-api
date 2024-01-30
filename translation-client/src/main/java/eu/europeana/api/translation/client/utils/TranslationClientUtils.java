@@ -57,7 +57,7 @@ public class TranslationClientUtils {
                     return node.get(CONFIG);
                 }
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error parsing the request for Translation API Info endpoint");
+                throw new TranslationApiException("Error parsing the request for Translation API Info endpoint", e);
 
             }
         }

@@ -26,10 +26,22 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
     }
 
+    /**
+     * indicates if the given language is supported by the language detection service
+     * @param srcLang language hint
+     * @return true is supported
+     */
     public boolean isSupported(String srcLang) {
         return getSupportedLanguagesForDetection().contains(srcLang);
     }
 
+    /**
+     * To validate the given pair of source and target language is valid for translation
+     *
+     * @param srcLang source language of the data to be translated
+     * @param trgLang target language in which data has to be translated
+     * @return true is the pair is valid
+     */
     public boolean isSupported(String srcLang, String trgLang) {
         return getSupportedLanguagesForTranslation().contains(new LanguagePair(srcLang, trgLang));
     }

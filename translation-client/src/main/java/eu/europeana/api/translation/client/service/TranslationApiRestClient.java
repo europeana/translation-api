@@ -38,7 +38,7 @@ public class TranslationApiRestClient {
      * @return
      */
     public TranslationResponse getTranslations(String request, String authToken) throws TranslationApiException {
-        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(TRANSLATE_URL), request, false, authToken);
+        return getTranslationApiResponse(webClient, buildUrl(TRANSLATE_URL), request, false, authToken);
     }
 
     /**
@@ -48,19 +48,20 @@ public class TranslationApiRestClient {
      * @return
      */
     public LangDetectResponse getDetectedLanguages(String request, String authToken) throws TranslationApiException {
-        return getTranslationApiResponse(webClient, TranslationClientUtils.buildUrl(LANG_DETECT_URL), request, true, authToken);
+        return getTranslationApiResponse(webClient, buildUrl(LANG_DETECT_URL), request, true, authToken);
     }
 
     /**
      * Get the supported languages for detection and supported language pairs for translations
      * @param supportedLanguagesForDetection
      * @param supportedLanguagesForTranslation
-     * @throws TranslationApiException
+     * @throws TranslationApiException throws an exception if json is invalid or Translation api is not up and running
      */
-    public void getSupportedLanguages(Set<String> supportedLanguagesForDetection, Set<LanguagePair> supportedLanguagesForTranslation) throws TranslationApiException {
+    public void getSupportedLanguages(Set<String> supportedLanguagesForDetection, Set<LanguagePair> supportedLanguagesForTranslation)
+            throws TranslationApiException {
         String json = getInfoEndpointResponse();
-        TranslationClientUtils.getDetectionLanguages(json, supportedLanguagesForDetection);
-        TranslationClientUtils.getTranslationLanguagePairs(json, supportedLanguagesForTranslation);
+        getDetectionLanguages(json, supportedLanguagesForDetection);
+        getTranslationLanguagePairs(json, supportedLanguagesForTranslation);
     }
 
     /**
@@ -70,16 +71,11 @@ public class TranslationApiRestClient {
      */
     private String getInfoEndpointResponse() throws TranslationApiException {
         try {
-            WebClient.ResponseSpec result = executeGet(webClient, TranslationClientUtils.buildUrl(INFO_ENDPOINT_URL), null);
+            WebClient.ResponseSpec result = executeGet(webClient, buildUrl(INFO_ENDPOINT_URL), null);
             return result
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
-            /*
-             * Spring WebFlux wraps exceptions in ReactiveError (see Exceptions.propagate())
-             * So we need to unwrap the underlying exception, for it to be handled by callers of this method
-             **/
-            Throwable t = Exceptions.unwrap(e);
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
             throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
         }
@@ -97,7 +93,8 @@ public class TranslationApiRestClient {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody, boolean langDetect, String authToken) throws TranslationApiException {
+    public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody,
+                                           boolean langDetect, String authToken) throws TranslationApiException {
         try {
             WebClient.ResponseSpec result = executePost(webClient, uriBuilderURIFunction, jsonBody, authToken);
             if (langDetect) {
