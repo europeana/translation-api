@@ -70,6 +70,12 @@ public class LangDetectionWebService extends BaseWebService {
    */
   private List<String> accumulateLanguages(List<String> texts, List<String> langDetected, List<String> eligibleValues) {
     List<String> languages = new ArrayList<>(texts.size());
+    // if langDetected and eligibleValues are empty then return all null results
+    if (langDetected.isEmpty() && eligibleValues.isEmpty()) {
+      texts.stream().forEach(text-> languages.add(null));
+      return languages;
+    }
+
     for (int i = 0; i < langDetected.size(); i++) {
       for (int j = 0; j < texts.size(); j++) {
            if (eligibleValues.get(i).equals(texts.get(j))) {
