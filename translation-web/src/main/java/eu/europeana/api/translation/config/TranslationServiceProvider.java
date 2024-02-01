@@ -12,6 +12,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
+
+import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
+import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
@@ -51,6 +54,8 @@ public class TranslationServiceProvider {
   ApplicationContext applicationContext;
 
   TranslationServicesConfiguration translationServicesConfig;
+  LanguageDetectionService languageDetectionPreProcessor;
+  TranslationService translationServicePreProcessor;
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> langMappings4TranslateServices = new ConcurrentHashMap<>();
@@ -107,6 +112,13 @@ public class TranslationServiceProvider {
     // init translation services
     readServiceConfigurations();
     validateAndInitServices();
+    // init preprocessor
+    initPreProcessor();
+  }
+
+  private void initPreProcessor() {
+    languageDetectionPreProcessor = new LangDetectionPreProcessor();
+    translationServicePreProcessor = new TranslationPreProcessor();
   }
 
   /**
@@ -370,6 +382,11 @@ public class TranslationServiceProvider {
     return langMappings4TranslateServices;
   }
 
+  public LanguageDetectionService getLanguageDetectionPreProcessor() {
+    return languageDetectionPreProcessor;
+  }
 
-
+  public TranslationService getTranslationServicePreProcessor() {
+    return translationServicePreProcessor;
+  }
 }

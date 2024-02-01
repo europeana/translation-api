@@ -10,6 +10,7 @@ public class TranslationObj {
   private String translation;
   private String cacheKey;
   private boolean availableInCache;
+  private boolean isTranslated;
 
   public String getText() {
     return text;
@@ -49,4 +50,11 @@ public class TranslationObj {
     this.availableInCache = cached;
   }
 
+  public boolean isTranslated() {
+    return isTranslated;
+  }
+
+  public void setIsTranslated(boolean translated) {
+    isTranslated = translated;
+  }
 }

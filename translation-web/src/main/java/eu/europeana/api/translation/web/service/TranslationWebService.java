@@ -39,7 +39,12 @@ public class TranslationWebService extends BaseWebService {
   public TranslationResponse translate(TranslationRequest translationRequest)
       throws EuropeanaI18nApiException {
     List<TranslationObj> translObjs = buildTranslationObjectList(translationRequest);
-
+    // pre processing for translation
+    try {
+      translationServiceProvider.getTranslationServicePreProcessor().translate(translObjs);
+    } catch (TranslationException e) {
+      e.printStackTrace();
+    }
     // get the configured translation services
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
@@ -59,7 +64,7 @@ public class TranslationWebService extends BaseWebService {
     String serviceId = null;
     for (TranslationService cachedTranslationService : cachedTranslationServices) {
       try {
-        cachedTranslationService.translate(translObjs);
+        cachedTranslationService.translate(translObjs.stream().filter(to -> to.isTranslated()).collect(Collectors.toList()));
         // call this method after the translate() method, because the serviceId changes depending if
         // there is sth in the cache
         serviceId = cachedTranslationService.getServiceId();
@@ -131,6 +136,7 @@ public class TranslationWebService extends BaseWebService {
       newTranslObj.setSourceLang(translationRequest.getSource());
       newTranslObj.setTargetLang(translationRequest.getTarget());
       newTranslObj.setText(inputText);
+      newTranslObj.setIsTranslated(true);
       translObjs.add(newTranslObj);
     }
     return translObjs;
@@ -153,7 +159,6 @@ public class TranslationWebService extends BaseWebService {
     // if none selected pick the default
     final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig()
         .getTranslationConfig().getDefaultServiceId();
-
     return getTranslationService(defaultServiceId, languagePair);
   }
 

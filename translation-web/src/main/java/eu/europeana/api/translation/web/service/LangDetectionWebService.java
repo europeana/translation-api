@@ -2,6 +2,8 @@ package eu.europeana.api.translation.web.service;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_UNSUPPORTED_LANG;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.PreDestroy;
@@ -33,9 +35,12 @@ public class LangDetectionWebService extends BaseWebService {
     LanguageDetectionService fallback = getFallbackService(langDetectRequest);
     List<String> langs = null;
     String serviceId = null;
+    List<String> eligibleValues = new ArrayList<>();
     try {
+      // preprocess the values
+      eligibleValues =  translationServiceProvider.getLanguageDetectionPreProcessor().detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
       langs =
-          langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+          langDetectService.detectLang(eligibleValues, langDetectRequest.getLang());
       serviceId = langDetectService.getServiceId();
     } catch (LanguageDetectionException originalError) {
       // check if fallback is available
@@ -43,7 +48,7 @@ public class LangDetectionWebService extends BaseWebService {
         throwApiException(originalError);
       } else {
         try {
-          langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+          langs = fallback.detectLang(eligibleValues, langDetectRequest.getLang());
           serviceId = fallback.getServiceId();
         } catch (LanguageDetectionException e) {
           if (logger.isDebugEnabled()) {
@@ -53,9 +58,31 @@ public class LangDetectionWebService extends BaseWebService {
         }
       }
     }
-
-    return new LangDetectResponse(langs, serviceId);
+    return new LangDetectResponse(accumulateLanguages(langDetectRequest.getText(), langs, eligibleValues), serviceId);
   }
+
+  /**
+   * Returns languages detected and null responses for the non-eligible values
+   * @param texts texts sent in the request
+   * @param langDetected languages detected by the service
+   * @param eligibleValues text sent for language detection
+   * @return
+   */
+  private List<String> accumulateLanguages(List<String> texts, List<String> langDetected, List<String> eligibleValues) {
+    List<String> languages = new ArrayList<>(texts.size());
+    for (int i = 0; i < langDetected.size(); i++) {
+      for (int j = 0; j < texts.size(); j++) {
+           if (eligibleValues.get(i).equals(texts.get(j))) {
+             languages.add(langDetected.get(i));
+             break;
+           } else {
+             languages.add(null);
+           }
+      }
+    }
+    return languages;
+  }
+
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
       throws ParamValidationException {
