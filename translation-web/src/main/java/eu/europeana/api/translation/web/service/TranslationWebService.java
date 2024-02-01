@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
+
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +45,7 @@ public class TranslationWebService extends BaseWebService {
     try {
       translationServiceProvider.getTranslationServicePreProcessor().translate(translObjs);
     } catch (TranslationException e) {
-      e.printStackTrace();
+     logger.error("Error during the pre processing ", e);
     }
     // get the configured translation services
     LanguagePair languagePair =
