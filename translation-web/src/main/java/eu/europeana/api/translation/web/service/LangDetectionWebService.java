@@ -76,8 +76,8 @@ public class LangDetectionWebService extends BaseWebService {
 
     List<String> languages = new ArrayList<>(texts.size());
     int j =0;
-    for (int i = 0; i < texts.size(); i++) {
-      if (eligibleValues.contains(texts.get(i))) {
+    for (String text : texts) {
+      if (eligibleValues.contains(text)) {
         languages.add(langDetected.get(j));
         j++;
       } else {

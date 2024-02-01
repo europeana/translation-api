@@ -6,6 +6,11 @@ import eu.europeana.api.translation.web.utils.PreProcessorUtils;
 
 import java.util.List;
 
+/**
+ * Pre processing class for the Language detection flow
+ * @author srishti singh
+ * @since 31 Jan 2024
+ */
 public class LangDetectionPreProcessor implements LanguageDetectionService {
 
     @Override
@@ -20,6 +25,7 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
 
     @Override
     public void setServiceId(String serviceId) {
+        // leave empty
 
     }
 
@@ -30,7 +36,7 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
 
     @Override
     public void close() {
-
+        // leave empty, nothing to close
     }
 
     @Override

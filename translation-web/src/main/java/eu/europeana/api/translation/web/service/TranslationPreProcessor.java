@@ -7,6 +7,11 @@ import eu.europeana.api.translation.web.utils.PreProcessorUtils;
 
 import java.util.List;
 
+/**
+ * Pre processing class for the Translation flow
+ * @author srishti singh
+ * @since 31 Jan 2024
+ */
 public class TranslationPreProcessor implements TranslationService {
 
     @Override
@@ -31,7 +36,7 @@ public class TranslationPreProcessor implements TranslationService {
 
     @Override
     public void close() {
-
+        // leave empty, nothing to close
     }
 
     @Override

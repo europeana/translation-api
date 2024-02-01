@@ -66,7 +66,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
-    assertTrue(langs.length() == 3);
+    assertEquals(3,langs.length());
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
@@ -106,7 +106,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
-    assertTrue(langs.length() == 2);
+    assertEquals(2, langs.length());
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);    
   }
