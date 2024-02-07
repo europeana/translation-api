@@ -1,7 +1,8 @@
 package eu.europeana.api.translation.service.tika;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
@@ -18,12 +19,11 @@ public class DummyApacheTikaLangDetectService extends ApacheTikaLangDetectServic
   }
 
   @Override
-  public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+    String langHint = languageDetectionObjs.get(0).getHint();
     String value = StringUtils.isNotBlank(langHint) ?  langHint : "en";
-    ArrayList<String> ret = new ArrayList<>();    
-    for (int i = 0; i < texts.size(); i++) {
-      ret.add(value);
+    for (LanguageDetectionObj obj : languageDetectionObjs) {
+      obj.setDetectedLang(value);
     }
-    return ret;
   }
 }

@@ -1,10 +1,10 @@
 package eu.europeana.api.translation.web.service;
 
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.web.utils.PreProcessorUtils;
-
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Pre processing class for the Language detection flow
@@ -13,25 +13,35 @@ import java.util.List;
  */
 public class LangDetectionPreProcessor implements LanguageDetectionService {
 
+    Pattern langDetectEligibleValuesPattern;
+
+    public LangDetectionPreProcessor(Pattern langDetectEligibleValuesPattern) {
+        this.langDetectEligibleValuesPattern = langDetectEligibleValuesPattern;
+    }
+
     @Override
     public boolean isSupported(String srcLang) {
-        return false;
+        // probably not used for now, but better return true, as it accepts any values
+        return true;
     }
 
     @Override
     public String getServiceId() {
-        return null;
+        return "TEXT_PROCESSOR";
     }
 
     @Override
     public void setServiceId(String serviceId) {
         // leave empty
-
     }
 
     @Override
-    public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
-        return PreProcessorUtils.filterEligibleValues(texts);
+    public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+        for (LanguageDetectionObj obj : languageDetectionObjs) {
+            if (!langDetectEligibleValuesPattern.matcher(obj.getText()).find()) {
+                obj.setIsTranslated(false);
+            }
+        }
     }
 
     @Override

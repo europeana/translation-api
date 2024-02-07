@@ -1,9 +1,10 @@
 package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,21 +36,29 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   }
 
   @Override
-  public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
-    if (texts.isEmpty()) {
-      return Collections.emptyList();
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+    if (languageDetectionObjs.isEmpty()) {
+      return;
     }
     
-    List<String> detectedLangs = new ArrayList<>(texts.size());
+    List<String> detectedLangs = new ArrayList<>();
     List<LanguageResult> tikaLanguages=null;
-    for(String text : texts) {
+    for(LanguageDetectionObj obj : languageDetectionObjs) {
       //returns all tika languages sorted by score
-      tikaLanguages =  this.detector.detectAll(text);
+      tikaLanguages =  this.detector.detectAll(obj.getText());
 
-      detectedLangs.add(chooseDetectedLang(tikaLanguages, langHint));
-      
+      detectedLangs.add(chooseDetectedLang(tikaLanguages, obj.getHint()));
     }
-    return detectedLangs;
+
+    // fallback check - if the lang detection is complete / successful
+    if (detectedLangs.size() != languageDetectionObjs.size()) {
+      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
+              + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
+    }
+    // build results
+    for(int i=0; i< detectedLangs.size(); i++) {
+      languageDetectionObjs.get(i).setDetectedLang(detectedLangs.get(i));
+    }
   }
 
   /**

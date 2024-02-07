@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -71,15 +73,32 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   }
 
   @Override
-  public List<String> detectLang(List<String> texts, String langHint)
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs)
       throws LanguageDetectionException {
-    if (texts.isEmpty()) {
-      return new ArrayList<>();
+    if (languageDetectionObjs.isEmpty()) {
+      return;
     }
+
+    // get values for the request
+    List<String> texts = new ArrayList<>();
+    languageDetectionObjs.stream().forEach(obj -> texts.add(obj.getText()));
+
+    String langHint = languageDetectionObjs.get(0).getHint();
 
     HttpPost post = PangeanicTranslationUtils
         .createDetectlanguageRequest(getExternalServiceEndPoint(), texts, langHint, "");
-    return sendDetectRequestAndParse(post);
+    List<String> results = sendDetectRequestAndParse(post);
+
+    // fallback check - if the lang detection is complete / successful
+    if (results.size() != languageDetectionObjs.size()) {
+      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
+              + languageDetectionObjs.size() + " but received: " + results.size());
+    }
+
+    // build results
+    for(int i=0; i< results.size(); i++) {
+      languageDetectionObjs.get(i).setDetectedLang(results.get(i));
+    }
   }
 
   /**

@@ -3,9 +3,9 @@ package eu.europeana.api.translation.web.service;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
-import eu.europeana.api.translation.web.utils.PreProcessorUtils;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Pre processing class for the Translation flow
@@ -14,9 +14,14 @@ import java.util.List;
  */
 public class TranslationPreProcessor implements TranslationService {
 
+    Pattern translationEligibleValuesPattern;
+
+    public TranslationPreProcessor(Pattern translationEligibleValuesPattern) {
+        this.translationEligibleValuesPattern = translationEligibleValuesPattern;
+    }
     @Override
     public String getServiceId() {
-        return null;
+        return "TEXT_PROCESSOR";
     }
 
     @Override
@@ -26,12 +31,24 @@ public class TranslationPreProcessor implements TranslationService {
 
     @Override
     public boolean isSupported(String srcLang, String trgLang) {
-        return false;
+        // probably not used for now, but better return true, as it accepts any values
+        return true;
     }
 
+    /**
+     * Check if the text present is an eligible value.
+     * Eligible Value : Any value that has at least 2 unicode consecutive letters.
+     * If value is not eligible, set isTranslated as false, which means we will not translate that text/value
+     * @param translationStrings
+     * @return
+     */
     @Override
     public void translate(List<TranslationObj> translationStrings) throws TranslationException {
-        PreProcessorUtils.processForEligibleValues(translationStrings);
+        for (TranslationObj obj : translationStrings) {
+            if (!translationEligibleValuesPattern.matcher(obj.getText()).find()) {
+                obj.setIsTranslated(false);
+            }
+        }
     }
 
     @Override

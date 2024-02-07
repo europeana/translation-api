@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,7 @@ public class TranslationWebService extends BaseWebService {
     String serviceId = null;
     for (TranslationService cachedTranslationService : cachedTranslationServices) {
       try {
-        cachedTranslationService.translate(translObjs.stream().filter(to -> to.isTranslated()).collect(Collectors.toList()));
+        cachedTranslationService.translate(translObjs.stream().filter(to -> to.isTranslatable()).collect(Collectors.toList()));
         // call this method after the translate() method, because the serviceId changes depending if
         // there is sth in the cache
         serviceId = cachedTranslationService.getServiceId();

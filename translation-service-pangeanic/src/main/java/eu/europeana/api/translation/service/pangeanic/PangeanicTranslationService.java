@@ -1,13 +1,9 @@
 package eu.europeana.api.translation.service.pangeanic;
 
 import java.io.IOException;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -213,11 +209,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
 
     // detect languages
-    List<String> texts =
-        translationObjs.stream().map(to -> to.getText()).toList();
-    List<String> detectedLanguages = null;
+    List<LanguageDetectionObj> languageDetectionObjs = PangeanicTranslationUtils.buildLangDetectionObjectList(translationObjs);
+    List<String> detectedLanguages = new ArrayList<>();
     try {
-      detectedLanguages = langDetectService.detectLang(texts, null);
+      langDetectService.detectLang(languageDetectionObjs);
+      languageDetectionObjs.stream().forEach(obj -> detectedLanguages.add(obj.getDetectedLang()));
     } catch (LanguageDetectionException e) {
       throw new TranslationException("Error when tryng to detect the language of the text input!",
           e.getRemoteStatusCode(), e);
