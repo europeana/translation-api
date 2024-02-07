@@ -15,6 +15,10 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
 
     Pattern langDetectEligibleValuesPattern;
 
+    /**
+     * LangDetectionPreProcessor constructor to initialise the pattern
+     * @param langDetectEligibleValuesPattern eligible values pattern
+     */
     public LangDetectionPreProcessor(Pattern langDetectEligibleValuesPattern) {
         this.langDetectEligibleValuesPattern = langDetectEligibleValuesPattern;
     }

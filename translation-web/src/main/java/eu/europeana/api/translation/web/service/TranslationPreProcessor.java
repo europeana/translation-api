@@ -16,6 +16,10 @@ public class TranslationPreProcessor implements TranslationService {
 
     Pattern translationEligibleValuesPattern;
 
+    /**
+     * TranslationPreProcessor constructor to initialise the pattern
+     * @param translationEligibleValuesPattern eligible values pattern
+     */
     public TranslationPreProcessor(Pattern translationEligibleValuesPattern) {
         this.translationEligibleValuesPattern = translationEligibleValuesPattern;
     }

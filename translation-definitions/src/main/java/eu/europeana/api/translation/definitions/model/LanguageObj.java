@@ -5,19 +5,19 @@ package eu.europeana.api.translation.definitions.model;
  * @author srishti singh
  * @since 5 Feb 2024
  */
-public interface LanguageObj {
+ public interface LanguageObj {
 
-    public String getText();
+     String getText();
 
-    public void setText(String text);
+     void setText(String text);
 
-    public String getCacheKey();
+     String getCacheKey();
 
-    public void setCacheKey(String cacheKey);
+     void setCacheKey(String cacheKey);
 
-    public boolean isAvailableInCache();
+     boolean isAvailableInCache();
 
-    public void setAvailableInCache(boolean cached);
+     void setAvailableInCache(boolean cached);
 
-    public boolean isTranslatable();
+     boolean isTranslatable();
 }

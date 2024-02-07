@@ -41,7 +41,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
       return;
     }
     
-    List<String> detectedLangs = new ArrayList<>();
+    List<String> detectedLangs = new ArrayList<>(languageDetectionObjs.size());
     List<LanguageResult> tikaLanguages=null;
     for(LanguageDetectionObj obj : languageDetectionObjs) {
       //returns all tika languages sorted by score

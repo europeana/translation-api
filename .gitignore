@@ -34,3 +34,5 @@ build/
 **/*auth.json
 # NOTE: use externalized log4j2.xml
 **/log4j2.xml
+
+**/src/main/resources/translation_service_configuration.json

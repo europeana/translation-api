@@ -33,8 +33,7 @@ public interface LanguageDetectionService {
    * To fetch the source language for the list of texts. If passed, langHint is used a hint in the
    * method
    * 
-   * @param languageDetectionObjs
-   * @return
+   * @param languageDetectionObjs languge detection input object list
    * @throws LanguageDetectionException if an error occurred when invoking the external service
    */
   void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException;
