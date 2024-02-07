@@ -3,7 +3,6 @@ package eu.europeana.api.translation.client.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import org.apache.commons.lang3.StringUtils;
@@ -22,9 +21,8 @@ public class TranslationClientUtils {
     public static final String INFO_ENDPOINT_URL = "actuator/info";
 
     // info endpoint constants
-    public static final String CONFIG = "config";
-    public static final String DETECT = "detect";
-    public static final String TRANSLATE = "translate";
+    public static final String CONFIG_DETECT = "/config/detect";
+    public static final String CONFIG_TRANSLATE = "/config/translate";
     public static final String SUPPORTED = "supported";
     public static final String SOURCE = "source";
     public static final String TARGET = "target";
@@ -48,57 +46,46 @@ public class TranslationClientUtils {
         };
     }
 
-    private static JsonNode getConfigNode(String json) throws TranslationApiException {
+    private static JsonNode getConfigNode(String json, String nodeToFetch) throws TranslationApiException {
         if (!StringUtils.isEmpty(json)) {
-            ObjectNode node = null;
             try {
-                node = mapper.readValue(json, ObjectNode.class);
-                if (node.has(CONFIG)) {
-                    return node.get(CONFIG);
-                }
+                return mapper.readTree(json).at(nodeToFetch);
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error parsing the request for Translation API Info endpoint", e);
-
+                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", e);
             }
         }
         return null;
     }
 
     public static Set<String> getDetectionLanguages(String json, Set<String> langDetectLanguages) throws TranslationApiException {
-        JsonNode config = getConfigNode(json);
-        if (config != null && config.has(DETECT)) {
-            JsonNode detect = config.get(DETECT);
-            if (detect.has(SUPPORTED)) {
-                Iterator<JsonNode> iterator = detect.get(SUPPORTED).iterator();
-                while (iterator.hasNext()) {
-                    langDetectLanguages.add(iterator.next().asText());
-                }
+        JsonNode detect = getConfigNode(json, CONFIG_DETECT);
+        if (detect.has(SUPPORTED)) {
+            Iterator<JsonNode> iterator = detect.get(SUPPORTED).iterator();
+            while (iterator.hasNext()) {
+                langDetectLanguages.add(iterator.next().asText());
             }
         }
         return langDetectLanguages;
     }
 
     public static Set<LanguagePair> getTranslationLanguagePairs(String json, Set<LanguagePair> translationLanguages) throws TranslationApiException {
-        JsonNode config = getConfigNode(json);
-        if (config != null && config.has(TRANSLATE)) {
-            JsonNode translate = config.get(TRANSLATE);
-            if (translate.has(SUPPORTED)) {
-                Iterator<JsonNode> iterator = translate.get(SUPPORTED).iterator();
-                while (iterator.hasNext()) {
-                    JsonNode object = iterator.next();
-                    List<String> source = getIteratorValue(object.get(SOURCE).iterator());
-                    List<String> target = getIteratorValue(object.get(TARGET).iterator());
-                    // make pairs
-                    source.stream().forEach(v -> target.stream().forEach(t -> translationLanguages.add(new LanguagePair(v, t))));
-                }
+        JsonNode translate = getConfigNode(json, CONFIG_TRANSLATE);
+        if (translate.has(SUPPORTED)) {
+            Iterator<JsonNode> iterator = translate.get(SUPPORTED).iterator();
+            while (iterator.hasNext()) {
+                JsonNode object = iterator.next();
+                List<String> source = getIteratorValue(object.get(SOURCE).iterator());
+                List<String> target = getIteratorValue(object.get(TARGET).iterator());
+                // make pairs
+                source.stream().forEach(v -> target.stream().forEach(t -> translationLanguages.add(new LanguagePair(v, t))));
             }
         }
+
         return translationLanguages;
     }
 
     private static List<String> getIteratorValue(Iterator<JsonNode> jsonNodeIterator) {
         List<String> values = new ArrayList<>();
-        // get all sources from the object
         while (jsonNodeIterator.hasNext()) {
             values.add(jsonNodeIterator.next().asText());
         }
