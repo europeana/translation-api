@@ -65,7 +65,8 @@ public class TranslationWebService extends BaseWebService {
     String serviceId = null;
     for (TranslationService cachedTranslationService : cachedTranslationServices) {
       try {
-        cachedTranslationService.translate(translObjs.stream().filter(to -> to.isTranslatable()).collect(Collectors.toList()));
+        // send the values which are not yet translated (isTranslated=false) for the translations
+        cachedTranslationService.translate(translObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList()));
         // call this method after the translate() method, because the serviceId changes depending if
         // there is sth in the cache
         serviceId = cachedTranslationService.getServiceId();
@@ -137,7 +138,7 @@ public class TranslationWebService extends BaseWebService {
       newTranslObj.setSourceLang(translationRequest.getSource());
       newTranslObj.setTargetLang(translationRequest.getTarget());
       newTranslObj.setText(inputText);
-      newTranslObj.setIsTranslated(true);
+      newTranslObj.setTranslated(false); // not translated yet hence set to false
       translObjs.add(newTranslObj);
     }
     return translObjs;

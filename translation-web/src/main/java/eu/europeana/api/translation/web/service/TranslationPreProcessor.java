@@ -42,15 +42,15 @@ public class TranslationPreProcessor implements TranslationService {
     /**
      * Check if the text present is an eligible value.
      * Eligible Value : Any value that has at least 2 unicode consecutive letters.
-     * If value is not eligible, set isTranslated as false, which means we will not translate that text/value
-     * @param translationStrings
+     * If value is not eligible, set isTranslated to true.
+     * @param translationStrings translation objects
      * @return
      */
     @Override
     public void translate(List<TranslationObj> translationStrings) throws TranslationException {
         for (TranslationObj obj : translationStrings) {
             if (!translationEligibleValuesPattern.matcher(obj.getText()).find()) {
-                obj.setIsTranslated(false);
+                obj.setTranslated(true);
             }
         }
     }

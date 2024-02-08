@@ -183,7 +183,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.isAvailableInCache()).toList();
+    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.isRetrievedFromCache()).toList();
     //check if all are availble in the cache
     assertTrue(cachedTranslations.size() == translObjs.size());
     

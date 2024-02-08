@@ -36,12 +36,14 @@ public class LangDetectionWebService extends BaseWebService {
 
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest);
-    List<String> langs = null;
     String serviceId = null;
+    List<LanguageDetectionObj> filteredObjs = null;
     try {
       // preprocess the values
       translationServiceProvider.getLanguageDetectionPreProcessor().detectLang(languageDetectionObjs);
-      langDetectService.detectLang(languageDetectionObjs.stream().filter(to -> to.isTranslatable()).collect(Collectors.toList()));
+      // send the values which are not yet translated (isTranslated=false)
+      filteredObjs = languageDetectionObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList());
+      langDetectService.detectLang(filteredObjs);
       serviceId = langDetectService.getServiceId();
     } catch (LanguageDetectionException originalError) {
       // check if fallback is available
@@ -49,7 +51,7 @@ public class LangDetectionWebService extends BaseWebService {
         throwApiException(originalError);
       } else {
         try {
-          fallback.detectLang(languageDetectionObjs.stream().filter(to -> to.isTranslatable()).collect(Collectors.toList()));
+          fallback.detectLang(filteredObjs);
           serviceId = fallback.getServiceId();
         } catch (LanguageDetectionException e) {
           if (logger.isDebugEnabled()) {
@@ -133,7 +135,7 @@ public class LangDetectionWebService extends BaseWebService {
         newLangDetectObj.setHint(langDetectRequest.getLang());
       }
       newLangDetectObj.setText(inputText);
-      newLangDetectObj.setIsTranslated(true);
+      newLangDetectObj.setTranslated(false); // not yet processed/translated
       detectionObjs.add(newLangDetectObj);
     }
     return detectionObjs;

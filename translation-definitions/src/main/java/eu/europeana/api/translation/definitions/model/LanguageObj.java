@@ -5,19 +5,60 @@ package eu.europeana.api.translation.definitions.model;
  * @author srishti singh
  * @since 5 Feb 2024
  */
- public interface LanguageObj {
+ public abstract class LanguageObj {
 
-     String getText();
+    private String text;
+    private String detectedLang;
+    private String cacheKey;
+    private boolean retrievedFromCache;
 
-     void setText(String text);
+    /**
+     * Set to :
+     *      true - if during the pre-processing or other workflow
+     *             that value is already translated
+     *
+     *     false - when the value is yet not translated and is yet to be
+     *             sent to the services for translations
+     */
+    private boolean isTranslated;
 
-     String getCacheKey();
+    public String getText() {
+        return text;
+    }
 
-     void setCacheKey(String cacheKey);
+    public void setText(String text) {
+        this.text = text;
+    }
 
-     boolean isAvailableInCache();
+    public String getDetectedLang() {
+        return detectedLang;
+    }
 
-     void setAvailableInCache(boolean cached);
+    public void setDetectedLang(String detectedLang) {
+        this.detectedLang = detectedLang;
+    }
 
-     boolean isTranslatable();
+    public String getCacheKey() {
+        return cacheKey;
+    }
+
+    public void setCacheKey(String cacheKey) {
+        this.cacheKey = cacheKey;
+    }
+
+    public boolean isRetrievedFromCache() {
+        return retrievedFromCache;
+    }
+
+    public void setRetrievedFromCache(boolean retrievedFromCache) {
+        this.retrievedFromCache = retrievedFromCache;
+    }
+
+    public boolean isTranslated() {
+        return isTranslated;
+    }
+
+    public void setTranslated(boolean translated) {
+        isTranslated = translated;
+    }
 }

@@ -65,7 +65,7 @@ public class PangeanicTranslationUtils {
     for (TranslationObj translationObj : translationObjs) {
       LanguageDetectionObj newLangDetectObj = new LanguageDetectionObj();
       newLangDetectObj.setText(translationObj.getText());
-      newLangDetectObj.setIsTranslated(true);
+      newLangDetectObj.setTranslated(false);
       detectionObjs.add(newLangDetectObj);
     }
     return detectionObjs;

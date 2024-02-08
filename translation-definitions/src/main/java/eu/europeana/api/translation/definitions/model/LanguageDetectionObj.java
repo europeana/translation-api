@@ -5,20 +5,10 @@ package eu.europeana.api.translation.definitions.model;
  * @author srishti singh
  * @since 6 Feb 2024
  */
-public class LanguageDetectionObj implements LanguageObj {
+public class LanguageDetectionObj extends LanguageObj {
 
-    private String text;
     private String hint;
     private String detectedLang;
-    private String cacheKey;
-    private boolean availableInCache;
-    private boolean isTranslated;
-
-
-    @Override
-    public String getText() {
-        return text;
-    }
 
     public String getHint() {
         return hint;
@@ -28,45 +18,13 @@ public class LanguageDetectionObj implements LanguageObj {
         this.hint = hint;
     }
 
+    @Override
     public String getDetectedLang() {
         return detectedLang;
     }
 
+    @Override
     public void setDetectedLang(String detectedLang) {
         this.detectedLang = detectedLang;
-    }
-
-    @Override
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    @Override
-    public String getCacheKey() {
-        return cacheKey;
-    }
-
-    @Override
-    public void setCacheKey(String cacheKey) {
-        this.cacheKey = cacheKey;
-    }
-
-    @Override
-    public boolean isAvailableInCache() {
-        return availableInCache;
-    }
-
-    @Override
-    public void setAvailableInCache(boolean cached) {
-        this.availableInCache = cached;
-    }
-
-    @Override
-    public boolean isTranslatable() {
-        return isTranslated;
-    }
-
-    public void setIsTranslated(boolean translated) {
-        isTranslated = translated;
     }
 }
