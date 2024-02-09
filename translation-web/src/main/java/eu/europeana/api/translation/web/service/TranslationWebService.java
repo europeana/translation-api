@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,12 @@ public class TranslationWebService extends BaseWebService {
   public TranslationResponse translate(TranslationRequest translationRequest)
       throws EuropeanaI18nApiException {
     List<TranslationObj> translObjs = buildTranslationObjectList(translationRequest);
-
+    // pre processing for translation
+    try {
+      translationServiceProvider.getTranslationServicePreProcessor().translate(translObjs);
+    } catch (TranslationException e) {
+     logger.error("Error during the pre processing ", e);
+    }
     // get the configured translation services
     LanguagePair languagePair =
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
@@ -59,7 +65,8 @@ public class TranslationWebService extends BaseWebService {
     String serviceId = null;
     for (TranslationService cachedTranslationService : cachedTranslationServices) {
       try {
-        cachedTranslationService.translate(translObjs);
+        // send the values which are not yet translated (isTranslated=false) for the translations
+        cachedTranslationService.translate(translObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList()));
         // call this method after the translate() method, because the serviceId changes depending if
         // there is sth in the cache
         serviceId = cachedTranslationService.getServiceId();
@@ -131,6 +138,7 @@ public class TranslationWebService extends BaseWebService {
       newTranslObj.setSourceLang(translationRequest.getSource());
       newTranslObj.setTargetLang(translationRequest.getTarget());
       newTranslObj.setText(inputText);
+      newTranslObj.setTranslated(false); // not translated yet hence set to false
       translObjs.add(newTranslObj);
     }
     return translObjs;
@@ -153,7 +161,6 @@ public class TranslationWebService extends BaseWebService {
     // if none selected pick the default
     final String defaultServiceId = translationServiceProvider.getTranslationServicesConfig()
         .getTranslationConfig().getDefaultServiceId();
-
     return getTranslationService(defaultServiceId, languagePair);
   }
 

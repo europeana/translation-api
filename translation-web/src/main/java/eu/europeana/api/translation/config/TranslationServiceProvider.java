@@ -11,14 +11,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
@@ -51,6 +52,13 @@ public class TranslationServiceProvider {
   ApplicationContext applicationContext;
 
   TranslationServicesConfiguration translationServicesConfig;
+
+  @Resource(name = BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
+  LanguageDetectionService languageDetectionPreProcessor;
+
+  @Resource(name = BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
+  TranslationService translationServicePreProcessor;
+
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> langMappings4TranslateServices = new ConcurrentHashMap<>();
@@ -370,6 +378,11 @@ public class TranslationServiceProvider {
     return langMappings4TranslateServices;
   }
 
+  public LanguageDetectionService getLanguageDetectionPreProcessor() {
+    return languageDetectionPreProcessor;
+  }
 
-
+  public TranslationService getTranslationServicePreProcessor() {
+    return translationServicePreProcessor;
+  }
 }

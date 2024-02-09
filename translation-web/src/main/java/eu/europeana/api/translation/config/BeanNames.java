@@ -18,4 +18,7 @@ public interface BeanNames {
   String BEAN_SERVICE_CONFIG_INFO_CONTRIBUTOR =
       "translationServiceConfigInfoContributor";
   String BEAN_REDIS_CACHE_SERVICE = "redisCacheService";
+
+  String BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE = "translationPreProcessorService";
+  String BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE = "langDetectPreProcessorService";
 }

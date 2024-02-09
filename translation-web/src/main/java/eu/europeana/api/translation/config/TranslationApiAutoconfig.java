@@ -8,6 +8,10 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
+
+import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
+import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -61,6 +65,14 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
+
+  /**
+   * Any value that has at least 2 unicode consecutive letters. The condition considered the
+   * fact that there can be words with only 2 letters that retain sufficient meaning and are therefore reasonable to be translated,
+   * especially when looking at languages other than English (see article - https://www.grammarly.com/blog/the-shortest-words-in-the-english-language/).
+   */
+  private static final String PATTERN = "\\p{IsAlphabetic}{2,}";
+  private static final Pattern IsAlphabetic = Pattern.compile(PATTERN);
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
@@ -215,6 +227,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     
     return translationServiceConfigProvider;
   }
+
+  @Bean(BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
+  public LangDetectionPreProcessor langDetectionPreProcessor() {
+   return new LangDetectionPreProcessor(IsAlphabetic);
+  }
+
+  @Bean(BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
+  public TranslationPreProcessor translationPreProcessor() {
+    return new TranslationPreProcessor(IsAlphabetic);
+  }
+
 
   /*
    * Help, see connect to a standalone redis server:

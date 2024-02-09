@@ -1,7 +1,8 @@
 package eu.europeana.api.translation.service.google;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.api.gax.rpc.ApiException;
@@ -46,20 +47,19 @@ public class GoogleLangDetectService implements LanguageDetectionService {
   }
 
   @Override
-  public List<String> detectLang(List<String> texts, String langHint) throws LanguageDetectionException {
-    //docs: https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java  
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+    //docs: https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java
     try {
-      List<String> result = new ArrayList<>();
-      if(texts.isEmpty()) {
-        return result;
+      if (languageDetectionObjs.isEmpty()) {
+        return;
       }
       
       Builder googleLangDetectBuilder = DetectLanguageRequest.newBuilder();
       googleLangDetectBuilder.setParent(locationName.toString());
       googleLangDetectBuilder.setMimeType("text/plain");
-      for(String text : texts) {
+      for(LanguageDetectionObj object : languageDetectionObjs) {
         DetectLanguageRequest request = googleLangDetectBuilder
-            .setContent(text)
+            .setContent(object.getText())
             .build();        
 
         DetectLanguageResponse response = clientWrapper.getClient().detectLanguage(request);
@@ -68,13 +68,12 @@ public class GoogleLangDetectService implements LanguageDetectionService {
         //The language detected: getLanguageCode()
         // Confidence of detection result for this language: getConfidence()
         if(response.getLanguagesList()==null || response.getLanguagesList().isEmpty()) {
-          result.add(null);
+          object.setDetectedLang(null);
         }
         else {
-          result.add(response.getLanguagesList().get(0).getLanguageCode());
+          object.setDetectedLang(response.getLanguagesList().get(0).getLanguageCode());
         }
       }
-      return result;
     } catch (ApiException ex) {
       final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
       throw new LanguageDetectionException("Exception occured during Google language detection!", remoteStatusCode, ex);
