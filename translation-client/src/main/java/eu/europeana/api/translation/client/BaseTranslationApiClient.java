@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
-import eu.europeana.api.translation.client.service.LanguageDetectionClient;
 import eu.europeana.api.translation.client.service.TranslationApiRestClient;
-import eu.europeana.api.translation.client.service.TranslationClient;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,12 +24,6 @@ public class BaseTranslationApiClient {
     private final ObjectWriter objectWriter;
     private static Set<String> supportedLanguagesForDetection = new TreeSet<>();
     private static Set<LanguagePair> supportedLanguagesForTranslation = new TreeSet<>();
-
-    // clients
-    private TranslationClient translationClient;
-    private LanguageDetectionClient languageDetectionClient;
-
-
     private TranslationApiRestClient translationApiRestClient;
 
     public BaseTranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
@@ -39,10 +31,6 @@ public class BaseTranslationApiClient {
         if (this.configuration.getTranslationApiUrl() == null || this.configuration.getTranslationApiUrl().isEmpty()) {
             throw new TranslationApiException("Translation api endpoint not configured !!!");
         }
-
-        this.translationClient = new TranslationClient();
-        this.languageDetectionClient = new LanguageDetectionClient();
-
         this.translationApiRestClient = new TranslationApiRestClient(getApiClient(this.configuration.getTranslationApiUrl()));
         this.objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
 
@@ -90,13 +78,5 @@ public class BaseTranslationApiClient {
 
     public Set<LanguagePair> getSupportedLanguagesForTranslation() {
         return supportedLanguagesForTranslation;
-    }
-
-    public TranslationClient getTranslationClient() {
-        return this.translationClient;
-    }
-
-    public LanguageDetectionClient getLanguageDetectionClient() {
-        return this.languageDetectionClient;
     }
 }

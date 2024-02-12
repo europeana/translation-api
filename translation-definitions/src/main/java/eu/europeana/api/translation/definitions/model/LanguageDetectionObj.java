@@ -18,12 +18,10 @@ public class LanguageDetectionObj extends LanguageObj {
         this.hint = hint;
     }
 
-    @Override
     public String getDetectedLang() {
         return detectedLang;
     }
 
-    @Override
     public void setDetectedLang(String detectedLang) {
         this.detectedLang = detectedLang;
     }

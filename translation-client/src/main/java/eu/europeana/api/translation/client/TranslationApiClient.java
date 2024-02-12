@@ -3,47 +3,163 @@ package eu.europeana.api.translation.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
+import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
-import eu.europeana.api.translation.definitions.model.LangDetectRequest;
-import eu.europeana.api.translation.definitions.model.LangDetectResponse;
-import eu.europeana.api.translation.definitions.model.TranslationRequest;
-import eu.europeana.api.translation.definitions.model.TranslationResponse;
+import eu.europeana.api.translation.definitions.model.*;
+import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.TranslationService;
+import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 
+import java.util.List;
+
+/**
+ * Translation API client class
+ * Implements the interfaces of Language Detection and translation services
+ * @author srishti singh
+ */
 public class TranslationApiClient extends BaseTranslationApiClient {
+
+    private static final String SERVICE_ID = "TRANSLATION_CLIENT";
+    private static final String TOKEN_ERROR_MESSAGE = "Translation API client has not been initialized with a token or has been closed!";
+
+    public static final ThreadLocal<String> token = new ThreadLocal<>();
+    // clients
+    private TranslationClient translationClient;
+    private LanguageDetectionClient languageDetectionClient;
 
 
     public TranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
         super(configuration);
+        this.translationClient = new TranslationClient();
+        this.languageDetectionClient = new LanguageDetectionClient();
     }
 
-    public TranslationResponse translate(TranslationRequest request, String authToken) throws TranslationApiException {
-        return getTranslationApiRestClient().getTranslations(getJsonString(request), authToken);
+    public TranslationService getTranslationService() {
+        return this.translationClient;
     }
 
-
-    public LangDetectResponse detectLang(LangDetectRequest langDetectRequest, String authToken) throws TranslationApiException {
-        return getTranslationApiRestClient().getDetectedLanguages(getJsonString(langDetectRequest), authToken);
-
+    public LanguageDetectionService getLanguageDetectionService() {
+        return this.languageDetectionClient;
     }
 
-    /**
-     * indicates if the given language is supported by the language detection service
-     * @param srcLang language hint
-     * @return true is supported
-     */
-    public boolean isSupported(String srcLang) {
-        return getSupportedLanguagesForDetection().contains(srcLang);
+    public void setAuthToken(String authToken) {
+        token.set(authToken);
     }
 
     /**
-     * To validate the given pair of source and target language is valid for translation
-     *
-     * @param srcLang source language of the data to be translated
-     * @param trgLang target language in which data has to be translated
-     * @return true is the pair is valid
+     * Close / purge the token from memory
      */
-    public boolean isSupported(String srcLang, String trgLang) {
-        return getSupportedLanguagesForTranslation().contains(new LanguagePair(srcLang, trgLang));
+    public void close() {
+        token.remove();
+    }
+
+
+    // Language detection client
+    private class LanguageDetectionClient implements LanguageDetectionService {
+
+        @Override
+        public boolean isSupported(String srcLang) {
+            return getSupportedLanguagesForDetection().contains(srcLang);
+        }
+
+        @Override
+        public String getServiceId() {
+            return SERVICE_ID;
+        }
+
+        @Override
+        public void setServiceId(String serviceId) {
+            // leave empty
+        }
+
+        @Override
+        public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+            if (languageDetectionObjs.isEmpty()) {
+                return;
+            }
+            String authToken = TranslationApiClient.token.get();
+            if (authToken == null) {
+                throw new LanguageDetectionException(TOKEN_ERROR_MESSAGE);
+            }
+            // convert LanguageDetectionObj to LangDetectRequest for the POST request to translation API
+            LangDetectRequest langDetectRequest = TranslationClientUtils.createLangDetectRequest(languageDetectionObjs);
+
+            try {
+                LangDetectResponse response = getTranslationApiRestClient().getDetectedLanguages(getJsonString(langDetectRequest), authToken);
+                List<String> detectedLang = response.getLangs();
+                for (int i = 0; i < detectedLang.size(); i++) {
+                    languageDetectionObjs.get(i).setDetectedLang(detectedLang.get(i));
+                }
+            } catch (TranslationApiException e) {
+                throw new LanguageDetectionException(e.getMessage());
+            }
+        }
+
+        @Override
+        public void close() {
+            TranslationApiClient.this.close();
+        }
+
+        @Override
+        public String getExternalServiceEndPoint() {
+            return null;
+        }
+    }
+
+
+    // Translation client
+    private class TranslationClient implements TranslationService {
+
+        @Override
+        public String getServiceId() {
+            return SERVICE_ID;
+        }
+
+        @Override
+        public void setServiceId(String serviceId) {
+            // leave empty
+        }
+
+        @Override
+        public boolean isSupported(String srcLang, String trgLang) {
+            return getSupportedLanguagesForTranslation().contains(new LanguagePair(srcLang, trgLang));
+        }
+
+        @Override
+        public void translate(List<TranslationObj> translationStrings) throws TranslationException {
+            if (translationStrings.isEmpty()) {
+                return;
+            }
+            String authToken = TranslationApiClient.token.get();
+            if (authToken == null) {
+                throw new TranslationException(TOKEN_ERROR_MESSAGE);
+            }
+            // convert TranslationObj to TranslationRequest for the POST request to translation API
+            TranslationRequest translationRequest = TranslationClientUtils.createTranslationRequest(translationStrings);
+
+            try {
+                TranslationResponse response = getTranslationApiRestClient().getTranslations(getJsonString(translationRequest), authToken);
+                List<String> translations = response.getTranslations();
+                for (int i = 0; i < translations.size(); i++) {
+                    translationStrings.get(i).setTranslation(translations.get(i));
+                }
+
+            } catch (TranslationApiException e) {
+                throw new TranslationException(e.getMessage());
+            }
+
+        }
+
+        @Override
+        public void close() {
+            TranslationApiClient.this.close();
+        }
+
+        @Override
+        public String getExternalServiceEndPoint() {
+            return null;
+        }
     }
 
     private <T> String getJsonString(T request) throws TranslationApiException {

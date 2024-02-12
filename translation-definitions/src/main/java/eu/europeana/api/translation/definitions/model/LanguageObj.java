@@ -8,7 +8,6 @@ package eu.europeana.api.translation.definitions.model;
  public abstract class LanguageObj {
 
     private String text;
-    private String detectedLang;
     private String cacheKey;
     private boolean retrievedFromCache;
 
@@ -28,14 +27,6 @@ package eu.europeana.api.translation.definitions.model;
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public String getDetectedLang() {
-        return detectedLang;
-    }
-
-    public void setDetectedLang(String detectedLang) {
-        this.detectedLang = detectedLang;
     }
 
     public String getCacheKey() {
