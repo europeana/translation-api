@@ -134,7 +134,7 @@ public class TranslationApiRestClient {
                 .body(BodyInserters.fromValue(jsonBody))
                 .retrieve()
                 .onStatus(
-                        HttpStatus.BAD_GATEWAY::equals,
+                        HttpStatus.GATEWAY_TIMEOUT::equals,
                         response -> response.bodyToMono(String.class).map(ExternalServiceException::new));
     }
 
