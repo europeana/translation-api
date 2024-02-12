@@ -100,7 +100,9 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                 }
             } catch (TranslationApiException e) {
                 if (e instanceof ExternalServiceException) {
-                    throw new LanguageDetectionException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
+                    // throw gateway timeout (504) for External service call exceptions.
+                    // This will also include the Resource Exhausted Exception
+                    throw new LanguageDetectionException(e.getMessage(), HttpStatus.GATEWAY_TIMEOUT.value(), e);
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(e.getMessage());
@@ -160,7 +162,9 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
             } catch (TranslationApiException e) {
                 if (e instanceof ExternalServiceException) {
-                    throw new TranslationException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
+                    // throw gateway timeout (504) for External service call exceptions.
+                    // This will also include the Resource Exhausted Exception
+                    throw new TranslationException(e.getMessage(), HttpStatus.GATEWAY_TIMEOUT.value(), e);
                 }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(e.getMessage());
