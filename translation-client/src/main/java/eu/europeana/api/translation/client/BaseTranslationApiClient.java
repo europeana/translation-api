@@ -17,7 +17,7 @@ import java.util.TreeSet;
 
 public class BaseTranslationApiClient {
 
-    private static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
+    protected static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
     private static final int MAXIN_MEM_SIZE_MB = 10;
 
     private final TranslationClientConfiguration configuration;

@@ -1,5 +1,6 @@
 package eu.europeana.api.translation.client.service;
 
+import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
@@ -7,6 +8,7 @@ import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,6 +21,10 @@ import java.util.function.Function;
 
 import static eu.europeana.api.translation.client.utils.TranslationClientUtils.*;
 
+/**
+ * Translation API rest client for the rest request
+ * @author srishti singh
+ */
 public class TranslationApiRestClient {
 
     private static final Logger LOGGER = LogManager.getLogger(TranslationApiRestClient.class);
@@ -113,6 +119,9 @@ public class TranslationApiRestClient {
              **/
             Throwable t = Exceptions.unwrap(e);
 
+            if (t instanceof ExternalServiceException) {
+                throw new ExternalServiceException(e.getMessage(), e);
+            }
             LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
             throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
         }
@@ -126,10 +135,10 @@ public class TranslationApiRestClient {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, authToken)
                 .body(BodyInserters.fromValue(jsonBody))
-                .retrieve();
-//                .onStatus(
-//                        HttpStatus.BAD_GATEWAY::equals,
-//                        response -> response.bodyToMono(String.class).map(ExternalServiceException::new));
+                .retrieve()
+                .onStatus(
+                        HttpStatus.BAD_GATEWAY::equals,
+                        response -> response.bodyToMono(String.class).map(ExternalServiceException::new));
     }
 
     private WebClient.ResponseSpec executeGet(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String authToken) {

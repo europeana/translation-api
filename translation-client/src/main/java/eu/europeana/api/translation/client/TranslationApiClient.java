@@ -2,6 +2,7 @@ package eu.europeana.api.translation.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
+import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -10,12 +11,14 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
 /**
  * Translation API client class
  * Implements the interfaces of Language Detection and translation services
+ *
  * @author srishti singh
  */
 public class TranslationApiClient extends BaseTranslationApiClient {
@@ -25,8 +28,8 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
     public static final ThreadLocal<String> token = new ThreadLocal<>();
     // clients
-    private TranslationClient translationClient;
-    private LanguageDetectionClient languageDetectionClient;
+    private final TranslationClient translationClient;
+    private final LanguageDetectionClient languageDetectionClient;
 
 
     public TranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
@@ -43,6 +46,10 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         return this.languageDetectionClient;
     }
 
+    /**
+     * Authentication token for the Translation api requests.
+     * @param authToken
+     */
     public void setAuthToken(String authToken) {
         token.set(authToken);
     }
@@ -92,7 +99,11 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                     languageDetectionObjs.get(i).setDetectedLang(detectedLang.get(i));
                 }
             } catch (TranslationApiException e) {
-                throw new LanguageDetectionException(e.getMessage());
+                if (e instanceof ExternalServiceException) {
+                    throw new LanguageDetectionException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
+                }
+                LOG.debug(e.getMessage());
+                throw new LanguageDetectionException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
             }
         }
 
@@ -146,7 +157,11 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                 }
 
             } catch (TranslationApiException e) {
-                throw new TranslationException(e.getMessage());
+                if (e instanceof ExternalServiceException) {
+                    throw new TranslationException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
+                }
+                LOG.debug(e.getMessage());
+                throw new TranslationException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
             }
 
         }
@@ -160,6 +175,7 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         public String getExternalServiceEndPoint() {
             return null;
         }
+
     }
 
     private <T> String getJsonString(T request) throws TranslationApiException {
