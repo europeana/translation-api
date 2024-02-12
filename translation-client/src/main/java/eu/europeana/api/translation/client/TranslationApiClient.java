@@ -102,7 +102,9 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                 if (e instanceof ExternalServiceException) {
                     throw new LanguageDetectionException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
                 }
-                LOG.debug(e.getMessage());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+                }
                 throw new LanguageDetectionException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
             }
         }
@@ -160,7 +162,9 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                 if (e instanceof ExternalServiceException) {
                     throw new TranslationException(e.getMessage(), HttpStatus.BAD_GATEWAY.value(), e);
                 }
-                LOG.debug(e.getMessage());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(e.getMessage());
+                }
                 throw new TranslationException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
             }
 
