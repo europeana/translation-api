@@ -93,7 +93,7 @@ public class TranslationClientUtils {
             try {
                 return mapper.readTree(json).at(nodeToFetch);
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", e);
+                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint");
             }
         }
         return null;

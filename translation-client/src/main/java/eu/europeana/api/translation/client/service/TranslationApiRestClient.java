@@ -1,19 +1,18 @@
 package eu.europeana.api.translation.client.service;
 
-import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriBuilder;
-import reactor.core.Exceptions;
 
 import java.net.URI;
 import java.util.Set;
@@ -28,6 +27,7 @@ import static eu.europeana.api.translation.client.utils.TranslationClientUtils.*
 public class TranslationApiRestClient {
 
     private static final Logger LOGGER = LogManager.getLogger(TranslationApiRestClient.class);
+    private static  final String ERROR_MESSAGE = "Translation API Client call failed - ";
     private final WebClient webClient;
 
     public TranslationApiRestClient(WebClient apiClient) {
@@ -78,11 +78,11 @@ public class TranslationApiRestClient {
             return result
                     .bodyToMono(String.class)
                     .block();
-        } catch (Exception e) {
+        } catch (WebClientResponseException e) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
+                LOGGER.debug(ERROR_MESSAGE + " {} ", e.getMessage());
             }
-            throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
+            throw new TranslationApiException(ERROR_MESSAGE + e.getMessage(), e.getRawStatusCode(), e);
         }
     }
 
@@ -112,18 +112,13 @@ public class TranslationApiRestClient {
                         .block();
             }
 
+        } catch (WebClientResponseException e) {
+            String message = getErrorMessage(e.getResponseBodyAsString(), e.getMessage());
+            LOGGER.debug(ERROR_MESSAGE + " {} ", message);
+            throw new TranslationApiException(ERROR_MESSAGE + message, e.getRawStatusCode(), e);
         } catch (Exception e) {
-            /*
-             * Spring WebFlux wraps exceptions in ReactiveError (see Exceptions.propagate())
-             * So we need to unwrap the underlying exception, for it to be handled by callers of this method
-             **/
-            Throwable t = Exceptions.unwrap(e);
-
-            if (t instanceof ExternalServiceException) {
-                throw new ExternalServiceException(e.getMessage(), e);
-            }
-            LOGGER.debug("Translation API Client call failed - {}", e.getMessage());
-            throw new TranslationApiException("Translation API Client call failed - " + e.getMessage(), e);
+            // catch any other exception that may happen
+            throw new TranslationApiException(ERROR_MESSAGE + e.getMessage());
         }
     }
 
@@ -135,10 +130,7 @@ public class TranslationApiRestClient {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, authToken)
                 .body(BodyInserters.fromValue(jsonBody))
-                .retrieve()
-                .onStatus(
-                        HttpStatus.GATEWAY_TIMEOUT::equals,
-                        response -> response.bodyToMono(String.class).map(ExternalServiceException::new));
+                .retrieve();
     }
 
     private WebClient.ResponseSpec executeGet(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String authToken) {
@@ -148,5 +140,12 @@ public class TranslationApiRestClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, authToken)
                 .retrieve();
+    }
+
+    private String getErrorMessage(String errorResponse, String defaultMessage) {
+        if (StringUtils.isNotEmpty(errorResponse)&& errorResponse.contains("message")) {
+            return StringUtils.substringBetween(errorResponse, "\"message\":", "\",");
+        }
+        return defaultMessage;
     }
 }

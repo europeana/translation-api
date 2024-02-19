@@ -2,7 +2,6 @@ package eu.europeana.api.translation.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
-import eu.europeana.api.translation.client.exception.ExternalServiceException;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
@@ -11,7 +10,6 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -99,15 +97,10 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                     languageDetectionObjs.get(i).setDetectedLang(detectedLang.get(i));
                 }
             } catch (TranslationApiException e) {
-                if (e instanceof ExternalServiceException) {
-                    // throw gateway timeout (504) for External service call exceptions.
-                    // This will also include the Resource Exhausted Exception
-                    throw new LanguageDetectionException(e.getMessage(), HttpStatus.GATEWAY_TIMEOUT.value(), e);
-                }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(e.getMessage());
                 }
-                throw new LanguageDetectionException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+                throw new LanguageDetectionException(e.getMessage(), e.getRemoteStatusCode(), e);
             }
         }
 
@@ -161,15 +154,10 @@ public class TranslationApiClient extends BaseTranslationApiClient {
                 }
 
             } catch (TranslationApiException e) {
-                if (e instanceof ExternalServiceException) {
-                    // throw gateway timeout (504) for External service call exceptions.
-                    // This will also include the Resource Exhausted Exception
-                    throw new TranslationException(e.getMessage(), HttpStatus.GATEWAY_TIMEOUT.value(), e);
-                }
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(e.getMessage());
                 }
-                throw new TranslationException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+                throw new TranslationException(e.getMessage(), e.getRemoteStatusCode(), e);
             }
 
         }
