@@ -116,9 +116,6 @@ public class TranslationApiRestClient {
             String message = getErrorMessage(e.getResponseBodyAsString(), e.getMessage());
             LOGGER.debug(ERROR_MESSAGE + " {} ", message);
             throw new TranslationApiException(ERROR_MESSAGE + message, e.getRawStatusCode(), e);
-        } catch (Exception e) {
-            // catch any other exception that may happen
-            throw new TranslationApiException(ERROR_MESSAGE + e.getMessage());
         }
     }
 
