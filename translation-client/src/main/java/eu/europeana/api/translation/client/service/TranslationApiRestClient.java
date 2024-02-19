@@ -30,6 +30,10 @@ public class TranslationApiRestClient {
     private static  final String ERROR_MESSAGE = "Translation API Client call failed - ";
     private final WebClient webClient;
 
+    /**
+     * constructor to initialise webclient
+     * @param apiClient client for rest request
+     */
     public TranslationApiRestClient(WebClient apiClient) {
         this.webClient = apiClient;
     }
@@ -37,8 +41,10 @@ public class TranslationApiRestClient {
     /**
      * Returns the Translation api translate endpoint response
      *
-     * @param request
-     * @return
+     * @param request http request
+     * @param authToken token for authentication
+     * @return TranslationResponse
+     * @throws TranslationApiException throws an exception if json is invalid or Translation api is not up and running
      */
     public TranslationResponse getTranslations(String request, String authToken) throws TranslationApiException {
         return getTranslationApiResponse(webClient, buildUrl(TRANSLATE_URL), request, false, authToken);
@@ -47,8 +53,10 @@ public class TranslationApiRestClient {
     /**
      * Retruns the translation api lang detection response
      *
-     * @param request
-     * @return
+     * @param request http request
+     * @param authToken token for authentication
+     * @return TranslationResponse
+     * @throws TranslationApiException throws an exception if json is invalid or Translation api is not up and running
      */
     public LangDetectResponse getDetectedLanguages(String request, String authToken) throws TranslationApiException {
         return getTranslationApiResponse(webClient, buildUrl(LANG_DETECT_URL), request, true, authToken);
@@ -56,8 +64,8 @@ public class TranslationApiRestClient {
 
     /**
      * Get the supported languages for detection and supported language pairs for translations
-     * @param supportedLanguagesForDetection
-     * @param supportedLanguagesForTranslation
+     * @param supportedLanguagesForDetection languages for lang detect
+     * @param supportedLanguagesForTranslation languages for translations
      * @throws TranslationApiException throws an exception if json is invalid or Translation api is not up and running
      */
     public void getSupportedLanguages(Set<String> supportedLanguagesForDetection, Set<LanguagePair> supportedLanguagesForTranslation)
@@ -89,13 +97,14 @@ public class TranslationApiRestClient {
     /**
      * Executes the post request for both endpoint "translate" and "detect"
      *
-     * @param webClient
-     * @param uriBuilderURIFunction
-     * @param jsonBody
-     * @param langDetect
-     * @param authToken             - the JWT token used for invocation of translation API
+     * @param webClient webclient to exceute
+     * @param uriBuilderURIFunction uri of the translation api to be executed
+     * @param jsonBody  request body for post
+     * @param langDetect true, if lang detect request
+     * @param authToken   - the JWT token used for invocation of translation API
      * @param <T>
-     * @return
+     * @throws TranslationApiException throws an exception if json is invalid or Translation api is not up and running
+     * @return LangDetectResponse or TranslationResponse
      */
     @SuppressWarnings("unchecked")
     public <T> T getTranslationApiResponse(WebClient webClient, Function<UriBuilder, URI> uriBuilderURIFunction, String jsonBody,

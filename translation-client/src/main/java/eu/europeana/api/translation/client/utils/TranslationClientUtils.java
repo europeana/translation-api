@@ -10,6 +10,7 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
@@ -93,7 +94,7 @@ public class TranslationClientUtils {
             try {
                 return mapper.readTree(json).at(nodeToFetch);
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint");
+                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
             }
         }
         return null;
