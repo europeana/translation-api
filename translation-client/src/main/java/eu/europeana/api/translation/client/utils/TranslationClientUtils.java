@@ -94,7 +94,8 @@ public class TranslationClientUtils {
             try {
                 return mapper.readTree(json).at(nodeToFetch);
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
+                //SG: would be better to provide the real status code to this method, for the time being I indicate that the client is not able to parse the result (likely a version missmatch)
+                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", HttpStatus.UNPROCESSABLE_ENTITY.value(), e);
             }
         }
         return null;
