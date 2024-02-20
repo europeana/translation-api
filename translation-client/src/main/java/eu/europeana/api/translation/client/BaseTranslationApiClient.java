@@ -17,15 +17,13 @@ import java.util.TreeSet;
 
 public class BaseTranslationApiClient {
 
-    private static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
+    protected static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
     private static final int MAXIN_MEM_SIZE_MB = 10;
 
     private final TranslationClientConfiguration configuration;
     private final ObjectWriter objectWriter;
     private static Set<String> supportedLanguagesForDetection = new TreeSet<>();
     private static Set<LanguagePair> supportedLanguagesForTranslation = new TreeSet<>();
-
-
     private TranslationApiRestClient translationApiRestClient;
 
     public BaseTranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {

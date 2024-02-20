@@ -5,7 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
+import eu.europeana.api.translation.definitions.model.LangDetectRequest;
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
@@ -46,12 +51,51 @@ public class TranslationClientUtils {
         };
     }
 
+    /**
+     * Creates LangDetectRequest from LanguageDetectionObj
+     * @param languageDetectionObjs
+     * @return
+     */
+    public static LangDetectRequest createLangDetectRequest(List<LanguageDetectionObj> languageDetectionObjs) {
+        LangDetectRequest langDetectRequest = new LangDetectRequest();
+        // hint is optional
+        String hint = languageDetectionObjs.get(0).getHint();
+        if (StringUtils.isNotEmpty(hint)) {
+            langDetectRequest.setLang(hint);
+        }
+        List<String> text = new ArrayList<>(languageDetectionObjs.size());
+        for (LanguageDetectionObj object : languageDetectionObjs) {
+            text.add(object.getText());
+        }
+        langDetectRequest.setText(text);
+        return langDetectRequest;
+    }
+
+    /**
+     * Creates TranslationRequest from TranslationObj
+     * @param translationStrings
+     * @return
+     */
+    public static TranslationRequest createTranslationRequest(List<TranslationObj> translationStrings) {
+        TranslationRequest translationRequest = new TranslationRequest();
+        translationRequest.setSource(translationStrings.get(0).getSourceLang());
+        translationRequest.setTarget(translationStrings.get(0).getTargetLang());
+
+        List<String> text = new ArrayList<>(translationStrings.size());
+        for (TranslationObj object : translationStrings) {
+            text.add(object.getText());
+        }
+        translationRequest.setText(text);
+        return translationRequest;
+    }
+
     private static JsonNode getConfigNode(String json, String nodeToFetch) throws TranslationApiException {
         if (!StringUtils.isEmpty(json)) {
             try {
                 return mapper.readTree(json).at(nodeToFetch);
             } catch (JsonProcessingException e) {
-                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", e);
+                //SG: would be better to provide the real status code to this method, for the time being I indicate that the client is not able to parse the result (likely a version missmatch)
+                throw new TranslationApiException("Error fetching the node - " + nodeToFetch + "from the Translation API Info endpoint", HttpStatus.UNPROCESSABLE_ENTITY.value(), e);
             }
         }
         return null;
