@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>translation-api</artifactId>
 		<groupId>eu.europeana.api</groupId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.1</version>
 	</parent>
 
 	<artifactId>translation-tests</artifactId>
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-web</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
+			<version>0.1.1</version>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>

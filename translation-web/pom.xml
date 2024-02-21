@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>translation-api</artifactId>
 		<groupId>eu.europeana.api</groupId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.1</version>
 	</parent>
 
 	<artifactId>translation-web</artifactId>
@@ -62,19 +62,19 @@
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-google</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
+			<version>0.1.1</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-pangeanic</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
+			<version>0.1.1</version>
 		</dependency>		
 
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-tika</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
+			<version>0.1.1</version>
 		</dependency>
 
 		<dependency>

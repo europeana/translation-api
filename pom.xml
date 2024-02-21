@@ -9,7 +9,7 @@
 
 	<groupId>eu.europeana.api</groupId>
 	<artifactId>translation-api</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<packaging>pom</packaging>
 
 	<name>Translation API</name>
