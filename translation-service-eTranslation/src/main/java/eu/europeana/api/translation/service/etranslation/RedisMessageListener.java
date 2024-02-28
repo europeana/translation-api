@@ -13,7 +13,9 @@ public class RedisMessageListener implements MessageListener {
     
     @Override
     public synchronized void onMessage(Message message, byte[] pattern) {
-      LOGGER.debug("New message received from RedisMessageListener: {}", message);
+      if(LOGGER.isDebugEnabled()) {
+        LOGGER.debug("New message received from RedisMessageListener: {}", message);
+      }
       String messageBody=new String(message.getBody(), StandardCharsets.UTF_8);
       
       /* 

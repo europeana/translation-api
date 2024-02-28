@@ -5,8 +5,8 @@
     <artifactId>translation-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>translation-service-eTranslation</artifactId>
-  <name>translation-service-eTranslation</name>
+  <artifactId>translation-service-etranslation</artifactId>
+  <name>translation-service-etranslation</name>
   <description>The Java APIs for the eTranslation service</description>
 
   <properties>

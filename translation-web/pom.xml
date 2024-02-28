@@ -79,7 +79,7 @@
 
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
-			<artifactId>translation-service-eTranslation</artifactId>
+			<artifactId>translation-service-etranslation</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>		
 
