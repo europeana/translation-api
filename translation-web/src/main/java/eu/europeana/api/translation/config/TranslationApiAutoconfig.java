@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -52,7 +53,9 @@ import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
+import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
 import eu.europeana.api.translation.web.service.RedisCacheService;
+import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
@@ -62,6 +65,14 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
+
+  /**
+   * Any value that has at least 2 unicode consecutive letters. The condition considered the
+   * fact that there can be words with only 2 letters that retain sufficient meaning and are therefore reasonable to be translated,
+   * especially when looking at languages other than English (see article - https://www.grammarly.com/blog/the-shortest-words-in-the-english-language/).
+   */
+  private static final String PATTERN = "\\p{IsAlphabetic}{2,}";
+  private static final Pattern IsAlphabetic = Pattern.compile(PATTERN);
 
   private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceConfigProvider;
@@ -203,7 +214,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
           googleTranslationServiceClientWrapper);
     }
   }
-  
+
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
   public ETranslationTranslationService getETranslationService(
       @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
@@ -230,6 +241,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return translationServiceConfigProvider;
   }
 
+  @Bean(BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
+  public LangDetectionPreProcessor langDetectionPreProcessor() {
+   return new LangDetectionPreProcessor(IsAlphabetic);
+  }
+
+  @Bean(BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
+  public TranslationPreProcessor translationPreProcessor() {
+    return new TranslationPreProcessor(IsAlphabetic);
+  }
+
+
   /*
    * Help, see connect to a standalone redis server:
    * https://medium.com/turkcell/making-first-connection-to-redis-with-java-application-spring-boot-
@@ -238,7 +260,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
-  private LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
+  @Bean(BeanNames.BEAN_REDIS_CONNECTION_FACTORY)
+  LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
         LettuceClientConfiguration.builder();
@@ -289,9 +312,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_REDIS_TEMPLATE)
-  public RedisTemplate<String, CachedTranslation> getRedisTemplate() throws AppConfigurationException {
+  public RedisTemplate<String, CachedTranslation> getRedisTemplate(@Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
-    LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
     redisConnectionFactory.afterPropertiesSet();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -300,7 +322,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
-
+  
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
   public RedisCacheService getRedisCacheService(@Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
@@ -308,9 +330,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
-  RedisMessageListenerContainer getRedisMessageListenerContainer() throws AppConfigurationException {
+  RedisMessageListenerContainer getRedisMessageListenerContainer(@Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
       RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
-      LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
       redisConnectionFactory.afterPropertiesSet();
       container.setConnectionFactory(redisConnectionFactory); 
 //      container.addMessageListener(messageListener(), topic()); 
@@ -378,3 +399,4 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
 }
+

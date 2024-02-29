@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.translation.web.model.CachedTranslation;
@@ -26,14 +27,15 @@ public class ETranslationCallbackController {
   @PostMapping(value = "/eTranslation/callback")
   public void eTranslationCallback(
       @RequestParam(value = "target-language", required = false) String targetLanguage,
-      @RequestParam(value = "translated-text", required = true) String translatedTextSnippet,
+      @RequestParam(value = "translated-text", required = false) String translatedTextSnippet,
       @RequestParam(value = "request-id", required = false) String requestId,
-      @RequestParam(value = "external-reference", required = true) String externalReference) {
+      @RequestParam(value = "external-reference", required = true) String externalReference,
+      @RequestBody String body) {
     if(LOGGER.isDebugEnabled()) {
       LOGGER.debug("eTranslation callback on translation api has been received");
     }
-    if(externalReference!=null && translatedTextSnippet!=null) {
-      redisTemplate.convertAndSend(externalReference, translatedTextSnippet);
+    if(externalReference!=null && body!=null) {
+      redisTemplate.convertAndSend(externalReference, body);
     }
   } 
   

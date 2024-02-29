@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -164,12 +165,14 @@ public class TranslationRestIT extends BaseTranslationTest {
     Thread.sleep(1000);
     //trigger the eTranslation callback manually
     //computed in advance using the code in the eTransl service
-    String eTranslRef="deenHohN/A";
+    String eTranslRef="et:deenPVsaOg";
+    String eTranslResp="That is my dog." + ETranslationTranslationService.markupDelimitETranslReturn + "That is my tree.";
+    String content=Base64.encodeBase64String(eTranslResp.getBytes(StandardCharsets.UTF_8));
     mockMvc
     .perform(
         post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)
         .param("external-reference", eTranslRef)
-        .param("translated-text", "That is my dog." + ETranslationTranslationService.markupDelimit + "That is my tree."))
+        .content(content))
     .andExpect(status().isOk());
 
     thread.join();
@@ -235,7 +238,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     
     //check that there are data in the cache
     redisCacheService.fillWithCachedTranslations(translObjs);
-    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.isAvailableInCache()).toList();
+    final List<TranslationObj> cachedTranslations = translObjs.stream().filter(el -> el.isRetrievedFromCache()).toList();
     //check if all are availble in the cache
     assertTrue(cachedTranslations.size() == translObjs.size());
     

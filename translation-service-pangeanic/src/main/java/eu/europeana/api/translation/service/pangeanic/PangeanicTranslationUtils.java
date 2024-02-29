@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -48,6 +51,24 @@ public class PangeanicTranslationUtils {
 
   private PangeanicTranslationUtils() {
     // to hide implicit public one
+  }
+
+  /**
+   * Build LanguageDetectionObj from Translation object
+   * Hint is not passed
+   * @param translationObjs
+   * @return
+   */
+  public static List<LanguageDetectionObj> buildLangDetectionObjectList(List<TranslationObj> translationObjs) {
+    // create a list of objects to be lang detected
+    List<LanguageDetectionObj> detectionObjs = new ArrayList<LanguageDetectionObj>(translationObjs.size());
+    for (TranslationObj translationObj : translationObjs) {
+      LanguageDetectionObj newLangDetectObj = new LanguageDetectionObj();
+      newLangDetectObj.setText(translationObj.getText());
+      newLangDetectObj.setTranslated(false);
+      detectionObjs.add(newLangDetectObj);
+    }
+    return detectionObjs;
   }
 
   /**

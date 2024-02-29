@@ -65,8 +65,8 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    List<String> langs = Collections.singletonList(json.getString(TranslationAppConstants.LANGS));
-    assertTrue(langs.size()>0);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(3,langs.length());
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
@@ -88,7 +88,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     assertTrue(langs.length()==3 && "hr".equals(langs.getString(0)) && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertEquals("APACHE-TIKA", serviceFieldValue);
+    assertEquals("TIKA", serviceFieldValue);
   }
 
   @Test
@@ -105,8 +105,8 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     
     assertNotNull(result);
     JSONObject json = new JSONObject(result);
-    List<String> langs = Collections.singletonList(json.getString(TranslationAppConstants.LANGS));
-    assertTrue(langs.size()>0);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(2, langs.length());
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);    
   }

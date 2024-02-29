@@ -21,4 +21,7 @@ public interface BeanNames {
   String BEAN_REDIS_TEMPLATE = "redisTemplate";
   String BEAN_REDIS_CACHE_SERVICE = "redisCacheService";
   String BEAN_REDIS_MESSAGE_LISTENER_CONTAINER = "redisCacheMessageListenerContainer";
+  String BEAN_REDIS_CONNECTION_FACTORY = "redisConnectionFactory";
+  String BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE = "translationPreProcessorService";
+  String BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE = "langDetectPreProcessorService";
 }

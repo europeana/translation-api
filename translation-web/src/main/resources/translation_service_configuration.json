@@ -13,7 +13,7 @@
               , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             },
             {
-                "id": "APACHE-TIKA"
+                "id": "TIKA"
               , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
             }          
         ],
@@ -44,7 +44,7 @@
                 "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService"
             },
             {
-                "id": "E-TRANSLATION", 
+                "id": "ETRANSLATION", 
                 "classname": "eu.europeana.api.translation.service.etranslation.ETranslationTranslationService"
             }
         ],

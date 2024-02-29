@@ -2,10 +2,15 @@ package eu.europeana.api.translation.web.service;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_UNSUPPORTED_LANG;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.NotNull;
+
+import eu.europeana.api.translation.definitions.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +18,6 @@ import org.springframework.stereotype.Service;
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
-import eu.europeana.api.translation.definitions.model.LangDetectRequest;
-import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
@@ -29,13 +32,18 @@ public class LangDetectionWebService extends BaseWebService {
 
   public LangDetectResponse detectLang(LangDetectRequest langDetectRequest)
       throws EuropeanaI18nApiException {
+    List<LanguageDetectionObj> languageDetectionObjs = buildLangDetectionObjectList(langDetectRequest);
+
     LanguageDetectionService langDetectService = getLangDetectService(langDetectRequest);
     LanguageDetectionService fallback = getFallbackService(langDetectRequest);
-    List<String> langs = null;
     String serviceId = null;
+    List<LanguageDetectionObj> filteredObjs = null;
     try {
-      langs =
-          langDetectService.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+      // preprocess the values
+      translationServiceProvider.getLanguageDetectionPreProcessor().detectLang(languageDetectionObjs);
+      // send the values which are not yet translated (isTranslated=false)
+      filteredObjs = languageDetectionObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList());
+      langDetectService.detectLang(filteredObjs);
       serviceId = langDetectService.getServiceId();
     } catch (LanguageDetectionException originalError) {
       // check if fallback is available
@@ -43,7 +51,7 @@ public class LangDetectionWebService extends BaseWebService {
         throwApiException(originalError);
       } else {
         try {
-          langs = fallback.detectLang(langDetectRequest.getText(), langDetectRequest.getLang());
+          fallback.detectLang(filteredObjs);
           serviceId = fallback.getServiceId();
         } catch (LanguageDetectionException e) {
           if (logger.isDebugEnabled()) {
@@ -53,8 +61,11 @@ public class LangDetectionWebService extends BaseWebService {
         }
       }
     }
+    return new LangDetectResponse(getResults(languageDetectionObjs), serviceId);
+  }
 
-    return new LangDetectResponse(langs, serviceId);
+  private List<String> getResults(List<LanguageDetectionObj> languageDetectionObjs) {
+    return languageDetectionObjs.stream().map( obj -> (obj.getDetectedLang())).collect(Collectors.toList());
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
@@ -112,6 +123,22 @@ public class LangDetectionWebService extends BaseWebService {
   public boolean isLangDetectionSupported(@NotNull String lang) {
     return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig()
         .getSupported().contains(lang.toLowerCase(Locale.ENGLISH));
+  }
+
+  private List<LanguageDetectionObj> buildLangDetectionObjectList(LangDetectRequest langDetectRequest) {
+    // create a list of objects to be lang detected
+    List<LanguageDetectionObj> detectionObjs = new ArrayList<LanguageDetectionObj>(langDetectRequest.getText().size());
+    for (String inputText : langDetectRequest.getText()) {
+      LanguageDetectionObj newLangDetectObj = new LanguageDetectionObj();
+      // hint is optional
+      if (langDetectRequest.getLang() != null) {
+        newLangDetectObj.setHint(langDetectRequest.getLang());
+      }
+      newLangDetectObj.setText(inputText);
+      newLangDetectObj.setTranslated(false); // not yet processed/translated
+      detectionObjs.add(newLangDetectObj);
+    }
+    return detectionObjs;
   }
 
   @PreDestroy

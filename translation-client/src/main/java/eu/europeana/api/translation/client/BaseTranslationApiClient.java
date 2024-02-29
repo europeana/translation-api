@@ -5,20 +5,25 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.service.TranslationApiRestClient;
+import eu.europeana.api.translation.definitions.language.LanguagePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 public class BaseTranslationApiClient {
 
-    private static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
+    protected static final Logger LOG = LogManager.getLogger(BaseTranslationApiClient.class);
     private static final int MAXIN_MEM_SIZE_MB = 10;
 
     private final TranslationClientConfiguration configuration;
     private final ObjectWriter objectWriter;
-
+    private static Set<String> supportedLanguagesForDetection = new TreeSet<>();
+    private static Set<LanguagePair> supportedLanguagesForTranslation = new TreeSet<>();
     private TranslationApiRestClient translationApiRestClient;
 
     public BaseTranslationApiClient(TranslationClientConfiguration configuration) throws TranslationApiException {
@@ -28,6 +33,9 @@ public class BaseTranslationApiClient {
         }
         this.translationApiRestClient = new TranslationApiRestClient(getApiClient(this.configuration.getTranslationApiUrl()));
         this.objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+
+        // load the supported languages
+        this.translationApiRestClient.getSupportedLanguages(supportedLanguagesForDetection, supportedLanguagesForTranslation);
     }
 
     protected BaseTranslationApiClient() throws TranslationApiException {
@@ -62,5 +70,13 @@ public class BaseTranslationApiClient {
 
     public TranslationApiRestClient getTranslationApiRestClient() {
         return translationApiRestClient;
+    }
+
+    public Set<String> getSupportedLanguagesForDetection() {
+        return supportedLanguagesForDetection;
+    }
+
+    public Set<LanguagePair> getSupportedLanguagesForTranslation() {
+        return supportedLanguagesForTranslation;
     }
 }
