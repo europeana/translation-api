@@ -160,17 +160,14 @@ public class ETranslationTranslationService extends AbstractTranslationService {
    * @throws TranslationException 
    */
   private String generateJointHtmlForTranslation(List<TranslationObj> translationObjs) throws TranslationException {
-    StringBuilder translJointString=new StringBuilder();
-    translJointString.append("<!DOCTYPE html>\n");
-    translJointString.append("<htlm>\n");
-    translJointString.append("<body>\n");
-    for(int i=0;i<translationObjs.size();i++) {
+    StringBuilder translJointString=new StringBuilder(100);
+    translJointString.append("<!DOCTYPE html>\n<htlm>\n<body>\n");
+    for(TranslationObj translObj : translationObjs) {
       translJointString.append("<p>");
-      translJointString.append(translationObjs.get(i).getText());
+      translJointString.append(translObj.getText());
       translJointString.append("</p>\n");
     }
-    translJointString.append("</body>\n");
-    translJointString.append("</html>");
+    translJointString.append("</body>\n</html>");
 
     return translJointString.toString();
     

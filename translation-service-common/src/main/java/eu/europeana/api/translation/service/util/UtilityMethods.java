@@ -6,6 +6,9 @@ import com.google.common.primitives.Ints;
 
 public class UtilityMethods {
   
+  private UtilityMethods() {
+  }
+
   /**
    * generate redis keys
    * 
