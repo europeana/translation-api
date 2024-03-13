@@ -5,8 +5,6 @@ import java.util.Base64;
 import com.google.common.primitives.Ints;
 
 public class UtilityMethods {
-  //hide default contructor
-  private UtilityMethods() {}
   
   /**
    * generate redis keys

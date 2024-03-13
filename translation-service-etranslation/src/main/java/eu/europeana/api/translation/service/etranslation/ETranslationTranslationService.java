@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.auth.AuthScope;
@@ -20,6 +21,9 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
@@ -42,11 +46,6 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   private final int maxWaitMillisec;
   private final RedisMessageListenerContainer redisMessageListenerContainer;
   public static final String baseUrlTests="base-url-for-testing";
-  //base64 encoded string, which will not be translated from eTransaltion, used as a markup delimiter
-//  public static final String markupDelimit=" ZXd3ZHdld2U= ";
-  public static final String markupDelimit="\n<<<>>>\n";
-  public static final String markupDelimitETranslReturn="\n<<<>>> \n";
-  public static final String markupDelimitWithoutNewLines="<<<>>>";
   
   public ETranslationTranslationService(String baseUrl, String domain, String callbackUrl, int maxWaitMillisec, 
       String username, String password, RedisMessageListenerContainer redisMessageListenerContainer) throws TranslationException {
@@ -65,7 +64,13 @@ public class ETranslationTranslationService extends AbstractTranslationService {
 
   @Override
   public void translate(List<TranslationObj> translationObjs) throws TranslationException {
-    String eTranslJointStr = generateJointStringForTranslation(translationObjs, markupDelimit);
+    String sourceLang = translationObjs.get(0).getSourceLang();
+    if(sourceLang==null) {
+      throw new TranslationException("The source language cannot be null for the eTranslation service.");
+    }
+
+//    String eTranslJointStr = generateJointStringForTranslation(translationObjs, markupDelimit);
+    String eTranslJointStr = generateJointHtmlForTranslation(translationObjs);
     
     /* create an eTransl request with an external reference and send it. The same external reference is received
      * in the eTransl callback. That reference is used for the name of the channel for the redis message subscriber 
@@ -73,7 +78,8 @@ public class ETranslationTranslationService extends AbstractTranslationService {
      * The publisher will publish to the same channel using the external reference from the eTransl callback.
      */
     //create external reference for eTransl service
-    String eTranslExtRef = UtilityMethods.generateRedisKey(eTranslJointStr, translationObjs.get(0).getSourceLang(), translationObjs.get(0).getTargetLang(), true);
+    String eTranslExtRef = UtilityMethods.generateRedisKey(
+        eTranslJointStr, translationObjs.get(0).getSourceLang(), translationObjs.get(0).getTargetLang(), true);
 
     //create and send the eTransl request
     //baseUrl is different for the integration tests, where the eTranslation service will not be called
@@ -81,7 +87,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       try {
         String body = createTranslationBody(eTranslJointStr,translationObjs.get(0).getSourceLang(),translationObjs.get(0).getTargetLang(),eTranslExtRef);
         String eTranslRespNumber = createHttpRequest(body);
-        if(Integer.valueOf(eTranslRespNumber) < 0) {
+        if(Integer.parseInt(eTranslRespNumber) < 0) {
           throw new TranslationException("Invalid eTranslation http request.");
         }
       } catch (JSONException | UnsupportedEncodingException e) {
@@ -131,16 +137,15 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       }
       if(response!=null) {
         //first base64 decode
-        String respBase64 = new String(Base64.decodeBase64(response), StandardCharsets.UTF_8);
-        String[] respTexts = respBase64.split(markupDelimitWithoutNewLines);
-        if(respTexts.length!=translationObjs.size()) {
+        String respBase64Decoded = new String(Base64.decodeBase64(response), StandardCharsets.UTF_8);
+        Document jsoupDoc = Jsoup.parse(respBase64Decoded);
+        Elements pTagTexts = jsoupDoc.select("p");
+        if(pTagTexts.size()!=translationObjs.size()) {
           redisMessageListenerContainer.removeMessageListener(redisMessageListenerAdapter);
           throw new TranslationException("The eTranslation response and the input texts have different size.");
         }
-        for(int i=0;i<respTexts.length;i++) {
-          //removing the new lines and possible spaces eTransl puts in
-          String cleanedRespText=respTexts[i].trim();
-          translationObjs.get(i).setTranslation(cleanedRespText);
+        for(int i=0;i<pTagTexts.size();i++) {
+          translationObjs.get(i).setTranslation(pTagTexts.get(i).ownText());
         }
       }
       /* unsubscibe this listener which automatically deletes the created pub/sub channel,
@@ -150,25 +155,25 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     }
   }
   
-  private String generateJointStringForTranslation(List<TranslationObj> translationObjs, String markupDelimit) throws TranslationException {
-    /*generate one eTranslation string to be sent for translation, as a combination of all input texts 
-     * separated with a given markup.
-     */
-    String translJointString="";
-    String sourceLang = translationObjs.get(0).getSourceLang();
-    
-    if(sourceLang==null) {
-      throw new TranslationException("The source language cannot be null for the eTranslation service.");
-    }
-    
+  /**
+   * Generate one eTransl html string to be sent for the translation, as a combination of all input texts. 
+   * @throws TranslationException 
+   */
+  private String generateJointHtmlForTranslation(List<TranslationObj> translationObjs) throws TranslationException {
+    StringBuilder translJointString=new StringBuilder();
+    translJointString.append("<!DOCTYPE html>\n");
+    translJointString.append("<htlm>\n");
+    translJointString.append("<body>\n");
     for(int i=0;i<translationObjs.size();i++) {
-      translJointString += translationObjs.get(i).getText();
-      if(i<translationObjs.size()-1) {
-        translJointString += markupDelimit;
-      }
+      translJointString.append("<p>");
+      translJointString.append(translationObjs.get(i).getText());
+      translJointString.append("</p>\n");
     }
+    translJointString.append("</body>\n");
+    translJointString.append("</html>");
 
-    return translJointString;
+    return translJointString.toString();
+    
   }
   /**
    * This method creates the translation request body with the text to translate. 
@@ -183,22 +188,23 @@ public class ETranslationTranslationService extends AbstractTranslationService {
    * @throws JSONException
    * @throws UnsupportedEncodingException 
    */
-  private String createTranslationBody(String text, String sourceLang, String targetLang, String externalReference) throws JSONException, UnsupportedEncodingException {
+  private String createTranslationBody(String text, String sourceLang, String targetLang, String externalReference) 
+      throws JSONException {
     String base64EncodedText=Base64.encodeBase64String(text.getBytes(StandardCharsets.UTF_8));
     JSONObject jsonBody = new JSONObject().put("priority", 0)
 //        .put("requesterCallback", callbackUrl)
 //        .put("errorCallback", callbackUrl)
         .put("externalReference", externalReference)
         .put("callerInformation", new JSONObject().put("application", credentialUsername).put("username", credentialUsername))
-        .put("sourceLanguage", sourceLang.toUpperCase())
-        .put("targetLanguages", new JSONArray().put(0, targetLang.toUpperCase()))
+        .put("sourceLanguage", sourceLang.toUpperCase(Locale.ENGLISH))
+        .put("targetLanguages", new JSONArray().put(0, targetLang.toUpperCase(Locale.ENGLISH)))
         .put("domain", domain)
         .put("destinations",
 //            new JSONObject().put("emailDestinations", new JSONArray().put(0, "e-mail")))
             new JSONObject().put("httpDestinations", new JSONArray().put(0, callbackUrl)))
 //        .put("textToTranslate", text);
         .put("documentToTranslateBase64",
-            new JSONObject().put("content", base64EncodedText).put("format", "txt")
+            new JSONObject().put("content", base64EncodedText).put("format", "html")
             );
     return jsonBody.toString();
   }

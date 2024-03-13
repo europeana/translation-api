@@ -165,14 +165,22 @@ public class TranslationRestIT extends BaseTranslationTest {
     Thread.sleep(1000);
     //trigger the eTranslation callback manually
     //computed in advance using the code in the eTransl service
-    String eTranslRef="et:deenPVsaOg";
-    String eTranslResp="That is my dog." + ETranslationTranslationService.markupDelimitETranslReturn + "That is my tree.";
-    String content=Base64.encodeBase64String(eTranslResp.getBytes(StandardCharsets.UTF_8));
+    String eTranslRef="et:deen2On73g";
+    StringBuilder eTranslResp=new StringBuilder();
+    eTranslResp.append("<!DOCTYPE html>\n");
+    eTranslResp.append("<htlm>\n");
+    eTranslResp.append("<body>\n");
+    eTranslResp.append("<p>That is my dog.</p>\n");
+    eTranslResp.append("<p>That is my tree.</p>\n");
+    eTranslResp.append("</body>\n");
+    eTranslResp.append("</html>");    
+    
+    String htmlContentBase64=Base64.encodeBase64String(eTranslResp.toString().getBytes(StandardCharsets.UTF_8));
     mockMvc
     .perform(
         post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)
         .param("external-reference", eTranslRef)
-        .content(content))
+        .content(htmlContentBase64))
     .andExpect(status().isOk());
 
     thread.join();

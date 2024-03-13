@@ -312,7 +312,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_REDIS_TEMPLATE)
-  public RedisTemplate<String, CachedTranslation> getRedisTemplate(@Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
+  public RedisTemplate<String, CachedTranslation> getRedisTemplate(
+      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
     redisConnectionFactory.afterPropertiesSet();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -325,17 +326,19 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
-  public RedisCacheService getRedisCacheService(@Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
+  public RedisCacheService getRedisCacheService(
+      @Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
     return new RedisCacheService(redisTemplate);
   }
 
   @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
-  RedisMessageListenerContainer getRedisMessageListenerContainer(@Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
-      RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
-      redisConnectionFactory.afterPropertiesSet();
-      container.setConnectionFactory(redisConnectionFactory); 
-//      container.addMessageListener(messageListener(), topic()); 
-      return container; 
+  RedisMessageListenerContainer getRedisMessageListenerContainer(
+      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
+    RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
+    redisConnectionFactory.afterPropertiesSet();
+    container.setConnectionFactory(redisConnectionFactory); 
+//    container.addMessageListener(messageListener(), topic()); 
+    return container; 
   }
 
   @Override
