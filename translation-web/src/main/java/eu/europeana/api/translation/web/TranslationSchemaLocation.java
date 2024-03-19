@@ -1,10 +1,10 @@
 package eu.europeana.api.translation.web;
 
-import eu.europeana.api.commons.JsonSchemaLocation;
 
-public interface TranslationSchemaLocation extends JsonSchemaLocation {
+public interface TranslationSchemaLocation {
 
   String JSON_SCHEMA_URI = "https://rnd-2.eanadev.org/share/api/schema/json/translation/ws.schema.json";
-  String JSON_SCHEMA_NESTED="#/definitions/LangDetectRequest";
+  String NESTED_SCHEMA_LANG_DETECT_REQUEST ="#/definitions/LangDetectRequest";
+  String NESTED_SCHEMA_TRANSLATE_REQUEST ="#/definitions/TranslationRequest";
 
 }

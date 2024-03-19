@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons.web.http.HttpHeaders;
 import eu.europeana.api.commons.web.model.vocabulary.Operations;
@@ -35,7 +34,7 @@ public class TranslationController extends BaseRest {
   @Tag(description = "Translation", name = "translate")
   @PostMapping(value = {"/translate"},
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
-  public ResponseEntity<String> translate(@ValidJson(uri = TranslationSchemaLocation.JSON_SCHEMA_URI, nested = TranslationSchemaLocation.JSON_SCHEMA_NESTED) TranslationRequest translRequest,
+  public ResponseEntity<String> translate(@ValidJson(uri = TranslationSchemaLocation.JSON_SCHEMA_URI, nested = TranslationSchemaLocation.NESTED_SCHEMA_TRANSLATE_REQUEST) TranslationRequest translRequest,
       HttpServletRequest request) throws Exception {
 
     verifyWriteAccess(Operations.CREATE, request);
@@ -52,7 +51,7 @@ public class TranslationController extends BaseRest {
   private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
     // validate mandatory params
     if (translationRequest.getText() == null || containsNullValues(translationRequest.getText())) {
-      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
+      throw  new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
     }
 
     if (StringUtils.isEmpty(translationRequest.getTarget())) {

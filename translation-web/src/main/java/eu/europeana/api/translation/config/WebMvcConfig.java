@@ -18,10 +18,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /** Setup CORS for all requests and setup default Content-type */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-  
+
   MediaType jsonLdMediaType =
       MediaType.valueOf(eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD);
-  Map<String, MediaType> mediaTypesMaping = new HashMap<String, MediaType>();
+  Map<String, MediaType> mediaTypesMaping = new HashMap<>();
+
+  @Autowired
+  private ResourcePatternResolver resourcePatternResolver;
+
 
   /** Setup CORS for all GET, HEAD and OPTIONS, requests. */
   @Override
@@ -89,16 +93,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //    registry.addResourceHandler("/public/**").addResourceLocations("classpath:/public/");
 //  }
 
-
-
-
-  private ObjectMapper objectMapper = new ObjectMapper();
-
-  @Autowired
-  private ResourcePatternResolver resourcePatternResolver;
-
+  /** Inform spring about  JsonSchemaValidatingArgumentResolver from commons module
+   * which is used for validating the input json against the schema specification.
+   * @param resolvers list of resolvers
+   */
  @Override
  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-   resolvers.add(new JsonSchemaValidatingArgumentResolver(objectMapper, resourcePatternResolver));
+   resolvers.add(new JsonSchemaValidatingArgumentResolver(new ObjectMapper(), resourcePatternResolver));
   }
 }

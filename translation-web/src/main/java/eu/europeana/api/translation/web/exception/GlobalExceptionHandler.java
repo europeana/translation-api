@@ -1,14 +1,10 @@
 package eu.europeana.api.translation.web.exception;
 
-import com.networknt.schema.ValidationMessage;
-import eu.europeana.api.commons.JsonValidationFailedException;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.web.service.RequestPathMethodService;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,23 +58,6 @@ public class GlobalExceptionHandler extends EuropeanaGlobalExceptionHandler {
   @Override
   public I18nService getI18nService() {
     return i18nService;
-  }
-
-
-  @ExceptionHandler(JsonValidationFailedException.class)
-  public ResponseEntity<EuropeanaApiErrorResponse> onJsonValidationFailedException(JsonValidationFailedException e,HttpServletRequest httpRequest) {
-    List<String> messages = e.getValidationMessages().stream()
-        .map(ValidationMessage::getMessage)
-        .collect(Collectors.toList());
-
-    HttpStatus responseStatus = HttpStatus.BAD_REQUEST;
-    EuropeanaApiErrorResponse response = (new EuropeanaApiErrorResponse.Builder(httpRequest, e, this.stackTraceEnabled())).
-        setStatus(responseStatus.value()).
-        setMessage(String.join(",", messages)).
-        setError(responseStatus.getReasonPhrase()).
-        setSeeAlso(getSeeAlso()).build();
-
-    return (ResponseEntity.status(responseStatus).headers(this.createHttpHeaders(httpRequest))).body(response);
   }
 
 
