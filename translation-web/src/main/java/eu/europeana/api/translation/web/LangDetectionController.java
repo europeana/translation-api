@@ -17,6 +17,7 @@ import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.web.exception.ParamValidationException;
 import eu.europeana.api.translation.web.service.LangDetectionWebService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
@@ -29,7 +30,7 @@ public class LangDetectionController extends BaseRest {
     this.langDetectionService = langDetectionService;
   }
 
-  @Tag(description = "Language detection", name = "detectLang")
+  @Operation(summary = "Language detection")
   @PostMapping(value = {"/detect"},
       produces = {HttpHeaders.CONTENT_TYPE_JSON_UTF8, MediaType.APPLICATION_JSON_VALUE})
   public ResponseEntity<String> detectLang(@RequestBody LangDetectRequest langDetectRequest,
