@@ -1,0 +1,10 @@
+{
+  "source": "de",
+  "target": "en",
+  "service": "ETRANSLATION",
+  "text": [
+    "Das ist mein Hund.",
+    "Das ist mein Baum."
+  ],
+  "caching": false
+}

@@ -42,6 +42,10 @@
             {
                 "id": "PANGEANIC", 
                 "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService"
+            },
+            {
+                "id": "ETRANSLATION", 
+                "classname": "eu.europeana.api.translation.service.etranslation.ETranslationTranslationService"
             }
         ],
 	 	"mappings": [

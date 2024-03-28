@@ -23,9 +23,11 @@
 		<module>translation-service-tika</module>
 		<module>translation-web</module>
 		<module>translation-tests</module>
+		<module>translation-service-etranslation</module>
 		<module>translation-client</module>
 		
     </modules>
+
 	
 	<repositories>
 		<repository>

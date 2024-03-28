@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.tests.web;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.codec.binary.Base64;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
@@ -25,11 +25,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
+import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
@@ -123,7 +125,68 @@ public class TranslationRestIT extends BaseTranslationTest {
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
   }
+
+  class eTranslationSimulatorThread implements Runnable {
+    private MockMvc mockMvc;
+    public eTranslationSimulatorThread(MockMvc mockMvc) {
+      this.mockMvc = mockMvc;
+    }
+    @Override
+    public void run() {
+      try {
+        String requestJson = getJsonStringInput(TRANSLATION_REQUEST_E_TRANSLATION);
+        String result = mockMvc
+            .perform(
+                post(BASE_URL_TRANSLATE)
+                  .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                  .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                  .content(requestJson))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        
+        assertNotNull(result);
+        JSONObject json = new JSONObject(result);
+        String langFieldValue = json.getString(TranslationAppConstants.LANG);
+        assertEquals(LANGUAGE_EN, langFieldValue);
+            
+        List<String> translations = Collections.singletonList(json.getString(TranslationAppConstants.TRANSLATIONS));
+        assertTrue(translations.contains("That is my dog.") && translations.contains("That is my tree."));
+        String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+        assertNotNull(serviceFieldValue);
+      } catch (Exception e) {
+      }
+    }
+  }
   
+  @Test
+  void translationETranslation() throws Exception {
+    Thread thread = new Thread(new eTranslationSimulatorThread(mockMvc));
+    thread.start();
+    Thread.sleep(1000);
+    //trigger the eTranslation callback manually
+    //computed in advance using the code in the eTransl service
+    String eTranslRef="et:deen2On73g";
+    StringBuilder eTranslResp=new StringBuilder();
+    eTranslResp.append("<!DOCTYPE html>\n");
+    eTranslResp.append("<htlm>\n");
+    eTranslResp.append("<body>\n");
+    eTranslResp.append("<p>That is my dog.</p>\n");
+    eTranslResp.append("<p>That is my tree.</p>\n");
+    eTranslResp.append("</body>\n");
+    eTranslResp.append("</html>");    
+    
+    String htmlContentBase64=Base64.encodeBase64String(eTranslResp.toString().getBytes(StandardCharsets.UTF_8));
+    mockMvc
+    .perform(
+        post("/eTranslation/callback").characterEncoding(StandardCharsets.UTF_8)
+        .param("external-reference", eTranslRef)
+        .content(htmlContentBase64))
+    .andExpect(status().isOk());
+
+    thread.join();
+    
+  }
+
   @Test
   void translationPangeanicNoSrcMultipleLanguages() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST_PANGEANIC_MULTIPLE_LANG);

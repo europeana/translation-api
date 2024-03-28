@@ -78,6 +78,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>translation-service-etranslation</artifactId>
+			<version>0.1.2-SNAPSHOT</version>
+		</dependency>		
+
+		<dependency>
 			<groupId>eu.europeana.api.commons</groupId>
 			<artifactId>commons-web</artifactId>
 			<version>${api-commons.version}</version>
@@ -96,7 +102,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-data-redis</artifactId>

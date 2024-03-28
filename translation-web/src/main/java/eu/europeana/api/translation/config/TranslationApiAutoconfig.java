@@ -9,9 +9,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
-import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
-import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,15 +28,16 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.redis.connection.RedisConfiguration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
@@ -55,7 +53,9 @@ import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
+import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
 import eu.europeana.api.translation.web.service.RedisCacheService;
+import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
@@ -215,6 +215,19 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
+  @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
+  public ETranslationTranslationService getETranslationService(
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
+    return new ETranslationTranslationService(
+        translationConfig.geteTranslationBaseUrl(), 
+        translationConfig.geteTranslationDomain(), 
+        translationConfig.geteTranslationCallback(), 
+        translationConfig.geteTranslationMaxWaitMillisec(), 
+        translationConfig.geteTranslationUsername(),
+        translationConfig.geteTranslationPassword(),
+        redisMessageListenerContainer);
+  }
+
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
   @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE,
       BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
@@ -247,7 +260,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    * bean creation. Otherwise all these methods would need to be called manually which is not the
    * best solution.
    */
-  private LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
+  @Bean(BeanNames.BEAN_REDIS_CONNECTION_FACTORY)
+  LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
     // in case of integration tests, we do not need the SSL certificate
     LettuceClientConfiguration.LettuceClientConfigurationBuilder lettuceClientConfigurationBuilder =
         LettuceClientConfiguration.builder();
@@ -297,9 +311,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return new File(translationConfig.getConfigFolder(), FilenameUtils.getName(configFile));
   }
 
-  private RedisTemplate<String, CachedTranslation> getRedisTemplate(
-      RedisConnectionFactory redisConnectionFactory) {
+  @Bean(BeanNames.BEAN_REDIS_TEMPLATE)
+  public RedisTemplate<String, CachedTranslation> getRedisTemplate(
+      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
+    redisConnectionFactory.afterPropertiesSet();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
     redisTemplate.setKeySerializer(new StringRedisSerializer());
     redisTemplate.setValueSerializer(
@@ -307,16 +323,22 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
-
+  
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
-  public RedisCacheService getRedisCacheService() throws AppConfigurationException {
-    LettuceConnectionFactory redisConnectionFactory = getRedisConnectionFactory();
-    redisConnectionFactory.afterPropertiesSet();
-    RedisTemplate<String, CachedTranslation> redisTemplate =
-        getRedisTemplate(redisConnectionFactory);
-
+  public RedisCacheService getRedisCacheService(
+      @Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
     return new RedisCacheService(redisTemplate);
+  }
+
+  @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
+  RedisMessageListenerContainer getRedisMessageListenerContainer(
+      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
+    RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
+    redisConnectionFactory.afterPropertiesSet();
+    container.setConnectionFactory(redisConnectionFactory); 
+//    container.addMessageListener(messageListener(), topic()); 
+    return container; 
   }
 
   @Override
@@ -380,3 +402,4 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
 }
+
