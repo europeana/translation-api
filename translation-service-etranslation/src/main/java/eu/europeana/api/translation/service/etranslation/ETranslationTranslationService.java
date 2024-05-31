@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -35,8 +36,8 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   
   private static final Logger LOGGER = LogManager.getLogger(ETranslationTranslationService.class);
   public static final String baseUrlTests="base-url-for-testing";
-  public static final String markupDelimiter="\ndeenPVsaOg\n";//base64 encoded string (as in generateRedisKey()) with new lines
-  public static final String markupDelimiterWithoutNewline="deenPVsaOg";
+  public static final String markupDelimiter="\n[notranslate]deenPVsaOg[/notranslate]\n";//base64 encoded string (as in generateRedisKey()) with new lines
+  public static final String markupDelimiterWithoutNewline=Pattern.quote("[notranslate]deenPVsaOg[/notranslate]");
   public static final String eTranslationErrorCallbackIndicator="eTranslationErrorCallback";
   public static final String eTranslationCallbackRelativeUrl="/etranslation/callback";
   public static final String eTranslationErrorCallbackRelativeUrl="/etranslation/error-callback";
@@ -120,6 +121,8 @@ public class ETranslationTranslationService extends AbstractTranslationService {
 
     //create and send the eTransl request
     //baseUrl is different for the integration tests, where the eTranslation service will not be called
+    
+    
     if(! baseUrlTests.equals(baseUrl)) {
       try {
 //        String body = createTranslationBodyAsHtmlDocument(eTranslJointStr,translationObjs.get(0).getSourceLang(),translationObjs.get(0).getTargetLang(),eTranslExtRef);

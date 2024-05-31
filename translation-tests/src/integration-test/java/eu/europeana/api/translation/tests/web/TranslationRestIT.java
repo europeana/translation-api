@@ -164,7 +164,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     Thread.sleep(1000);
     //trigger the eTranslation callback manually
     //computed in advance using the code in the eTransl service
-    String eTranslRef="et:deen0E3jxg";
+    String eTranslRef="et:deenre7d+w";
     StringBuilder translatedText=new StringBuilder();
     translatedText.append("That is my dog.");
     translatedText.append(ETranslationTranslationService.markupDelimiter);
@@ -174,6 +174,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     .perform(
         post(ETranslationTranslationService.eTranslationCallbackRelativeUrl).characterEncoding(StandardCharsets.UTF_8)
         .param("external-reference", eTranslRef)
+        .param("request-id", "1")
         .param("translated-text", translatedText.toString()))
     .andExpect(status().isOk());
 
