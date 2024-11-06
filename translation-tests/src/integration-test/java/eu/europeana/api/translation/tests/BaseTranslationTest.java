@@ -39,7 +39,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   protected MockMvc mockMvc;
-  protected final static int redisPort=6370;
+  protected final static int redisPort=16370;
   protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
   
   @Autowired
