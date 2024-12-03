@@ -93,6 +93,9 @@
 		<aggregate.report.xml>translation-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.xml>
 		<sonar.coverage.jacoco.xmlReportPaths>${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
 		
+		<!-- test dependencies -->
+		<version.testcontainers>1.19.7</version.testcontainers>
+
 	</properties>
 
 	<dependencyManagement>

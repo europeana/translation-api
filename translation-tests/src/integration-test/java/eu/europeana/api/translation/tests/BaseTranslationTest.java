@@ -22,6 +22,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 import eu.europeana.api.translation.TranslationApp;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
@@ -39,7 +41,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
   protected MockMvc mockMvc;
-  protected final static int redisPort=16370;
+  
   protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
   
   @Autowired
@@ -51,6 +53,17 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
   public static final Map<String, String> TRANSLATION_RESPONSE_MAP = initTranslationMap();
+
+  //start redis test container
+  protected final static int redisContainerPort=6379;
+  private static GenericContainer<?> redis_container = startRedisTestContainer();
+  private static GenericContainer<?> startRedisTestContainer() {
+    @SuppressWarnings("resource")
+    GenericContainer<?> redis = 
+      new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine")).withExposedPorts(redisContainerPort);
+    redis.start();
+    return redis;
+  }
   
   /** MockWebServer needs to be static, so we can inject its port into the Spring context. */
   private static MockWebServer mockPangeanic = startPangeanicMockServer();
@@ -130,7 +143,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
-    registry.add("redis.connection.url", () -> "redis://localhost:" + redisPort + "/");
+    registry.add("redis.connection.url", () -> "redis://"+ redis_container.getHost() + ":" + redis_container.getMappedPort(redisContainerPort).toString() + "/");
     registry.add("translation.eTranslation.baseUrl", () -> ETranslationTranslationService.FAKE_BASE_URL_FOR_TESTING);
     registry.add("translation.eTranslation.credentials", () -> "");
     registry.add("translation.eTranslation.truncate", () -> false);
