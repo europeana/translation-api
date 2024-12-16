@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -37,7 +36,6 @@ import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
 import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
 import eu.europeana.api.translation.web.service.RedisCacheService;
-import redis.embedded.RedisServer;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,9 +47,7 @@ public class TranslationRestIT extends BaseTranslationTest {
   
   @Autowired
   RedisCacheService redisCacheService;
-  
-  private static RedisServer redisServer = startRedisService();
-  
+    
   public static final String LANGUAGE_EN = "en";
   
   
@@ -65,21 +61,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     clientWrapper.setClient(googleClient);
     googleTranslationService.init(clientWrapper);
   }
-
-  static RedisServer startRedisService() {
-    //start redis server
-    RedisServer redisServer = new RedisServer(redisPort);
-    redisServer.start();
-    return redisServer;
-  }
-  
-  @AfterAll void stopRedis() {
-    if(redisServer != null) {
-      redisServer.stop();
-    }
-  }
-  
-  
+    
   @Test
   void translationGoogle() throws Exception {
     String requestJson = getJsonStringInput(TRANSLATION_REQUEST);
