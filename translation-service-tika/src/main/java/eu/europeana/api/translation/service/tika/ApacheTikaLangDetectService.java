@@ -2,7 +2,6 @@ package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
@@ -20,19 +19,13 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   private final LanguageDetector detector; 
   private String serviceId;
 
-  private static final Set<String> supportedLanguages = Set.of("af", "an", "ar", "ast", "be", "br", "ca", "bg",
-      "bn", "cs", "cy", "da", "de", "el", "en", "es", "et", "eu", "fa", "fi", "fr", "ga", "gl", "gu", "he", "hi",
-      "hr", "ht", "hu", "id", "is", "it", "ja", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ms", "mt",
-      "ne", "nl", "no", "oc", "pa", "pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sr", "sv", "sw", "ta", "te", "th", "tl",
-      "tr", "uk", "ur", "vi", "wa", "yi", "zh-cn", "zh-tw");
-
   public ApacheTikaLangDetectService() {
     this.detector = new OptimaizeLangDetector().loadModels();
   }
 
   @Override
   public boolean isSupported(String srcLang) {
-    return supportedLanguages.contains(srcLang);
+    return ApacheTikaConstants.supportedLanguages.contains(srcLang);
   }
 
   @Override
@@ -47,7 +40,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
       //returns all tika languages sorted by score
       tikaLanguages =  this.detector.detectAll(obj.getText());
 
-      detectedLangs.add(chooseDetectedLang(tikaLanguages, obj.getHint()));
+      detectedLangs.add(chooseDetectedLang(obj.getText(), tikaLanguages, obj.getHint()));
     }
 
     // fallback check - if the lang detection is complete / successful
@@ -65,7 +58,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
    * In case lang hint is not null, check if it myabe exists among the langs with the highest confidence, 
    * and if so return the langHint as a detected lang, if not return the first one. 
    */
-  private String chooseDetectedLang(List<LanguageResult> tikaLanguages, String langHint) {
+  protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
     if(tikaLanguages.isEmpty()) {
       return null;
     }
