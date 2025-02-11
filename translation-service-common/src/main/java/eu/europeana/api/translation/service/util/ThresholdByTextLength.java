@@ -47,8 +47,8 @@ public class ThresholdByTextLength {
 	 * @return true, when the detection is accepted, false otherwise. If this threshold is not applicable to the source text, returns null.  
 	 */
 	public Boolean acceptDetection(String sourceText, double confidence) {
-		if(sourceText.length() >= minimumLength && sourceText.length() <= maximumLength)
-			return confidence>=minimumConfidence;
+		if((sourceText.length() >= minimumLength) && (sourceText.length() <= maximumLength))
+			return (confidence>=minimumConfidence);
 		return null;
 	}
 	
