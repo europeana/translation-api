@@ -77,7 +77,7 @@ public class CachedTranslationService extends AbstractTranslationService {
     //logging the number of translated/cached lines and chars
     if(logger.isInfoEnabled()) {
       TranslationCachingStats stats = computeTranslationCachingStats(translationObjs);
-      logger.info("Tracking cache usage: numLinesCached={}, numCharsCached={}, numLinesToBeTranslated={}, "
+      logger.info("Tracking cache usage: numValuesCached={}, numCharsCached={}, numValuesToBeTranslated={}, "
           + "numCharsToBeTranslated={}", stats.getNumLinesCached(), stats.getNumCharsCached(), 
           stats.getNumLinesToBeTranslated(), stats.getNumCharsToBeTranslated());
     }
