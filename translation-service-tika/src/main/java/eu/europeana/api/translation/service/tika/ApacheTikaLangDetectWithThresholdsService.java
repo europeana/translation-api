@@ -106,10 +106,4 @@ public class ApacheTikaLangDetectWithThresholdsService extends ApacheTikaLangDet
     if (previous.getMaxLength() != null)
       throw new LangDetectionServiceConfigurationException("The last threshold should be unbounded");
   }
-  
-  
-  public static void main(String[] args) throws Exception {
-    ApacheTikaLangDetectWithThresholdsService t=new ApacheTikaLangDetectWithThresholdsService();
-    t.setConfiguration(null, "/tika_service_thresholds_medium_precision.json");
-  }
 }
