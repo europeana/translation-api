@@ -43,6 +43,7 @@ import eu.europeana.api.translation.service.etranslation.ETranslationTranslation
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
+import eu.europeana.api.translation.service.google.DummyGLangDetectWithThresholdsService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectWithThresholdService;
@@ -56,6 +57,7 @@ import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationServic
 import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectWithThresholdsService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
+import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectWithThresholdsService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
@@ -133,16 +135,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
-  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_THRESHOLDS_SERVICE)
-  public ApacheTikaLangDetectService getApacheTikaLangDetectThresholdsService() {
+  @Bean(BeanNames.BEAN_APACHE_TIKA_THRESHOLDS_LANG_DETECT_SERVICE)
+  public ApacheTikaLangDetectWithThresholdsService getApacheTikaLangDetectThresholdsService() {
     if (translationConfig.isUseDummyServices()) {
-      return new DummyApacheTikaLangDetectService();
+      return new DummyApacheTikaLangDetectWithThresholdsService();
     } else {
       return new ApacheTikaLangDetectWithThresholdsService();
     }
   }  
   
-  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_THRESHOLDS_SERVICE)
+  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
   public HybridLangDetectService getHybridDetectThresholdsService() {
       return new HybridLangDetectService();
   }  
@@ -223,17 +225,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
   
-  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_THRESHOLDS_SERVICE)
-  public GoogleLangDetectService getGoogleLangDetectThresholdsService(
+  @Bean(BeanNames.BEAN_GOOGLE_LANG_THRESHOLDS_DETECT_SERVICE)
+  public GoogleLangDetectWithThresholdService getGoogleLangDetectWithThresholdsService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
     if (translationConfig.isUseDummyServices()) {
-      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
+      return new DummyGLangDetectWithThresholdsService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleLangDetectWithThresholdService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
     }
   }
-
+  
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
