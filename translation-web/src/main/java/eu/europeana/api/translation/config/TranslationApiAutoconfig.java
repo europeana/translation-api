@@ -214,16 +214,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return thresholds;
   }
 
-  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
-  public GoogleLangDetectService getGoogleLangDetectService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
-    } else {
-      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
-          googleTranslationServiceClientWrapper);
-    }
-  }
+//  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
+//  public GoogleLangDetectService getGoogleLangDetectService(
+//      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+//    if (translationConfig.isUseDummyServices()) {
+//      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
+//    } else {
+//      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+//          googleTranslationServiceClientWrapper);
+//    }
+//  }
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_THRESHOLDS_DETECT_SERVICE)
   public GoogleLangDetectWithThresholdService getGoogleLangDetectWithThresholdsService(
