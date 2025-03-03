@@ -29,8 +29,7 @@ public class ApacheTikaLangDetectWithThresholdsService extends ApacheTikaLangDet
   List<ThresholdConfiguration> confidenceThresholdsWithHint = null;
   List<ThresholdConfiguration> confidenceThresholdsWithoutHint = null;
 
-  public ApacheTikaLangDetectWithThresholdsService(List<ThresholdConfiguration> confidenceThresholdsWithHint,
-      List<ThresholdConfiguration> confidenceThresholdsWithoutHint) {
+  public ApacheTikaLangDetectWithThresholdsService() {
     super();
   }
 

@@ -45,13 +45,16 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
+import eu.europeana.api.translation.service.google.GoogleLangDetectWithThresholdService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.hybrid.HybridLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectWithThresholdsService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
@@ -130,6 +133,20 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
+  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_THRESHOLDS_SERVICE)
+  public ApacheTikaLangDetectService getApacheTikaLangDetectThresholdsService() {
+    if (translationConfig.isUseDummyServices()) {
+      return new DummyApacheTikaLangDetectService();
+    } else {
+      return new ApacheTikaLangDetectWithThresholdsService();
+    }
+  }  
+  
+  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_THRESHOLDS_SERVICE)
+  public HybridLangDetectService getHybridDetectThresholdsService() {
+      return new HybridLangDetectService();
+  }  
+  
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
     if (translationConfig.isUseDummyServices()) {
@@ -202,6 +219,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+          googleTranslationServiceClientWrapper);
+    }
+  }
+  
+  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_THRESHOLDS_SERVICE)
+  public GoogleLangDetectService getGoogleLangDetectThresholdsService(
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+    if (translationConfig.isUseDummyServices()) {
+      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
+    } else {
+      return new GoogleLangDetectWithThresholdService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
     }
   }
