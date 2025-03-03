@@ -32,11 +32,3 @@
 		}
 	]
 }
-
-	protected static final List<ThresholdByTextLength> thresholdsWithoutHintLowPrecision = List.of(
-			new ThresholdByTextLength(0, 10, 0.7),
-			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0.5));
-
-	protected static final List<ThresholdByTextLength> thresholdsWithoutHintVeryLowPrecision = List.of(
-			new ThresholdByTextLength(0, 10, 0.5),
-			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0));

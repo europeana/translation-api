@@ -37,15 +37,4 @@
 		}
 	]
 }
-	protected static final List<ThresholdByTextLength> thresholdsWithoutHintMediumPrecision = List.of(
-			new ThresholdByTextLength(0, 10, 0.9),
-			new ThresholdByTextLength(11, 40, 0.7),
-			new ThresholdByTextLength(41, Integer.MAX_VALUE, 0.5));
-
-	protected static final List<ThresholdByTextLength> thresholdsWithoutHintLowPrecision = List.of(
-			new ThresholdByTextLength(0, 10, 0.7),
-			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0.5));
-
-	protected static final List<ThresholdByTextLength> thresholdsWithoutHintVeryLowPrecision = List.of(
-			new ThresholdByTextLength(0, 10, 0.5),
-			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0));
+	

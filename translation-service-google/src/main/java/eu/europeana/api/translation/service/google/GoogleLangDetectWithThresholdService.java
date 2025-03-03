@@ -120,4 +120,5 @@ public class GoogleLangDetectWithThresholdService extends GoogleLangDetectServic
     if (previous.getMaxLength() != null)
       throw new LangDetectionServiceConfigurationException("The last threshold should be unbounded");
   }
+  
 }

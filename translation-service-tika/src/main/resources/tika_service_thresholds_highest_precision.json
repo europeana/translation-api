@@ -2,7 +2,7 @@
 	"hintThresholds": [
 		{
 			"minLength": 0,
-			"maxLength": 20,
+			"maxLength": 20
 		},
 		{
 			"minLength": 21,

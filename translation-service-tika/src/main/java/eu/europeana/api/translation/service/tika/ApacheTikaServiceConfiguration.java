@@ -24,7 +24,7 @@ public class ApacheTikaServiceConfiguration {
   }
 
   @JsonSetter(ApacheTikaConstants.HINT_THRESHOLDS)
-  public void setHintThresholds(List<ThresholdConfiguration> services) {
+  public void setHintThresholds(List<ThresholdConfiguration> hintThresholds) {
     this.hintThresholds = hintThresholds;
   }
 
