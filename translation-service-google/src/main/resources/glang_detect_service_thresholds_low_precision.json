@@ -1,0 +1,42 @@
+{
+	"hintThresholds": [
+		{
+			"minLength": 0,
+			"maxLength": 15,
+			"confidenceThreshold": 0.75
+		},
+		{
+			"minLength": 16,
+			"maxLength": 30,
+			"confidenceThreshold": 0.5
+		},
+		{
+			"minLength": 31,
+			"maxLength": 40,
+			"confidenceThreshold": 0.3
+		},
+		{
+			"minLength": 41,
+			"confidenceThreshold": 0
+		}
+	],		
+	"noHintThresholds": [
+		{
+			"minLength": 0,
+			"maxLength": 10,
+			"confidenceThreshold": 0.7
+		},
+		{
+			"minLength": 11,
+			"confidenceThreshold": 0.5
+		}
+	]
+}
+
+	protected static final List<ThresholdByTextLength> thresholdsWithoutHintLowPrecision = List.of(
+			new ThresholdByTextLength(0, 10, 0.7),
+			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0.5));
+
+	protected static final List<ThresholdByTextLength> thresholdsWithoutHintVeryLowPrecision = List.of(
+			new ThresholdByTextLength(0, 10, 0.5),
+			new ThresholdByTextLength(11, Integer.MAX_VALUE, 0));

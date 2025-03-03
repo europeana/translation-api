@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +15,7 @@ import com.google.cloud.translate.v3.LocationName;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
@@ -25,94 +27,98 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class GoogleLangDetectService implements LanguageDetectionService {
 
-	protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
-	private GoogleTranslationServiceClientWrapper clientWrapper;
-	protected final String googleProjectId;
-	private LocationName locationName;
-	private String serviceId;
+  protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
+  private GoogleTranslationServiceClientWrapper clientWrapper;
+  protected final String googleProjectId;
+  private LocationName locationName;
+  private String serviceId;
 
-	/**
-	 * used mainly for testing purposes.
-	 * 
-	 * @param client
-	 */
-	public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
-		this.clientWrapper = clientWrapper;
-		this.locationName = LocationName.of(googleProjectId, "global");
-	}
+  /**
+   * used mainly for testing purposes.
+   * 
+   * @param client
+   */
+  public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
+    this.clientWrapper = clientWrapper;
+    this.locationName = LocationName.of(googleProjectId, "global");
+  }
 
-	public GoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
-		this.googleProjectId = googleProjectId;
-		this.locationName = LocationName.of(googleProjectId, "global");
-		this.clientWrapper = clientWrapperBean;
-	}
+  public GoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
+    this.googleProjectId = googleProjectId;
+    this.locationName = LocationName.of(googleProjectId, "global");
+    this.clientWrapper = clientWrapperBean;
+  }
 
-	@Override
-	public boolean isSupported(String srcLang) {
-		return true;
-	}
+  @Override
+  public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
+      throws LangDetectionServiceConfigurationException {
+    // nothing to do
+  }
 
-	@Override
-	public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
-		// docs:
-		// https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java
-		try {
-			if (languageDetectionObjs.isEmpty()) {
-				return;
-			}
+  @Override
+  public boolean isSupported(String srcLang) {
+    return true;
+  }
 
-			Builder googleLangDetectBuilder = DetectLanguageRequest.newBuilder();
-			googleLangDetectBuilder.setParent(locationName.toString());
-			googleLangDetectBuilder.setMimeType("text/plain");
-			for (LanguageDetectionObj object : languageDetectionObjs) {
-				DetectLanguageRequest request = googleLangDetectBuilder.setContent(object.getText()).build();
+  @Override
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+    // docs:
+    // https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java
+    try {
+      if (languageDetectionObjs.isEmpty()) {
+        return;
+      }
 
-				DetectLanguageResponse response = clientWrapper.getClient().detectLanguage(request);
+      Builder googleLangDetectBuilder = DetectLanguageRequest.newBuilder();
+      googleLangDetectBuilder.setParent(locationName.toString());
+      googleLangDetectBuilder.setMimeType("text/plain");
+      for (LanguageDetectionObj object : languageDetectionObjs) {
+        DetectLanguageRequest request = googleLangDetectBuilder.setContent(object.getText()).build();
 
-				object.setDetectedLang(
-						chooseDetectedLang(object.getText(), response.getLanguagesList(), object.getHint()));
-			}
-		} catch (ApiException ex) {
-			final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
-			throw new LanguageDetectionException("Exception occured during Google language detection!",
-					remoteStatusCode, ex);
-		}
-	}
+        DetectLanguageResponse response = clientWrapper.getClient().detectLanguage(request);
 
-	/**
-	 * Return the first one. Subclasses may override this method for choosing with
-	 * more elaborate methods
-	 */
-	protected String chooseDetectedLang(String sourceText, List<DetectedLanguage> detectedLanguages, String langHint) {
-		// Display list of detected languages sorted by detection confidence. The most
-		// probable language is first.
-		// The language detected: getLanguageCode()
-		// Confidence of detection result for this language: getConfidence()
-		if (detectedLanguages == null || detectedLanguages.isEmpty()) {
-			return null;
-		} else {
-			return detectedLanguages.get(0).getLanguageCode();
-		}
-	}
+        object.setDetectedLang(chooseDetectedLang(object.getText(), response.getLanguagesList(), object.getHint()));
+      }
+    } catch (ApiException ex) {
+      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
+      throw new LanguageDetectionException("Exception occured during Google language detection!", remoteStatusCode, ex);
+    }
+  }
 
-	@Override
-	public void close() {
-		clientWrapper.close();
-	}
+  /**
+   * Return the first one. Subclasses may override this method for choosing with
+   * more elaborate methods
+   */
+  protected String chooseDetectedLang(String sourceText, List<DetectedLanguage> detectedLanguages, String langHint) {
+    // Display list of detected languages sorted by detection confidence. The most
+    // probable language is first.
+    // The language detected: getLanguageCode()
+    // Confidence of detection result for this language: getConfidence()
+    if (detectedLanguages == null || detectedLanguages.isEmpty()) {
+      return null;
+    } else {
+      return detectedLanguages.get(0).getLanguageCode();
+    }
+  }
 
-	@Override
-	public String getServiceId() {
-		return serviceId;
-	}
+  @Override
+  public void close() {
+    clientWrapper.close();
+  }
 
-	@Override
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
+  @Override
+  public String getServiceId() {
+    return serviceId;
+  }
 
-	@Override
-	public String getExternalServiceEndPoint() {
-		return null;
-	}
+  @Override
+  public void setServiceId(String serviceId) {
+    this.serviceId = serviceId;
+  }
+
+  @Override
+  public String getExternalServiceEndPoint() {
+    return null;
+  }
 
 }

@@ -13,8 +13,23 @@
               , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             },
             {
+                "id": "GOOGLE_THRESHOLDS"
+              , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
+              , "config": "/glang_detect_service_thresholds_medium_precision.json"
+            },
+            {
                 "id": "TIKA"
               , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
+            },  
+            {
+                "id": "TIKA_THRESHOLDS"
+              , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectWithThresholdsService"
+              , "config": "/tika_service_thresholds_medium_precision.json"
+            },    
+            {
+                "id": "HYBRID_TIKA_GOOGLE"
+              , "classname": "eu.europeana.api.translation.service.hybrid.HybridLangDetectService"
+              , "config": "/hybrid_tika_google_service_configuration.json"
             }          
         ],
         "default": "PANGEANIC"

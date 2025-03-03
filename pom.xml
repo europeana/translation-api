@@ -19,6 +19,7 @@
 		<module>translation-definitions</module>
 		<module>translation-service-common</module>
 		<module>translation-service-google</module>
+		<module>translation-service-hy</module>
 		<module>translation-service-pangeanic</module>
 		<module>translation-service-tika</module>
 		<module>translation-web</module>

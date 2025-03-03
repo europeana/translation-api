@@ -1,0 +1,33 @@
+{
+	"hintThresholds": [
+		{
+			"minLength": 0,
+			"maxLength": 20,
+		},
+		{
+			"minLength": 21,
+			"maxLength": 30,
+			"confidenceThreshold": 0.99
+		},
+		{
+			"minLength": 31,
+			"maxLength": 40,
+			"confidenceThreshold": 0.3
+		},
+		{
+			"minLength": 41,
+			"confidenceThreshold": 0
+		}
+	],
+	"noHintThresholds": [
+		{
+			"minLength": 0,
+			"maxLength": 30,
+			"confidenceThreshold": 0.99
+		},
+		{
+			"minLength": 31,
+			"confidenceThreshold": 0.5
+		}
+	]
+}
