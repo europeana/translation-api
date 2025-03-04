@@ -26,7 +26,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  * @author Nuno Freire
  *
  */
-public class GoogleLangDetectWithThresholdService extends GoogleLangDetectService {
+public class GoogleLangDetectWithThresholdService extends BaseGoogleLangDetectService {
   List<ThresholdConfiguration> confidenceThresholdsWithHint;
   List<ThresholdConfiguration> confidenceThresholdsWithoutHint;
 
