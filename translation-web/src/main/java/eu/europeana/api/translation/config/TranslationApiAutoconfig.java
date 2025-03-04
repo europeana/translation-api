@@ -127,14 +127,14 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
         translationConfig.useGoogleHttpClient());
   }
 
-//  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
-//  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
-//    if (translationConfig.isUseDummyServices()) {
-//      return new DummyApacheTikaLangDetectService();
-//    } else {
-//      return new ApacheTikaLangDetectService();
-//    }
-//  }
+  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
+    if (translationConfig.isUseDummyServices()) {
+      return new DummyApacheTikaLangDetectService();
+    } else {
+      return new ApacheTikaLangDetectService();
+    }
+  }
 
   @Bean(BeanNames.BEAN_APACHE_TIKA_THRESHOLDS_LANG_DETECT_SERVICE)
   public ApacheTikaLangDetectWithThresholdsService getApacheTikaLangDetectThresholdsService() {
@@ -214,16 +214,16 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return thresholds;
   }
 
-//  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
-//  public GoogleLangDetectService getGoogleLangDetectService(
-//      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-//    if (translationConfig.isUseDummyServices()) {
-//      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
-//    } else {
-//      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
-//          googleTranslationServiceClientWrapper);
-//    }
-//  }
+  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
+  public GoogleLangDetectService getGoogleLangDetectService(
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+    if (translationConfig.isUseDummyServices()) {
+      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
+    } else {
+      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+          googleTranslationServiceClientWrapper);
+    }
+  }
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_THRESHOLDS_DETECT_SERVICE)
   public GoogleLangDetectWithThresholdService getGoogleLangDetectWithThresholdsService(

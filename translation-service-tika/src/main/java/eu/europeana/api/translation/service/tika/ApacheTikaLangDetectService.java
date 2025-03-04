@@ -24,45 +24,12 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
-public class ApacheTikaLangDetectService implements LanguageDetectionService {
+public class ApacheTikaLangDetectService extends BaseApacheTikaLangDetectService {
 
   protected static final Logger LOG = LogManager.getLogger(ApacheTikaLangDetectService.class);
-  private final LanguageDetector detector;
-  private String serviceId;
-
+  
   public ApacheTikaLangDetectService() {
-    this.detector = new OptimaizeLangDetector().loadModels();
-  }
-
-  @Override
-  public boolean isSupported(String srcLang) {
-    return ApacheTikaConstants.supportedLanguages.contains(srcLang);
-  }
-
-  @Override
-  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
-    if (languageDetectionObjs.isEmpty()) {
-      return;
-    }
-
-    List<String> detectedLangs = new ArrayList<>(languageDetectionObjs.size());
-    List<LanguageResult> tikaLanguages = null;
-    for (LanguageDetectionObj obj : languageDetectionObjs) {
-      // returns all tika languages sorted by score
-      tikaLanguages = this.detector.detectAll(obj.getText());
-
-      detectedLangs.add(chooseDetectedLang(obj.getText(), tikaLanguages, obj.getHint()));
-    }
-
-    // fallback check - if the lang detection is complete / successful
-    if (detectedLangs.size() != languageDetectionObjs.size()) {
-      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
-          + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
-    }
-    // build results
-    for (int i = 0; i < detectedLangs.size(); i++) {
-      languageDetectionObjs.get(i).setDetectedLang(detectedLangs.get(i));
-    }
+    super();
   }
 
   /**
@@ -98,41 +65,10 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     return detectedLang;
   }
 
-  @Override
-  public void close() {
-  }
-
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
-  @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
 
   @Override
   public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
       throws LangDetectionServiceConfigurationException {
-    ApacheTikaServiceConfiguration config = null;
-    try (InputStream inputStream = getClass().getResourceAsStream(configResourceName)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-      config = parseConfig(reader);
-      LOG.info("Successfully loaded service configurations from classpath resources.");
-    } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException(
-          "Cannot read service configurations from classpath resource!", e);
-    }
-  }
-
-  private ApacheTikaServiceConfiguration parseConfig(BufferedReader reader) throws JsonProcessingException {
-    String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    return new ObjectMapper().readValue(content, ApacheTikaServiceConfiguration.class);
+    //nothing to do
   }
 }

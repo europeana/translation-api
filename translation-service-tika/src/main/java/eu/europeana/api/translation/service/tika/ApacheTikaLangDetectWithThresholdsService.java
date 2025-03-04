@@ -25,7 +25,8 @@ import eu.europeana.api.translation.service.exception.LangDetectionServiceConfig
  * @author Nuno Freire
  * @since 29/01/2025
  */
-public class ApacheTikaLangDetectWithThresholdsService extends ApacheTikaLangDetectService {
+public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLangDetectService {
+  
   List<ThresholdConfiguration> confidenceThresholdsWithHint = null;
   List<ThresholdConfiguration> confidenceThresholdsWithoutHint = null;
 

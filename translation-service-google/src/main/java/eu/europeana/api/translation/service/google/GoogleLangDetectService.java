@@ -25,64 +25,16 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  * @author GordeaS
  *
  */
-public class GoogleLangDetectService implements LanguageDetectionService {
-
-  protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
-  private GoogleTranslationServiceClientWrapper clientWrapper;
-  protected final String googleProjectId;
-  private LocationName locationName;
-  private String serviceId;
-
-  /**
-   * used mainly for testing purposes.
-   * 
-   * @param client
-   */
-  public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
-    this.clientWrapper = clientWrapper;
-    this.locationName = LocationName.of(googleProjectId, "global");
-  }
+public class GoogleLangDetectService extends BaseGoogleLangDetectService {
 
   public GoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
-    this.googleProjectId = googleProjectId;
-    this.locationName = LocationName.of(googleProjectId, "global");
-    this.clientWrapper = clientWrapperBean;
+    super(googleProjectId, clientWrapperBean);
   }
 
   @Override
   public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
       throws LangDetectionServiceConfigurationException {
     // nothing to do
-  }
-
-  @Override
-  public boolean isSupported(String srcLang) {
-    return true;
-  }
-
-  @Override
-  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
-    // docs:
-    // https://cloud.google.com/translate/docs/advanced/detecting-language-v3#translate_v3_detect_language-java
-    try {
-      if (languageDetectionObjs.isEmpty()) {
-        return;
-      }
-
-      Builder googleLangDetectBuilder = DetectLanguageRequest.newBuilder();
-      googleLangDetectBuilder.setParent(locationName.toString());
-      googleLangDetectBuilder.setMimeType("text/plain");
-      for (LanguageDetectionObj object : languageDetectionObjs) {
-        DetectLanguageRequest request = googleLangDetectBuilder.setContent(object.getText()).build();
-
-        DetectLanguageResponse response = clientWrapper.getClient().detectLanguage(request);
-
-        object.setDetectedLang(chooseDetectedLang(object.getText(), response.getLanguagesList(), object.getHint()));
-      }
-    } catch (ApiException ex) {
-      final int remoteStatusCode = ex.getStatusCode().getCode().getHttpStatusCode();
-      throw new LanguageDetectionException("Exception occured during Google language detection!", remoteStatusCode, ex);
-    }
   }
 
   /**
@@ -101,24 +53,5 @@ public class GoogleLangDetectService implements LanguageDetectionService {
     }
   }
 
-  @Override
-  public void close() {
-    clientWrapper.close();
-  }
-
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
-  @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
 
 }
