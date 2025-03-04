@@ -1,12 +1,12 @@
-package eu.europeana.api.translation.service.google;
+package eu.europeana.api.translation.service.threshold;
 
 /**
- * Constants used by the Google language detection service
+ * Constants used by the Tika and Google language detection services
  * 
  * @author Nuno Freire
  * @since 29/01/2025
  */
-public class GLangDetectConstants {
+public class ThresholdsConstants {
   // JSON config field names
   public static final String HINT_THRESHOLDS = "hintThresholds";
   public static final String NO_HINT_THRESHOLDS = "noHintThresholds";

@@ -15,12 +15,4 @@ public class ApacheTikaConstants {
       "hu", "id", "is", "it", "ja", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ms", "mt", "ne", "nl", "no", "oc",
       "pa", "pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sr", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur",
       "vi", "wa", "yi", "zh-cn", "zh-tw");
-
-  // JSON config field names
-  public static final String HINT_THRESHOLDS = "hintThresholds";
-  public static final String NO_HINT_THRESHOLDS = "noHintThresholds";
-  public static final String MIN_LENGTH = "minLength";
-  public static final String MAX_LENGTH = "maxLength";
-  public static final String CONFIDENCE_THRESHOLD = "confidenceThreshold";
-
 }

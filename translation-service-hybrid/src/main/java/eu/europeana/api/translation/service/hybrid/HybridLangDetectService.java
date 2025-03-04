@@ -97,8 +97,9 @@ public class HybridLangDetectService implements LanguageDetectionService {
   public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
       throws LangDetectionServiceConfigurationException {
     HybridServiceConfiguration config = null;
-    try (InputStream inputStream = getClass().getResourceAsStream(configResourceName)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+    try (InputStream inputStream = getClass().getResourceAsStream(configResourceName);
+        InputStreamReader rawReader = new InputStreamReader(inputStream);
+        BufferedReader reader = new BufferedReader(rawReader)) {
       config = parseConfig(reader);
       LOG.info("Successfully loaded service configurations from classpath resources.");
     } catch (IOException e) {

@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.threshold.ThresholdRangeConfiguration;
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Language detection service extending the Apache Tika language detection
@@ -27,8 +29,7 @@ import eu.europeana.api.translation.service.exception.LangDetectionServiceConfig
  */
 public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLangDetectService {
   
-  List<ThresholdConfiguration> confidenceThresholdsWithHint = null;
-  List<ThresholdConfiguration> confidenceThresholdsWithoutHint = null;
+  ThresholdsConfiguration thresholdsConf;
 
   public ApacheTikaLangDetectWithThresholdsService() {
     super();
@@ -43,12 +44,12 @@ public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLan
       return null;
     }
 
-    List<ThresholdConfiguration> confidenceThresholds = StringUtils.isBlank(langHint) ? confidenceThresholdsWithoutHint
-        : confidenceThresholdsWithHint;
+    List<ThresholdRangeConfiguration> confidenceThresholds = StringUtils.isBlank(langHint) ? thresholdsConf.getNoHintThresholds()
+        : thresholdsConf.getHintThresholds();
 
     String detectedLang = tikaLanguages.get(0).getLanguage();
     float confidence = tikaLanguages.get(0).getRawScore();
-    for (ThresholdConfiguration threshold : confidenceThresholds) {
+    for (ThresholdRangeConfiguration threshold : confidenceThresholds) {
       Boolean acceptDetection = threshold.acceptDetection(sourceText, confidence);
       if (acceptDetection != null) {
         if (acceptDetection)
@@ -63,48 +64,7 @@ public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLan
   @Override
   public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
       throws LangDetectionServiceConfigurationException {
-    ApacheTikaServiceConfiguration config = null;
-    try (InputStream inputStream = getClass().getResourceAsStream(configResourceName)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-      config = parseConfig(reader);
-      LOG.info("Successfully loaded service configurations from classpath resources.");
-    } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException(
-          "Cannot read service configurations from classpath resource!", e);
-    }
-    confidenceThresholdsWithHint = config.getHintThresholds();
-    confidenceThresholdsWithoutHint = config.getNoHintThresholds();
-    validateThresholds(confidenceThresholdsWithHint);
-    validateThresholds(confidenceThresholdsWithoutHint);
+    thresholdsConf=ThresholdsConfiguration.fromJson(configResourceName);
   }
 
-  private ApacheTikaServiceConfiguration parseConfig(BufferedReader reader) throws JsonProcessingException {
-    String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    return new ObjectMapper().readValue(content, ApacheTikaServiceConfiguration.class);
-  }
-
-  private void validateThresholds(List<ThresholdConfiguration> confidenceThresholds)
-      throws LangDetectionServiceConfigurationException {
-    ThresholdConfiguration previous = null;
-    for (ThresholdConfiguration threshold : confidenceThresholds) {
-      if (threshold.getMinLength() == null)
-        throw new LangDetectionServiceConfigurationException("Minimum length is missing");
-      if (previous == null) {
-        if (threshold.getMinLength() != 0)
-          throw new LangDetectionServiceConfigurationException("First threshold does not start at zero");
-      } else {
-        if (previous.getMaxLength() == null || (threshold.getMinLength() != (previous.getMaxLength() + 1)))
-          throw new LangDetectionServiceConfigurationException("Gap or overlap detected in threshold lengths");
-      }
-      if (threshold.getConfidenceThreshold() != null
-          && (threshold.getConfidenceThreshold() < 0 || threshold.getConfidenceThreshold() > 1))
-        throw new LangDetectionServiceConfigurationException(
-            "confidence threshold must be a number between 0 and 1 (both inclusive)");
-      previous = threshold;
-    }
-    if (previous == null)
-      throw new LangDetectionServiceConfigurationException("No threshold configured");
-    if (previous.getMaxLength() != null)
-      throw new LangDetectionServiceConfigurationException("The last threshold should be unbounded");
-  }
 }

@@ -1,4 +1,4 @@
-package eu.europeana.api.translation.service.tika;
+package eu.europeana.api.translation.service.threshold;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -6,14 +6,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * Definition of a confidence threshold applicable to a text length range
+ * Definition of a confidence threshold applicable to a text length range.
+ * Used by the Tika and Google language detection services
  * 
  * @author Nuno Freire
  * @since 29/01/2025
  */
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ThresholdConfiguration {
+public class ThresholdRangeConfiguration {
   /**
    * The minimum text length where the threshold is applicable (inclusive). Must
    * never be null.
@@ -28,13 +29,9 @@ public class ThresholdConfiguration {
 
   /**
    * The minimum confidence required for accepting a detection (inclusive). null
-   * means that results in this range should always be rejected.
+   * means that results in this range are always be rejected.
    */
   private Double confidenceThreshold;
-
-  public ThresholdConfiguration() {
-    super();
-  }
 
   /**
    * Checks if a detected language is above the threshold
@@ -50,32 +47,32 @@ public class ThresholdConfiguration {
     return null;
   }
 
-  @JsonGetter(ApacheTikaConstants.MIN_LENGTH)
+  @JsonGetter(ThresholdsConstants.MIN_LENGTH)
   public Integer getMinLength() {
     return minLength;
   }
 
-  @JsonSetter(ApacheTikaConstants.MIN_LENGTH)
+  @JsonSetter(ThresholdsConstants.MIN_LENGTH)
   public void setMinLength(Integer minLength) {
     this.minLength = minLength;
   }
 
-  @JsonGetter(ApacheTikaConstants.MAX_LENGTH)
+  @JsonGetter(ThresholdsConstants.MAX_LENGTH)
   public Integer getMaxLength() {
     return maxLength;
   }
 
-  @JsonSetter(ApacheTikaConstants.MAX_LENGTH)
+  @JsonSetter(ThresholdsConstants.MAX_LENGTH)
   public void setMaxLength(Integer maxLength) {
     this.maxLength = maxLength;
   }
 
-  @JsonGetter(ApacheTikaConstants.CONFIDENCE_THRESHOLD)
+  @JsonGetter(ThresholdsConstants.CONFIDENCE_THRESHOLD)
   public Double getConfidenceThreshold() {
     return confidenceThreshold;
   }
 
-  @JsonSetter(ApacheTikaConstants.CONFIDENCE_THRESHOLD)
+  @JsonSetter(ThresholdsConstants.CONFIDENCE_THRESHOLD)
   public void setConfidenceThreshold(Double confidenceThreshold) {
     this.confidenceThreshold = confidenceThreshold;
   }
