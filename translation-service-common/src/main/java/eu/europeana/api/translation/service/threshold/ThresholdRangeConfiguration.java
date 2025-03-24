@@ -36,15 +36,21 @@ public class ThresholdRangeConfiguration {
   /**
    * Checks if a detected language is above the threshold
    * 
-   * @param sourceText the text where a language was detected
    * @param confidence the confidence on the detected language
-   * @return true, when the detection is accepted, false otherwise. If this
-   *         threshold is not applicable to the source text, returns null.
+   * @return true, when the detection is accepted, false otherwise. 
    */
-  public Boolean acceptDetection(String sourceText, double confidence) {
-    if ((sourceText.length() >= minLength) && (maxLength == null || (sourceText.length() <= maxLength)))
-      return (confidenceThreshold != null && (confidence >= confidenceThreshold));
-    return null;
+  public boolean isAcceptableDetection(double confidence) {
+     return (confidenceThreshold != null && (confidence >= confidenceThreshold));
+  }
+    
+  /**
+   * Checks if a detected language is above the threshold
+   * 
+   * @param sourceText the text where a language was detected
+   * @return true if this threshold is applicable to the source text
+   */
+  public boolean isApplicableToText(String sourceText) {
+    return (sourceText.length() >= minLength) && (maxLength == null || (sourceText.length() <= maxLength));
   }
 
   @JsonGetter(ThresholdsConstants.MIN_LENGTH)

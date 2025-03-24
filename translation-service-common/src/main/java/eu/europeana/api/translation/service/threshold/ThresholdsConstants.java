@@ -14,4 +14,10 @@ public class ThresholdsConstants {
   public static final String MAX_LENGTH = "maxLength";
   public static final String CONFIDENCE_THRESHOLD = "confidenceThreshold";
 
+  
+  /**
+   * No instances
+   */
+  private ThresholdsConstants() {
+  }
 }

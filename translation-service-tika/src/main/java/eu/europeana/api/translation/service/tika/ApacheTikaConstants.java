@@ -15,4 +15,11 @@ public class ApacheTikaConstants {
       "hu", "id", "is", "it", "ja", "km", "kn", "ko", "lt", "lv", "mk", "ml", "mr", "ms", "mt", "ne", "nl", "no", "oc",
       "pa", "pl", "pt", "ro", "ru", "sk", "sl", "so", "sq", "sr", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur",
       "vi", "wa", "yi", "zh-cn", "zh-tw");
+  
+  
+  /**
+   * No instances
+   */
+  private ApacheTikaConstants() {
+  }
 }

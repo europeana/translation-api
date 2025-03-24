@@ -40,6 +40,9 @@ public class HybridLangDetectService implements LanguageDetectionService {
   private final List<LanguageDetectionService> services;
   private String serviceId;
 
+  /**
+   * Default constructor
+   */
   public HybridLangDetectService() {
     services = new ArrayList<>();
   }
@@ -107,10 +110,10 @@ public class HybridLangDetectService implements LanguageDetectionService {
       throw new LangDetectionServiceConfigurationException(
           "Cannot read service configurations from classpath resource!", e);
     }
-    for (String serviceId : config.getServices()) {
-      LanguageDetectionService subService = detectionServices.get(serviceId);
+    for (String srvId : config.getServices()) {
+      LanguageDetectionService subService = detectionServices.get(srvId);
       if (subService == null)
-        throw new LangDetectionServiceConfigurationException("Service ID not found: " + serviceId);
+        throw new LangDetectionServiceConfigurationException("Service ID not found: " + srvId);
       services.add(subService);
     }
   }

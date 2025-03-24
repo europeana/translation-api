@@ -33,6 +33,9 @@ public class ThresholdsConfiguration {
   private List<ThresholdRangeConfiguration> hintThresholds;
   private List<ThresholdRangeConfiguration> noHintThresholds;
 
+  /**
+   * Default constructor
+   */
   public ThresholdsConfiguration() {
     super();
   }
@@ -62,11 +65,6 @@ public class ThresholdsConfiguration {
     validateThresholdRanges(hintThresholds);
     validateThresholdRanges(noHintThresholds);
   }
-
-  
-  
-  
-  
   
   private void validateThresholdRanges(List<ThresholdRangeConfiguration> confidenceThresholds)
       throws LangDetectionServiceConfigurationException {
@@ -131,9 +129,8 @@ public class ThresholdsConfiguration {
         ? getNoHintThresholds()
         : getHintThresholds();
     for (ThresholdRangeConfiguration threshold : confidenceThresholds) {
-      Boolean acceptDetection = threshold.acceptDetection(sourceText, confidence);
-      if (acceptDetection != null) 
-        return acceptDetection;
+      if (threshold.isApplicableToText(sourceText)) 
+        return threshold.isAcceptableDetection(confidence);
     }
     return false;
   }

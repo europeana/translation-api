@@ -89,6 +89,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @Value("${translation.service.config.file:}")
   private String serviceConfigFile;
 
+  /**
+   * Constructor
+   * 
+   * @param translationConfig configuration object
+   */
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
   }

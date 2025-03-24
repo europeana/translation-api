@@ -13,6 +13,9 @@ public class HybridServiceConfiguration {
 
   private List<String> services;
 
+  /**
+   * Default constructor
+   */
   public HybridServiceConfiguration() {
     super();
   }

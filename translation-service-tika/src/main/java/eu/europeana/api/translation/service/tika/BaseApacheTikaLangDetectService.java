@@ -19,7 +19,10 @@ public abstract class BaseApacheTikaLangDetectService implements LanguageDetecti
   private final LanguageDetector detector;
   private String serviceId;
 
-  public BaseApacheTikaLangDetectService() {
+  /**
+   * Default constructor
+   */
+  protected BaseApacheTikaLangDetectService() {
     this.detector = new OptimaizeLangDetector().loadModels();
   }
 
@@ -63,6 +66,7 @@ public abstract class BaseApacheTikaLangDetectService implements LanguageDetecti
 
   @Override
   public void close() {
+    //nothing to do 
   }
 
   @Override
@@ -77,6 +81,7 @@ public abstract class BaseApacheTikaLangDetectService implements LanguageDetecti
 
   @Override
   public String getExternalServiceEndPoint() {
+    //nothing to do
     return null;
   }
 

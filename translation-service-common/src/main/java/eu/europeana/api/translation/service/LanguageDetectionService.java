@@ -37,11 +37,11 @@ public interface LanguageDetectionService {
   /**
    * Configures the service
    * 
-   * @param detectionSetvices all the available LanguageDetectionServices (needed
+   * @param detectionServices all the available LanguageDetectionServices (needed
    *                          for hybrid language detectors)
-   * @param resourceName      a resource available in the classpath with the
+   * @param configResourceName      a resource available in the classpath with the
    *                          configuration of the service
-   * @throws TranslationServiceConfigurationException 
+   * @throws LangDetectionServiceConfigurationException on invalid configurations
    */
   void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName) throws LangDetectionServiceConfigurationException;
 

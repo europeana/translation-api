@@ -15,6 +15,9 @@ public class ApacheTikaLangDetectService extends BaseApacheTikaLangDetectService
 
   protected static final Logger LOG = LogManager.getLogger(ApacheTikaLangDetectService.class);
   
+  /**
+   * Default constructor
+   */
   public ApacheTikaLangDetectService() {
     super();
   }

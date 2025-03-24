@@ -23,6 +23,9 @@ public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLan
   
   ThresholdsConfiguration thresholdsConf;
 
+  /**
+   * Default constructor
+   */
   public ApacheTikaLangDetectWithThresholdsService() {
     super();
   }

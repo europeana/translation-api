@@ -41,7 +41,13 @@ public abstract class BaseGoogleLangDetectService implements LanguageDetectionSe
     this.locationName = LocationName.of(googleProjectId, "global");
   }
 
-  public BaseGoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
+  /**
+   * Main constructor
+   * 
+   * @param googleProjectId project ID
+   * @param clientWrapperBean Client wrapper
+   */
+  protected BaseGoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
     this.googleProjectId = googleProjectId;
     this.locationName = LocationName.of(googleProjectId, "global");
     this.clientWrapper = clientWrapperBean;
