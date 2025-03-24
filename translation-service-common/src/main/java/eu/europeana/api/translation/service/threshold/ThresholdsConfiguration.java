@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,6 +66,11 @@ public class ThresholdsConfiguration {
     validateThresholdRanges(noHintThresholds);
   }
 
+  
+  
+  
+  
+  
   private void validateThresholdRanges(List<ThresholdRangeConfiguration> confidenceThresholds)
       throws LangDetectionServiceConfigurationException {
     ThresholdRangeConfiguration previous = null;
@@ -113,4 +119,28 @@ public class ThresholdsConfiguration {
           "Cannot read service configurations from classpath resource!", e);
     }
   }
+  
+
+  /**
+   * Checks if a detection is acceptable 
+   * 
+   * @param sourceText the text on which the detection was executed
+   * @param langHint the language hint
+   * @param confidence the confidence score obtained
+   * @return true if it is acceptable, false otherwise
+   */
+  public boolean isAcceptableDetection(String sourceText, String langHint, float confidence) {
+    List<ThresholdRangeConfiguration> confidenceThresholds = StringUtils.isBlank(langHint)
+        ? getNoHintThresholds()
+        : getHintThresholds();
+    for (ThresholdRangeConfiguration threshold : confidenceThresholds) {
+      Boolean acceptDetection = threshold.acceptDetection(sourceText, confidence);
+      if (acceptDetection != null) 
+        return acceptDetection;
+    }
+    return false;
+  }
+  
+  
+  
 }

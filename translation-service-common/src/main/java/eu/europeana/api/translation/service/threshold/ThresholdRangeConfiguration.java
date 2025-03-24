@@ -76,4 +76,5 @@ public class ThresholdRangeConfiguration {
   public void setConfidenceThreshold(Double confidenceThreshold) {
     this.confidenceThreshold = confidenceThreshold;
   }
+
 }

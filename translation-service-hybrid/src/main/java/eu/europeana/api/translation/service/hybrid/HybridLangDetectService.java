@@ -67,6 +67,7 @@ public class HybridLangDetectService implements LanguageDetectionService {
 
   @Override
   public void close() {
+    //nothing to do
   }
 
   @Override
@@ -75,13 +76,13 @@ public class HybridLangDetectService implements LanguageDetectionService {
   }
 
   @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
+  public String getExternalServiceEndPoint() {
+    return null;
   }
 
   @Override
-  public String getExternalServiceEndPoint() {
-    return null;
+  public void setServiceId(String serviceId) {
+    this.serviceId = serviceId;
   }
 
   @Override
