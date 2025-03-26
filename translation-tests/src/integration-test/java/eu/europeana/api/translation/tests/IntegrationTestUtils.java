@@ -29,7 +29,11 @@ public abstract class IntegrationTestUtils {
 
   public static final String LANG_DETECT_BAD_REQUEST_1 = "/content/lang_detection_bad_request_1.json";
   public static final String LANG_DETECT_BAD_REQUEST_2 = "/content/lang_detection_bad_request_2.json";
-  
+
+  public static final String LANG_DETECT_HYBRID_REQUEST_1 = "/content/lang_detection_hybrid_request_1.json";
+  public static final String LANG_DETECT_HYBRID_REQUEST_2 = "/content/lang_detection_hybrid_request_2.json";
+  public static final String LANG_DETECT_HYBRID_REQUEST_3 = "/content/lang_detection_hybrid_request_2.json";
+
   public static final String TRANSLATION_REQUEST = "/content/translation_request.json";
   public static final String TRANSLATION_GOOGLE_REQUEST = "/content/google/translate/translate_google_request.txt";
   public static final String TRANSLATION_GOOGLE_RESPONSE = "/content/google/translate/translate_google_response.json";

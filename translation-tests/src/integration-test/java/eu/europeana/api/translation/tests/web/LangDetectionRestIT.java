@@ -169,5 +169,59 @@ public class LangDetectionRestIT extends BaseTranslationTest {
               .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
               .content(requestJson))
         .andExpect(status().isBadRequest());
-  }  
+  }
+
+  // Hybrid lang detect tests
+
+  @Test
+  void langDetectionHybrid_1() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REQUEST_1);
+    String result = mockMvc
+            .perform(
+                    post(BASE_URL_DETECT)
+                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .content(requestJson))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(3, langs.length());
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+  }
+
+  @Test
+  void langDetectionHybrid_2() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REQUEST_2);
+    String result = mockMvc
+            .perform(
+                    post(BASE_URL_DETECT)
+                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .content(requestJson))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(2, langs.length());
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+  }
+
+  @Test
+  void langDetectionHybrid_InvalidHint() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REQUEST_3);
+    mockMvc
+            .perform(
+                    post(BASE_URL_DETECT)
+                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .content(requestJson))
+            .andExpect(status().isBadRequest());
+  }
 }
