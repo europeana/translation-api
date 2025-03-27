@@ -224,4 +224,23 @@ public class LangDetectionRestIT extends BaseTranslationTest {
                             .content(requestJson))
             .andExpect(status().isBadRequest());
   }
+
+
+  @Test
+  void langDetectionHybrid_WhenNoLangDetected() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REQUEST_4);
+    String result = mockMvc
+            .perform(
+                    post(BASE_URL_DETECT)
+                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .content(requestJson))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(1, langs.length());
+    assertTrue(langs.isNull(0));
+  }
 }
