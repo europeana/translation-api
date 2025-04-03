@@ -266,7 +266,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
           translationConfig.getEtranslationMaxWaitMillisec(), translationConfig.getEtranslationUsername(),
           translationConfig.getEtranslationPassword(), redisMessageListenerContainer);
     } catch (TranslationException e) {
-      throw new AppConfigurationException(e.getLocalizedMessage());
+      throw new AppConfigurationException(e.getLocalizedMessage(), e);
     }
   }
 

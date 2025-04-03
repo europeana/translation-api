@@ -11,4 +11,8 @@ public class AppConfigurationException extends Exception {
   public AppConfigurationException(String message) {
     super (message);
   }
+
+  public AppConfigurationException(String message, Throwable e) {
+    super (message, e);
+  }
 }
