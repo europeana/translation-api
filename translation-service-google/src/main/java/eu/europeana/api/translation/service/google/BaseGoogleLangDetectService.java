@@ -34,7 +34,7 @@ public abstract class BaseGoogleLangDetectService implements LanguageDetectionSe
   /**
    * used mainly for testing purposes.
    * 
-   * @param client
+   * @param clientWrapper wrapper class object of the client
    */
   public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
     this.clientWrapper = clientWrapper;
@@ -105,8 +105,6 @@ public abstract class BaseGoogleLangDetectService implements LanguageDetectionSe
   }
 
   @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
+  public abstract String getExternalServiceEndPoint();
 
 }

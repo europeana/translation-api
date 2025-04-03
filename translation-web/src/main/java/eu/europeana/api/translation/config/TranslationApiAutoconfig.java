@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Pattern;
+
+import eu.europeana.api.translation.service.exception.TranslationException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -66,6 +68,9 @@ import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
+/**
+ * Translation API configuration class
+ */
 @Configuration()
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
@@ -254,12 +259,15 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
   public ETranslationTranslationService getETranslationService(
-      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer)
-      throws Exception {
-    return new ETranslationTranslationService(translationConfig.getEtranslationBaseUrl(),
-        translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),
-        translationConfig.getEtranslationMaxWaitMillisec(), translationConfig.getEtranslationUsername(),
-        translationConfig.getEtranslationPassword(), redisMessageListenerContainer);
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws AppConfigurationException {
+    try {
+      return new ETranslationTranslationService(translationConfig.getEtranslationBaseUrl(),
+          translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),
+          translationConfig.getEtranslationMaxWaitMillisec(), translationConfig.getEtranslationUsername(),
+          translationConfig.getEtranslationPassword(), redisMessageListenerContainer);
+    } catch (TranslationException e) {
+      throw new AppConfigurationException(e.getLocalizedMessage());
+    }
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)

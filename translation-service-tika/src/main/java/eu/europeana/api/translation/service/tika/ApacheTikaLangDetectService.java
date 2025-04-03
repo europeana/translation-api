@@ -11,6 +11,11 @@ import org.apache.tika.language.detect.LanguageResult;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 
+/**
+ * Apache Tika language detection service
+ *
+ * @author Srdjan
+ */
 public class ApacheTikaLangDetectService extends BaseApacheTikaLangDetectService {
 
   protected static final Logger LOG = LogManager.getLogger(ApacheTikaLangDetectService.class);
@@ -53,6 +58,16 @@ public class ApacheTikaLangDetectService extends BaseApacheTikaLangDetectService
       }
     }
     return detectedLang;
+  }
+
+  @Override
+  public void close() {
+    // nothing to do
+  }
+
+  @Override
+  public String getExternalServiceEndPoint() {
+    return null;
   }
 
 

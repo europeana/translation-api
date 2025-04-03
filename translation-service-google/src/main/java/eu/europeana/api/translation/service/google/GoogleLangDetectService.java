@@ -43,5 +43,10 @@ public class GoogleLangDetectService extends BaseGoogleLangDetectService {
     }
   }
 
+  @Override
+  public String getExternalServiceEndPoint() {
+    return null;
+  }
+
 
 }

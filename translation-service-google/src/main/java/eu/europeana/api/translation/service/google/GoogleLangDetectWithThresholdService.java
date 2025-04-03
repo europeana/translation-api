@@ -46,4 +46,9 @@ public class GoogleLangDetectWithThresholdService extends BaseGoogleLangDetectSe
     else
       return StringUtils.isBlank(langHint) ? null : langHint;
   }
+
+  @Override
+  public String getExternalServiceEndPoint() {
+    return null;
+  }
 }

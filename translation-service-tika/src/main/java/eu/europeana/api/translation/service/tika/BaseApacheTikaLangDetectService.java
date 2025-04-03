@@ -13,6 +13,10 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
+/**
+ * Base service for Apache Tika language detection
+ * @author Srdjan
+ */
 public abstract class BaseApacheTikaLangDetectService implements LanguageDetectionService {
 
   protected static final Logger LOG = LogManager.getLogger(BaseApacheTikaLangDetectService.class);
@@ -65,9 +69,7 @@ public abstract class BaseApacheTikaLangDetectService implements LanguageDetecti
   protected abstract String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint);
 
   @Override
-  public void close() {
-    //nothing to do 
-  }
+  public abstract void close();
 
   @Override
   public String getServiceId() {
@@ -80,9 +82,6 @@ public abstract class BaseApacheTikaLangDetectService implements LanguageDetecti
   }
 
   @Override
-  public String getExternalServiceEndPoint() {
-    //nothing to do
-    return null;
-  }
+  public abstract String getExternalServiceEndPoint();
 
 }

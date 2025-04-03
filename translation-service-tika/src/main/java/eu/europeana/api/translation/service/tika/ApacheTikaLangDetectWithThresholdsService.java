@@ -46,6 +46,16 @@ public class ApacheTikaLangDetectWithThresholdsService extends BaseApacheTikaLan
   }
 
   @Override
+  public void close() {
+    // nothing to do
+  }
+
+  @Override
+  public String getExternalServiceEndPoint() {
+    return null;
+  }
+
+  @Override
   public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
       throws LangDetectionServiceConfigurationException {
     thresholdsConf=ThresholdsConfiguration.fromJson(configResourceName);
