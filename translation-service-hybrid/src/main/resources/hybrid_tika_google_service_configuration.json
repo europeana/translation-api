@@ -1,0 +1,7 @@
+{
+	"services": [
+	    "TIKA_THRESHOLDS",
+	    "GOOGLE_THRESHOLDS"
+	]
+}
+

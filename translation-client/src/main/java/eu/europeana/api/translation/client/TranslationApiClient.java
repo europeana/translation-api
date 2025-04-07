@@ -8,10 +8,12 @@ import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.*;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Translation API client class
@@ -78,6 +80,12 @@ public class TranslationApiClient extends BaseTranslationApiClient {
             // leave empty
         }
 
+        @Override
+        public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
+          throws LangDetectionServiceConfigurationException {
+          // leave empty
+        }
+        
         @Override
         public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
             if (languageDetectionObjs.isEmpty()) {

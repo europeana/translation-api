@@ -1,9 +1,12 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
+import java.util.Map;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 /**
  * The interface for the language detection services
@@ -14,7 +17,9 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public interface LanguageDetectionService {
 
   /**
-   * indicates if the given language is supported by the service implementing the interface
+   * indicates if the given language is supported by the service implementing the
+   * interface
+   * 
    * @param srcLang language hint
    * @return true is supported
    */
@@ -30,11 +35,23 @@ public interface LanguageDetectionService {
   void setServiceId(String serviceId);
 
   /**
-   * To fetch the source language for the list of texts. If passed, langHint is used a hint in the
-   * method
+   * Configures the service
+   * 
+   * @param detectionServices all the available LanguageDetectionServices (needed
+   *                          for hybrid language detectors)
+   * @param configResourceName      a resource available in the classpath with the
+   *                          configuration of the service
+   * @throws LangDetectionServiceConfigurationException on invalid configurations
+   */
+  void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName) throws LangDetectionServiceConfigurationException;
+
+  /**
+   * To fetch the source language for the list of texts. If passed, langHint is
+   * used a hint in the method
    * 
    * @param languageDetectionObjs languge detection input object list
-   * @throws LanguageDetectionException if an error occurred when invoking the external service
+   * @throws LanguageDetectionException if an error occurred when invoking the
+   *                                    external service
    */
   void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException;
 
