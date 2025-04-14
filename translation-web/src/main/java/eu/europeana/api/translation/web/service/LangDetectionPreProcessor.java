@@ -4,7 +4,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -64,10 +63,5 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
     @Override
     public String getExternalServiceEndPoint() {
         return null;
-    }
-
-    @Override
-    public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName) {
-      // leave empty, nothing to configure
     }
 }

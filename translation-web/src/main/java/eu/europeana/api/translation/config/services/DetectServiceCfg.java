@@ -9,12 +9,11 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ TranslationAppConstants.SERVICE_ID, TranslationAppConstants.CLASSNAME })
+@JsonPropertyOrder({TranslationAppConstants.SERVICE_ID, TranslationAppConstants.CLASSNAME})
 public class DetectServiceCfg {
 
   private String id;
   private String classname;
-  private String config;
 
   public DetectServiceCfg() {
     super();
@@ -38,16 +37,6 @@ public class DetectServiceCfg {
   @JsonSetter(TranslationAppConstants.CLASSNAME)
   public void setClassname(String classname) {
     this.classname = classname;
-  }
-
-  @JsonGetter(TranslationAppConstants.SERVICE_CONFIG)
-  public String getConfig() {
-    return config;
-  }
-
-  @JsonSetter(TranslationAppConstants.SERVICE_CONFIG)
-  public void setConfig(String config) {
-    this.config = config;
   }
 
 }

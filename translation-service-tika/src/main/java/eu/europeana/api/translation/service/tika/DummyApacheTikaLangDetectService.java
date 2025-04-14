@@ -2,9 +2,8 @@ package eu.europeana.api.translation.service.tika;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import org.apache.commons.lang3.StringUtils;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
