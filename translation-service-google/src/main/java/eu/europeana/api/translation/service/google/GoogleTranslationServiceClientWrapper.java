@@ -1,10 +1,8 @@
 package eu.europeana.api.translation.service.google;
 
 import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.tasks.v2.stub.CloudTasksStubSettings;
 import com.google.cloud.translate.v3.TranslationServiceClient;

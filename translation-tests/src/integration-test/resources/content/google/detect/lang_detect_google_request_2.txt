@@ -1,3 +1,0 @@
-content: "plaja iadului"
-mime_type: "text/plain"
-parent: "projects/project-id-test/locations/global"

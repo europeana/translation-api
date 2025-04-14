@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 
 /**
