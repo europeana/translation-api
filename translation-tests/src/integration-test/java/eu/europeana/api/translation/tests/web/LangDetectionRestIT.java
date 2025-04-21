@@ -35,6 +35,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   @Autowired TranslationConfig translationConfig;
   
   @Autowired 
+  @Qualifier(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   GoogleLangDetectService googleLangDetectService;
   
   @Autowired 
