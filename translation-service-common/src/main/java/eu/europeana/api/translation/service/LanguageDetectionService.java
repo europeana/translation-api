@@ -35,17 +35,6 @@ public interface LanguageDetectionService {
   void setServiceId(String serviceId);
 
   /**
-   * Configures the service
-   * 
-   * @param detectionServices all the available LanguageDetectionServices (needed
-   *                          for hybrid language detectors)
-   * @param configResourceName      a resource available in the classpath with the
-   *                          configuration of the service
-   * @throws LangDetectionServiceConfigurationException on invalid configurations
-   */
-  void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName) throws LangDetectionServiceConfigurationException;
-
-  /**
    * To fetch the source language for the list of texts. If passed, langHint is
    * used a hint in the method
    * 

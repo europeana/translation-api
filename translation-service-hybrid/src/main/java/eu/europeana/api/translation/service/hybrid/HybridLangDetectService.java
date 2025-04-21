@@ -19,6 +19,7 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 
 /**
  * Language detection service that applies multiple language detectors. The
@@ -37,14 +38,16 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public class HybridLangDetectService implements LanguageDetectionService {
 
   protected static final Logger LOG = LogManager.getLogger(HybridLangDetectService.class);
-  private final List<LanguageDetectionService> services;
+  private final LanguageDetectionService[] services;
   private String serviceId;
 
   /**
    * Default constructor
+   * @param googleSubservice 
+   * @param tikaSubservice 
    */
-  public HybridLangDetectService() {
-    services = new ArrayList<>();
+  public HybridLangDetectService(LanguageDetectionService... services) {
+    this.services = services;
   }
 
   @Override
@@ -95,32 +98,6 @@ public class HybridLangDetectService implements LanguageDetectionService {
         return true;
     }
     return false;
-  }
-
-  @Override
-  public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
-      throws LangDetectionServiceConfigurationException {
-    HybridServiceConfiguration config = null;
-    try (InputStream inputStream = getClass().getResourceAsStream(configResourceName);
-        InputStreamReader rawReader = new InputStreamReader(inputStream);
-        BufferedReader reader = new BufferedReader(rawReader)) {
-      config = parseConfig(reader);
-      LOG.info("Successfully loaded service configurations from classpath resources.");
-    } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException(
-          "Cannot read service configurations from classpath resource!", e);
-    }
-    for (String srvId : config.getServices()) {
-      LanguageDetectionService subService = detectionServices.get(srvId);
-      if (subService == null)
-        throw new LangDetectionServiceConfigurationException("Service ID not found: " + srvId);
-      services.add(subService);
-    }
-  }
-
-  private HybridServiceConfiguration parseConfig(BufferedReader reader) throws JsonProcessingException {
-    String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    return new ObjectMapper().readValue(content, HybridServiceConfiguration.class);
   }
 
 }

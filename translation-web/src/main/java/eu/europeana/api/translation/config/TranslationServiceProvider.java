@@ -350,14 +350,6 @@ public class TranslationServiceProvider {
       // add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }
-    // configure all the services that require it
-    for (DetectServiceCfg detectServiceCfg : translationServicesConfig.getLangDetectConfig().getServices()) {
-      LanguageDetectionService detectService = getLangDetectServices().get(detectServiceCfg.getId());
-      String configResource = detectServiceCfg.getConfig();
-      if (configResource != null)
-        detectService.setConfiguration(getLangDetectServices(), configResource);
-    }
-
   }
 
   public String getServiceConfigLocation() {

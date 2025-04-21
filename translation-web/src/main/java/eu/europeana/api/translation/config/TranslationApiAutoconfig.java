@@ -45,10 +45,8 @@ import eu.europeana.api.translation.service.etranslation.ETranslationTranslation
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
-import eu.europeana.api.translation.service.google.DummyGLangDetectWithThresholdsService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
-import eu.europeana.api.translation.service.google.GoogleLangDetectWithThresholdService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.hybrid.HybridLangDetectService;
@@ -57,9 +55,7 @@ import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationServic
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
-import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectWithThresholdsService;
 import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
-import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectWithThresholdsService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
@@ -76,6 +72,10 @@ import io.lettuce.core.SslOptions;
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
   final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
+  final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS = "/glang_detect_service_thresholds_medium_precision.json";
+  final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS = "/tika_service_thresholds_medium_precision.json";
+  final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/glang_detect_service_thresholds_medium_precision.json";
+  final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/tika_service_thresholds_medium_precision.json";
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
 
   /**
@@ -138,27 +138,42 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
-  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService() throws LangDetectionServiceConfigurationException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyApacheTikaLangDetectService();
     } else {
-      return new ApacheTikaLangDetectService();
-    }
-  }
-
-  @Bean(BeanNames.BEAN_APACHE_TIKA_THRESHOLDS_LANG_DETECT_SERVICE)
-  public ApacheTikaLangDetectWithThresholdsService getApacheTikaLangDetectThresholdsService() {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyApacheTikaLangDetectWithThresholdsService();
-    } else {
-      return new ApacheTikaLangDetectWithThresholdsService();
+      ApacheTikaLangDetectService apacheTikaLangDetectService = new ApacheTikaLangDetectService();
+      apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
+      return apacheTikaLangDetectService;
     }
   }
 
   @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
-  public HybridLangDetectService getHybridDetectThresholdsService() {
-    return new HybridLangDetectService();
+  public HybridLangDetectService getHybridDetectThresholdsService(
+      @Qualifier(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_TIKA_SUBSERVICE) ApacheTikaLangDetectService tikaSubservice, 
+    @Qualifier(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_GOOGLE_SUBSERVICE) GoogleLangDetectService googleSubservice) {
+    HybridLangDetectService hybridService = new HybridLangDetectService(tikaSubservice, googleSubservice);
+    return hybridService;
   }
+
+  
+  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_GOOGLE_SUBSERVICE)
+  public GoogleLangDetectService getGoogleForHybridLangDetectService(
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) 
+          throws LangDetectionServiceConfigurationException {
+    GoogleLangDetectService apacheTikaLangDetectService = new GoogleLangDetectService(null, googleTranslationServiceClientWrapper);
+    apacheTikaLangDetectService.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
+    return apacheTikaLangDetectService;
+  }
+
+  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_TIKA_SUBSERVICE)
+  public ApacheTikaLangDetectService getApacheTikaForHybridLangDetectService() 
+      throws LangDetectionServiceConfigurationException {
+    ApacheTikaLangDetectService apacheTikaLangDetectService = new ApacheTikaLangDetectService();
+    apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
+    return apacheTikaLangDetectService;
+  }
+
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
@@ -231,17 +246,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
       return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
-          googleTranslationServiceClientWrapper);
-    }
-  }
-
-  @Bean(BeanNames.BEAN_GOOGLE_LANG_THRESHOLDS_DETECT_SERVICE)
-  public GoogleLangDetectWithThresholdService getGoogleLangDetectWithThresholdsService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyGLangDetectWithThresholdsService(googleTranslationServiceClientWrapper);
-    } else {
-      return new GoogleLangDetectWithThresholdService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
     }
   }

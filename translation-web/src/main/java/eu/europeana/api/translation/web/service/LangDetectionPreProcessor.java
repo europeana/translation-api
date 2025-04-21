@@ -66,8 +66,4 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
         return null;
     }
 
-    @Override
-    public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName) {
-      // leave empty, nothing to configure
-    }
 }

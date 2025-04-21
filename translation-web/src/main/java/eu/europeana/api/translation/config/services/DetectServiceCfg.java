@@ -1,5 +1,7 @@
 package eu.europeana.api.translation.config.services;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,6 +17,7 @@ public class DetectServiceCfg {
   private String id;
   private String classname;
   private String config;
+  private List<DetectServiceCfg> services;
 
   public DetectServiceCfg() {
     super();
@@ -50,4 +53,13 @@ public class DetectServiceCfg {
     this.config = config;
   }
 
+  @JsonGetter(TranslationAppConstants.SERVICES)
+  public List<DetectServiceCfg> getServices() {
+    return services;
+  }
+
+  @JsonSetter(TranslationAppConstants.SERVICES)
+  public void setServices(List<DetectServiceCfg> services) {
+    this.services = services;
+  }
 }

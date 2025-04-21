@@ -70,12 +70,6 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   }
   
   @Override
-  public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
-      throws LangDetectionServiceConfigurationException {
-    //nothing to do
-  }
-
-  @Override
   public boolean isSupported(String srcLang) {
     return supportedLanguages.contains(srcLang);
   }

@@ -81,12 +81,6 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         }
 
         @Override
-        public void setConfiguration(Map<String, LanguageDetectionService> detectionServices, String configResourceName)
-          throws LangDetectionServiceConfigurationException {
-          // leave empty
-        }
-        
-        @Override
         public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
             if (languageDetectionObjs.isEmpty()) {
                 return;
