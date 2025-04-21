@@ -161,7 +161,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   public GoogleLangDetectService getGoogleForHybridLangDetectService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) 
           throws LangDetectionServiceConfigurationException {
-    GoogleLangDetectService apacheTikaLangDetectService = new GoogleLangDetectService(null, googleTranslationServiceClientWrapper);
+    GoogleLangDetectService apacheTikaLangDetectService = new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
     apacheTikaLangDetectService.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
     return apacheTikaLangDetectService;
   }
