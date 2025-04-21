@@ -2,13 +2,15 @@ package eu.europeana.api.translation.config;
 
 public interface BeanNames {
 
-  String BEAN_APACHE_TIKA_LANG_DETECT_SERVICE = "apacheTikaLangDetectService";
+//  String BEAN_APACHE_TIKA_LANG_DETECT_SERVICE = "apacheTikaLangDetectService";
+  String BEAN_APACHE_TIKA_LANG_DETECT_SERVICE = "TIKA";//The name must match the service ID in translation_service_configuration.json
   String BEAN_PANGEANIC_LANG_DETECT_SERVICE = "pangeanicLangDetectService";
   String BEAN_PANGEANIC_TRANSLATION_SERVICE = "pangeanicTranslationService";
   String BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER = "googleTranslationClientWrapper";
   String BEAN_GOOGLE_TRANSLATION_SERVICE = "googleTranslationService";
   String BEAN_E_TRANSLATION_SERVICE = "eTranslationService";
-  String BEAN_GOOGLE_LANG_DETECT_SERVICE = "googleLangDetectService";
+//  String BEAN_GOOGLE_LANG_DETECT_SERVICE = "googleLangDetectService";
+  String BEAN_GOOGLE_LANG_DETECT_SERVICE = "GOOGLE";//The name must match the service ID in translation_service_configuration.json
   String BEAN_HYBRID_LANG_DETECT_SERVICE = "hybridLangDetectService";
   String BEAN_HYBRID_LANG_DETECT_SERVICE_GOOGLE_SUBSERVICE = "hybridLangDetectServiceGoogleSubservice";
   String BEAN_HYBRID_LANG_DETECT_SERVICE_TIKA_SUBSERVICE = "hybridLangDetectServiceTikaSubservice";

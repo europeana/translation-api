@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -341,7 +342,11 @@ public class TranslationServiceProvider {
       LanguageDetectionService detectService;
       try {
         final Class<?> beanClass = Class.forName(detectServiceCfg.getClassname());
-        detectService = (LanguageDetectionService) applicationContext.getBean(beanClass);
+        Map<String, ?> beansOfType = applicationContext.getBeansOfType(beanClass);
+        if(beansOfType.size()==1)
+          detectService = (LanguageDetectionService) applicationContext.getBean(beanClass);
+        else 
+          detectService = (LanguageDetectionService) beansOfType.get(detectServiceCfg.getId());
       } catch (BeansException | ClassNotFoundException e) {
         throw new LangDetectionServiceConfigurationException(
             "Service bean not available: " + detectServiceCfg.getClassname(), e);
