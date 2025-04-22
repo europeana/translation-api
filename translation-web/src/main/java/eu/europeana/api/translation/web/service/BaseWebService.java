@@ -4,7 +4,9 @@ import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_GOOGLE
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_LANG_DETECT_SERVICE_CALL;
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_TRANSLATION_SERVICE_CALL;
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
+
 import com.google.api.gax.rpc.ResourceExhaustedException;
+
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;

@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.exception;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.error.EuropeanaApiErrorResponse;
 import eu.europeana.api.commons.web.exception.EuropeanaGlobalExceptionHandler;

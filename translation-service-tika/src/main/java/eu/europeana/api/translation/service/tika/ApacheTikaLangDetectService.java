@@ -2,7 +2,6 @@ package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -79,48 +78,44 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   }
 
 
-  /**
-   * 
-   */
   protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
     if (tikaLanguages.isEmpty())
       return null;
-    if (thresholdsConf==null) {
-      //In case lang hint is not null, check if it myabe exists among the langs with
-      //the highest confidence, and if so return the langHint as a detected lang, if
-      //not return the first one.
-
-      // if langHint is null, return the first detected language (has the highest
-      // confidence)
-      if (StringUtils.isBlank(langHint)) 
-        return tikaLanguages.get(0).getLanguage();
-  
-      String detectedLang = tikaLanguages.get(0).getLanguage();
-      if (langHint.equals(detectedLang)) {
-        return langHint;
-      }
-      float confidence = tikaLanguages.get(0).getRawScore();
-      for (int i = 1; i < tikaLanguages.size(); i++) {
-        if (tikaLanguages.get(i).getRawScore() >= confidence) {
-          if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
-            detectedLang = langHint;
-            break;
-          }
-        } else {
+    if (thresholdsConf!=null) 
+      return chooseDetectedLangUsingThresholds(sourceText, tikaLanguages, langHint);
+      
+    //In case lang hint is not null, check if it myabe exists among the langs with
+    //the highest confidence, and if so return the langHint as a detected lang, if
+    //not return the first one.
+    // if langHint is null, return the first detected language (has the highest
+    // confidence)
+    String detectedLang = tikaLanguages.get(0).getLanguage();
+    if (StringUtils.isBlank(langHint)) 
+      return detectedLang;
+    if (langHint.equals(detectedLang)) 
+      return langHint;
+    float confidence = tikaLanguages.get(0).getRawScore();
+    for (int i = 1; i < tikaLanguages.size(); i++) {
+      if (tikaLanguages.get(i).getRawScore() >= confidence) {
+        if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
+          detectedLang = langHint;
           break;
         }
+      } else {
+        break;
       }
-      return detectedLang;
-    } else {
-      //Accepts/rejects the highest confidence detected language based on the length
-      //of text and the confidence given by Tika
-      String detectedLang = tikaLanguages.get(0).getLanguage();
-      float confidence = tikaLanguages.get(0).getRawScore();
-      if (thresholdsConf.isAcceptableDetection(sourceText, langHint, confidence))
-        return detectedLang;
-      else
-        return StringUtils.isBlank(langHint) ? null : langHint;
     }
+    return detectedLang;
+  }
+
+  protected String chooseDetectedLangUsingThresholds(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
+    //
+    String detectedLang = tikaLanguages.get(0).getLanguage();
+    float confidence = tikaLanguages.get(0).getRawScore();
+    if (thresholdsConf.isAcceptableDetection(sourceText, langHint, confidence))
+      return detectedLang;
+    else
+      return StringUtils.isBlank(langHint) ? null : langHint;    
   }
 
   @Override
@@ -133,6 +128,12 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     return null;
   }
 
+
+  /**
+   * Sets the confidence thresholds for accepting/rejecting a detected language
+   * @param configResourceName JSON file with the thresholds  
+   * @throws LangDetectionServiceConfigurationException
+   */
   public void loadThresholds(String configResourceName)
       throws LangDetectionServiceConfigurationException {
     if(!StringUtils.isEmpty(configResourceName))

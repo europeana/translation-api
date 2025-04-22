@@ -3,7 +3,6 @@ package eu.europeana.api.translation.service.pangeanic;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
@@ -23,7 +22,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.service.LanguageDetectionService;
-import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 public class PangeanicLangDetectService implements LanguageDetectionService {

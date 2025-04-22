@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -9,10 +8,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.DetectLanguageRequest;
+import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
 import com.google.cloud.translate.v3.DetectedLanguage;
 import com.google.cloud.translate.v3.LocationName;
-import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
@@ -27,8 +26,8 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  * @author GordeaS
  *
  */
-public class GoogleLangDetectService implements LanguageDetectionService {  
-  
+public class GoogleLangDetectService implements LanguageDetectionService {
+
   protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
   private GoogleTranslationServiceClientWrapper clientWrapper;
   protected final String googleProjectId;
@@ -49,7 +48,7 @@ public class GoogleLangDetectService implements LanguageDetectionService {
   /**
    * Main constructor
    * 
-   * @param googleProjectId project ID
+   * @param googleProjectId   project ID
    * @param clientWrapperBean Client wrapper
    */
   public GoogleLangDetectService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
@@ -108,19 +107,17 @@ public class GoogleLangDetectService implements LanguageDetectionService {
    * more elaborate methods
    */
   protected String chooseDetectedLang(String sourceText, List<DetectedLanguage> detectedLanguages, String langHint) {
-    if (thresholdsConf==null) {
+    if (thresholdsConf == null) {
       // Display list of detected languages sorted by detection confidence. The most
       // probable language is first.
       // The language detected: getLanguageCode()
       // Confidence of detection result for this language: getConfidence()
-      if (detectedLanguages == null || detectedLanguages.isEmpty()) {
-        return null;
-      } else {
-        return detectedLanguages.get(0).getLanguageCode();
-      }
+      return (detectedLanguages == null || detectedLanguages.isEmpty()) ? null
+          : detectedLanguages.get(0).getLanguageCode();
     } else {
-      //Accepts/rejects the highest confidence detected language based on the length of text and the confidence             
-      if (detectedLanguages.isEmpty()) 
+      // Accepts/rejects the highest confidence detected language based on the length
+      // of text and the confidence
+      if (detectedLanguages.isEmpty())
         return null;
       String detectedLang = detectedLanguages.get(0).getLanguageCode();
       float confidence = detectedLanguages.get(0).getConfidence();
@@ -131,16 +128,19 @@ public class GoogleLangDetectService implements LanguageDetectionService {
     }
   }
 
-  public void loadThresholds(String configResourceName)
-      throws LangDetectionServiceConfigurationException {
-    if(!StringUtils.isEmpty(configResourceName))
-        thresholdsConf = ThresholdsConfiguration.fromJson(configResourceName);
+  /**
+   * Sets the confidence thresholds for accepting/rejecting a detected language
+   * @param configResourceName JSON file with the thresholds  
+   * @throws LangDetectionServiceConfigurationException
+   */
+  public void loadThresholds(String configResourceName) throws LangDetectionServiceConfigurationException {
+    if (!StringUtils.isEmpty(configResourceName))
+      thresholdsConf = ThresholdsConfiguration.fromJson(configResourceName);
   }
-  
+
   @Override
   public String getExternalServiceEndPoint() {
     return null;
   }
-
 
 }

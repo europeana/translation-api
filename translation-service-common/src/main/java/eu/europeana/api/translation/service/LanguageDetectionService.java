@@ -1,12 +1,9 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-import java.util.Map;
 
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
-import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 
 /**
  * The interface for the language detection services

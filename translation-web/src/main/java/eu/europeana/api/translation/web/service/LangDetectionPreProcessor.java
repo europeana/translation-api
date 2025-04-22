@@ -1,11 +1,11 @@
 package eu.europeana.api.translation.web.service;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Pre processing class for the Language detection flow

@@ -1,12 +1,15 @@
 package eu.europeana.api.translation.serialization;
 
 import static eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants.BEAN_JSON_MAPPER;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component

@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.exception;
 
 import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
+
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 
 /**

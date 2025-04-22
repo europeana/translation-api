@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import eu.europeana.api.translation.service.exception.TranslationException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -38,11 +37,13 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
@@ -71,11 +72,11 @@ import io.lettuce.core.SslOptions;
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
-  final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
-  final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS = "/glang_detect_service_thresholds_medium_precision.json";
-  final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS = "/tika_service_thresholds_medium_precision.json";
-  final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/glang_detect_service_thresholds_medium_precision.json";
-  final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/tika_service_thresholds_medium_precision.json";
+  private static final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
+  private static final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS = "/glang_detect_service_thresholds_medium_precision.json";
+  private static final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS = "/tika_service_thresholds_medium_precision.json";
+  private static final String RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/glang_detect_service_thresholds_medium_precision.json";
+  private static final String RESOURCE_TIKA_CONFIDENCE_THRESHOLDS_FOR_HYBRID = "/tika_service_thresholds_medium_precision.json";
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
 
   /**
@@ -138,7 +139,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
-  public ApacheTikaLangDetectService getApacheTikaLangDetectService() throws LangDetectionServiceConfigurationException {
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService()
+      throws LangDetectionServiceConfigurationException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyApacheTikaLangDetectService();
     } else {
@@ -148,32 +150,28 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
   }
 
+  /**
+   * Creates the hybrid language detector based on Tika and Google
+   * 
+   * @param tikaSubservice
+   * @param googleSubservice
+   * @return
+   * @throws LangDetectionServiceConfigurationException
+   */
   @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
   public HybridLangDetectService getHybridDetectThresholdsService(
-      @Qualifier(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_TIKA_SUBSERVICE) ApacheTikaLangDetectService tikaSubservice, 
-    @Qualifier(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_GOOGLE_SUBSERVICE) GoogleLangDetectService googleSubservice) {
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper)
+      throws LangDetectionServiceConfigurationException {
+    ApacheTikaLangDetectService tikaSubservice = new ApacheTikaLangDetectService();
+    tikaSubservice.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
+
+    GoogleLangDetectService googleSubservice = new GoogleLangDetectService(
+        translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
+    googleSubservice.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
+
     HybridLangDetectService hybridService = new HybridLangDetectService(tikaSubservice, googleSubservice);
     return hybridService;
   }
-
-  
-  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_GOOGLE_SUBSERVICE)
-  public GoogleLangDetectService getGoogleForHybridLangDetectService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) 
-          throws LangDetectionServiceConfigurationException {
-    GoogleLangDetectService apacheTikaLangDetectService = new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
-    apacheTikaLangDetectService.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
-    return apacheTikaLangDetectService;
-  }
-
-  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE_TIKA_SUBSERVICE)
-  public ApacheTikaLangDetectService getApacheTikaForHybridLangDetectService() 
-      throws LangDetectionServiceConfigurationException {
-    ApacheTikaLangDetectService apacheTikaLangDetectService = new ApacheTikaLangDetectService();
-    apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
-    return apacheTikaLangDetectService;
-  }
-
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
@@ -263,7 +261,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
   public ETranslationTranslationService getETranslationService(
-      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws AppConfigurationException {
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer)
+      throws AppConfigurationException {
     try {
       return new ETranslationTranslationService(translationConfig.getEtranslationBaseUrl(),
           translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),

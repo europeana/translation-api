@@ -7,16 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.NotNull;
 
-import eu.europeana.api.translation.definitions.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
+import eu.europeana.api.translation.definitions.model.LangDetectRequest;
+import eu.europeana.api.translation.definitions.model.LangDetectResponse;
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;

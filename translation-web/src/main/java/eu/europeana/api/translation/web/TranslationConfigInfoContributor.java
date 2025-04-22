@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.info.Info.Builder;
 import org.springframework.boot.actuate.info.InfoContributor;
 import org.springframework.stereotype.Component;
+
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 

@@ -1,11 +1,13 @@
 package eu.europeana.api.translation.config.services;
 
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
+
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)

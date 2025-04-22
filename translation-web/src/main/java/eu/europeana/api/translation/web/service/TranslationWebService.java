@@ -1,14 +1,18 @@
 package eu.europeana.api.translation.web.service;
 
 import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.annotation.PreDestroy;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
