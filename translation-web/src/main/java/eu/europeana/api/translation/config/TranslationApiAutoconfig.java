@@ -153,24 +153,22 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   /**
    * Creates the hybrid language detector based on Tika and Google
    * 
-   * @param tikaSubservice
-   * @param googleSubservice
-   * @return
-   * @throws LangDetectionServiceConfigurationException
+   * @param googleTranslationServiceClientWrapper google wrapper
+   * @return hybrid detector
+   * @throws LangDetectionServiceConfigurationException on config error
    */
   @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
   public HybridLangDetectService getHybridDetectThresholdsService(
       @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper)
       throws LangDetectionServiceConfigurationException {
     ApacheTikaLangDetectService tikaSubservice = new ApacheTikaLangDetectService();
-    tikaSubservice.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
+    tikaSubservice.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS_FOR_HYBRID);
 
     GoogleLangDetectService googleSubservice = new GoogleLangDetectService(
         translationConfig.getGoogleTranslateProjectId(), googleTranslationServiceClientWrapper);
-    googleSubservice.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
+    googleSubservice.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS_FOR_HYBRID);
 
-    HybridLangDetectService hybridService = new HybridLangDetectService(tikaSubservice, googleSubservice);
-    return hybridService;
+    return new HybridLangDetectService(tikaSubservice, googleSubservice);
   }
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
@@ -239,14 +237,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) throws LangDetectionServiceConfigurationException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
-      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+      GoogleLangDetectService googleLangDetectService = new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
           googleTranslationServiceClientWrapper);
+      googleLangDetectService.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
+      return googleLangDetectService;
     }
   }
+
 
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
   public GoogleTranslationService getGoogleTranslationService(

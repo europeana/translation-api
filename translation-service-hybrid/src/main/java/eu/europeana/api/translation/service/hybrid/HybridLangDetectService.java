@@ -3,9 +3,6 @@ package eu.europeana.api.translation.service.hybrid;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
@@ -26,7 +23,6 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class HybridLangDetectService implements LanguageDetectionService {
 
-  private static final Logger LOG = LogManager.getLogger(HybridLangDetectService.class);
   private final LanguageDetectionService[] services;
   private String serviceId;
 

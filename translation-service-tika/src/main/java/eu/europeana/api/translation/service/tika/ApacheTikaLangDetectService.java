@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
@@ -23,8 +21,6 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  */
 public class ApacheTikaLangDetectService implements LanguageDetectionService {
 
-  protected static final Logger LOG = LogManager.getLogger(ApacheTikaLangDetectService.class);
-  
   private final LanguageDetector detector;
   private String serviceId;
   private ThresholdsConfiguration thresholdsConf;
@@ -90,19 +86,19 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     // if langHint is null, return the first detected language (has the highest
     // confidence)
     String detectedLang = tikaLanguages.get(0).getLanguage();
-    if (StringUtils.isBlank(langHint)) 
-      return detectedLang;
-    if (langHint.equals(detectedLang)) 
-      return langHint;
-    float confidence = tikaLanguages.get(0).getRawScore();
-    for (int i = 1; i < tikaLanguages.size(); i++) {
-      if (tikaLanguages.get(i).getRawScore() >= confidence) {
-        if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
-          detectedLang = langHint;
+    if (!StringUtils.isBlank(langHint)) {
+      if (langHint.equals(detectedLang)) 
+        return langHint;
+      float confidence = tikaLanguages.get(0).getRawScore();
+      for (int i = 1; i < tikaLanguages.size(); i++) {
+        if (tikaLanguages.get(i).getRawScore() >= confidence) {
+          if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
+            detectedLang = langHint;
+            break;
+          }
+        } else {
           break;
         }
-      } else {
-        break;
       }
     }
     return detectedLang;
@@ -132,7 +128,7 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * @param configResourceName JSON file with the thresholds  
-   * @throws LangDetectionServiceConfigurationException
+   * @throws LangDetectionServiceConfigurationException  when unable to read the configuration
    */
   public void loadThresholds(String configResourceName)
       throws LangDetectionServiceConfigurationException {

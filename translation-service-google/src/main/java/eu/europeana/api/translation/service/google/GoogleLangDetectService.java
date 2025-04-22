@@ -3,8 +3,6 @@ package eu.europeana.api.translation.service.google;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.DetectLanguageRequest;
@@ -28,7 +26,6 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  */
 public class GoogleLangDetectService implements LanguageDetectionService {
 
-  protected static final Logger LOG = LogManager.getLogger(GoogleLangDetectService.class);
   private GoogleTranslationServiceClientWrapper clientWrapper;
   protected final String googleProjectId;
   private LocationName locationName;
@@ -131,7 +128,7 @@ public class GoogleLangDetectService implements LanguageDetectionService {
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * @param configResourceName JSON file with the thresholds  
-   * @throws LangDetectionServiceConfigurationException
+   * @throws LangDetectionServiceConfigurationException when unable to read the configuration
    */
   public void loadThresholds(String configResourceName) throws LangDetectionServiceConfigurationException {
     if (!StringUtils.isEmpty(configResourceName))

@@ -17,8 +17,6 @@ public class DetectServiceCfg {
 
   private String id;
   private String classname;
-  private String config;
-  private List<DetectServiceCfg> services;
 
   public DetectServiceCfg() {
     super();
@@ -44,23 +42,4 @@ public class DetectServiceCfg {
     this.classname = classname;
   }
 
-  @JsonGetter(TranslationAppConstants.SERVICE_CONFIG)
-  public String getConfig() {
-    return config;
-  }
-
-  @JsonSetter(TranslationAppConstants.SERVICE_CONFIG)
-  public void setConfig(String config) {
-    this.config = config;
-  }
-
-  @JsonGetter(TranslationAppConstants.SERVICES)
-  public List<DetectServiceCfg> getServices() {
-    return services;
-  }
-
-  @JsonSetter(TranslationAppConstants.SERVICES)
-  public void setServices(List<DetectServiceCfg> services) {
-    this.services = services;
-  }
 }
