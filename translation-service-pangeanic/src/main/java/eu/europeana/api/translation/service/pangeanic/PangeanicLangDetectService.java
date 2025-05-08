@@ -21,15 +21,18 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
-public class PangeanicLangDetectService implements LanguageDetectionService {
+public class PangeanicLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
   private final String externalServiceEndpoint;
   private String serviceId;
+  private ThresholdsConfiguration thresholdsConf;
 
   private Set<String> supportedLanguages = Set.of("sk", "ro", "bg", "pl", "hr", "sv", "fr", "it",
       "es", "cs", "de", "lv", "nl", "el", "fi", "da", "sl", "hu", "pt", "et", "lt", "ga", "en");
@@ -207,6 +210,14 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
   @Override
   public void setServiceId(String serviceId) {
     this.serviceId = serviceId;
+  }
+
+  ThresholdsConfiguration getThresholdsConf() {
+    return thresholdsConf;
+  }
+
+  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
+    this.thresholdsConf = thresholdsConf;
   }
 
 }

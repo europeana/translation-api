@@ -2,17 +2,18 @@ package eu.europeana.api.translation.web.service;
 
 import java.util.List;
 import java.util.regex.Pattern;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Pre processing class for the Language detection flow
  * @author srishti singh
  * @since 31 Jan 2024
  */
-public class LangDetectionPreProcessor implements LanguageDetectionService {
+public class LangDetectionPreProcessor extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
     Pattern langDetectEligibleValuesPattern;
 
@@ -59,11 +60,6 @@ public class LangDetectionPreProcessor implements LanguageDetectionService {
     @Override
     public void close() {
         // leave empty, nothing to close
-    }
-
-    @Override
-    public String getExternalServiceEndPoint() {
-        return null;
     }
 
 }

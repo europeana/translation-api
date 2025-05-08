@@ -1,19 +1,16 @@
 package eu.europeana.api.translation.service.google;
 
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.translate.v3.DetectLanguageRequest;
 import com.google.cloud.translate.v3.DetectLanguageRequest.Builder;
 import com.google.cloud.translate.v3.DetectLanguageResponse;
 import com.google.cloud.translate.v3.DetectedLanguage;
 import com.google.cloud.translate.v3.LocationName;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
-import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
@@ -24,7 +21,7 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  * @author GordeaS
  *
  */
-public class GoogleLangDetectService implements LanguageDetectionService {
+public class GoogleLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
   private GoogleTranslationServiceClientWrapper clientWrapper;
   protected final String googleProjectId;
@@ -125,19 +122,17 @@ public class GoogleLangDetectService implements LanguageDetectionService {
     }
   }
 
-  /**
-   * Sets the confidence thresholds for accepting/rejecting a detected language
-   * @param configResourceName JSON file with the thresholds  
-   * @throws LangDetectionServiceConfigurationException when unable to read the configuration
-   */
-  public void loadThresholds(String configResourceName) throws LangDetectionServiceConfigurationException {
-    if (!StringUtils.isEmpty(configResourceName))
-      thresholdsConf = ThresholdsConfiguration.fromJson(configResourceName);
-  }
-
   @Override
   public String getExternalServiceEndPoint() {
     return null;
+  }
+
+  ThresholdsConfiguration getThresholdsConf() {
+    return thresholdsConf;
+  }
+
+  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
+    this.thresholdsConf = thresholdsConf;
   }
 
 }

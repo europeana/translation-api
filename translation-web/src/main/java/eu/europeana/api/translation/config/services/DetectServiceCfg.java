@@ -17,6 +17,8 @@ public class DetectServiceCfg {
 
   private String id;
   private String classname;
+  private List<DetectServiceCfg> referencedServices;
+  private String configFilePath;
 
   public DetectServiceCfg() {
     super();
@@ -40,6 +42,26 @@ public class DetectServiceCfg {
   @JsonSetter(TranslationAppConstants.CLASSNAME)
   public void setClassname(String classname) {
     this.classname = classname;
+  }
+
+  @JsonGetter(TranslationAppConstants.SERVICES)
+  public List<DetectServiceCfg> getReferencedServices() {
+    return referencedServices;
+  }
+
+  @JsonSetter(TranslationAppConstants.SERVICES)
+  public void setReferencedServices(List<DetectServiceCfg> referencedServices) {
+    this.referencedServices = referencedServices;
+  }
+
+  @JsonGetter(TranslationAppConstants.SERVICE_CONFIG)
+  public String getConfigFilePath() {
+    return configFilePath;
+  }
+
+  @JsonSetter(TranslationAppConstants.SERVICE_CONFIG)
+  public void setConfigFilePath(String configFilePath) {
+    this.configFilePath = configFilePath;
   }
 
 }

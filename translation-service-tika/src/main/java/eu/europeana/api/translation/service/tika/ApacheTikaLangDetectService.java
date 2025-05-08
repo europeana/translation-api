@@ -2,15 +2,13 @@ package eu.europeana.api.translation.service.tika;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
-import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
@@ -19,7 +17,7 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  *
  * @author Srdjan
  */
-public class ApacheTikaLangDetectService implements LanguageDetectionService {
+public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
   private final LanguageDetector detector;
   private String serviceId;
@@ -124,15 +122,11 @@ public class ApacheTikaLangDetectService implements LanguageDetectionService {
     return null;
   }
 
+  public ThresholdsConfiguration getThresholdsConf() {
+    return thresholdsConf;
+  }
 
-  /**
-   * Sets the confidence thresholds for accepting/rejecting a detected language
-   * @param configResourceName JSON file with the thresholds  
-   * @throws LangDetectionServiceConfigurationException  when unable to read the configuration
-   */
-  public void loadThresholds(String configResourceName)
-      throws LangDetectionServiceConfigurationException {
-    if(!StringUtils.isEmpty(configResourceName))
-        thresholdsConf = ThresholdsConfiguration.fromJson(configResourceName);
+  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
+    this.thresholdsConf = thresholdsConf;
   }
 }

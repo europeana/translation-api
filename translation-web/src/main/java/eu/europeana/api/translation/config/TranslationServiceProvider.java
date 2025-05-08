@@ -6,24 +6,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.services.TranslationMappingCfg;
@@ -34,17 +33,22 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 
 /**
- * Class used to read the translation service configurations, validate them,
- * initialize mapping for language detection and translation services
+ * Class used to read the translation service configurations, validate them, initialize mapping for
+ * language detection and translation services
  * 
  * @author GordeaS
  *
  */
-public class TranslationServiceProvider {
+public class TranslationServiceProvider extends AbstractServiceInstantiationUtils{
 
-  public static final String DEFAULT_SERVICE_CONFIG_FILE = "/translation_service_configuration.json";
+  public static final String DEFAULT_SERVICE_CONFIG_FILE =
+      "/translation_service_configuration.json";
+  private static final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS =
+      "pangeanic_language_thresholds.properties";
+  
   private final Logger logger = LogManager.getLogger(TranslationServiceProvider.class);
 
   private final String serviceConfigLocation;
@@ -53,8 +57,9 @@ public class TranslationServiceProvider {
   @Autowired
   ApplicationContext applicationContext;
 
-  TranslationServicesConfiguration translationServicesConfig;
-
+  @Resource(name = BeanNames.BEAN_TRANSLATION_CONFIG)
+  TranslationConfig translationConfig;
+  
   @Resource(name = BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
   LanguageDetectionService languageDetectionPreProcessor;
 
@@ -64,6 +69,8 @@ public class TranslationServiceProvider {
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> langMappings4TranslateServices = new ConcurrentHashMap<>();
+  
+  TranslationServicesConfiguration translationServicesConfig;
 
   /**
    * Default contructor using default config file
@@ -92,8 +99,16 @@ public class TranslationServiceProvider {
     this.serviceConfigLocation = null;
   }
 
-  public TranslationServicesConfiguration getTranslationServicesConfig() {
-    return translationServicesConfig;
+  public Optional<DetectServiceCfg> getLangDetectServiceDefinition(String beanName) {
+    // if configuration not available
+    if (translationServicesConfig == null
+        || translationServicesConfig.getLangDetectConfig() == null) {
+      return Optional.empty();
+    }
+
+    List<DetectServiceCfg> serviceDefinitions =
+        translationServicesConfig.getLangDetectConfig().getServiceDefinition();
+    return serviceDefinitions.stream().filter(sd -> beanName.equals(sd.getId())).findFirst();
   }
 
   public Map<String, LanguageDetectionService> getLangDetectServices() {
@@ -107,12 +122,10 @@ public class TranslationServiceProvider {
   /**
    * Initialization of language detection and translation services
    * 
-   * @throws TranslationServiceConfigurationException   if translations services
-   *                                                    are not properly
-   *                                                    configured
-   * @throws LangDetectionServiceConfigurationException if language detection
-   *                                                    services are not properly
-   *                                                    configured
+   * @throws TranslationServiceConfigurationException if translations services are not properly
+   *         configured
+   * @throws LangDetectionServiceConfigurationException if language detection services are not
+   *         properly configured
    */
   public void initTranslationServicesConfiguration()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
@@ -136,7 +149,8 @@ public class TranslationServiceProvider {
     }
   }
 
-  private void readServiceConfigurationsFromClassPath() throws TranslationServiceConfigurationException {
+  private void readServiceConfigurationsFromClassPath()
+      throws TranslationServiceConfigurationException {
     try (InputStream inputStream = getClass().getResourceAsStream(getServiceConfigLocation())) {
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
       parseTranslationServicesConfig(reader);
@@ -145,12 +159,13 @@ public class TranslationServiceProvider {
         logger.info("Successfully loaded service configurations from classpath resources.");
       }
     } catch (IOException e) {
-      throw new TranslationServiceConfigurationException("Cannot read service configurations from classpath resources!",
-          e);
+      throw new TranslationServiceConfigurationException(
+          "Cannot read service configurations from classpath resources!", e);
     }
   }
 
-  private void readServiceConfigurationsFromConfigFile() throws TranslationServiceConfigurationException {
+  private void readServiceConfigurationsFromConfigFile()
+      throws TranslationServiceConfigurationException {
     try (BufferedReader input = Files.newBufferedReader(serviceConfigFile.toPath())) {
       parseTranslationServicesConfig(input);
       if (logger.isInfoEnabled()) {
@@ -158,26 +173,35 @@ public class TranslationServiceProvider {
       }
     } catch (IOException e) {
       throw new TranslationServiceConfigurationException(
-          "Cannot load service configurations from external config file: " + serviceConfigFile.toPath(), e);
+          "Cannot load service configurations from external config file: "
+              + serviceConfigFile.toPath(),
+          e);
     }
   }
 
-  private void parseTranslationServicesConfig(BufferedReader reader) throws JsonProcessingException {
+  private void parseTranslationServicesConfig(BufferedReader reader)
+      throws JsonProcessingException {
     String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-    translationServicesConfig = new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
+    translationServicesConfig =
+        new ObjectMapper().readValue(content, TranslationServicesConfiguration.class);
   }
 
   private void validateAndInitServices()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    validateDetectServiceCfg();
-    validateTranslationServiceCfg();
+    
+    // init lang detection services
+    validateAndInitLangDetectionServices();
+    validateDefaultLangDetectServiceConfig();
+    
+    // init translation services
+    validateAndInitFromTranslationServiceCfg();
   }
 
-  private void validateTranslationServiceCfg() throws TranslationServiceConfigurationException {
+  private void validateAndInitFromTranslationServiceCfg() throws TranslationServiceConfigurationException {
     /*
      * Validate translation config
      */
-    validateTranslationServices();
+    validateAndInitTranslationServices();
     // check that a default service id is a valid one
     validateDefaultTranslationService();
     // init language mappings
@@ -187,8 +211,8 @@ public class TranslationServiceProvider {
   }
 
   private void validateSupportedLanguagePairs() throws TranslationServiceConfigurationException {
-    final List<TranslationLangPairCfg> supportedLanguagePairs = translationServicesConfig.getTranslationConfig()
-        .getSupported();
+    final List<TranslationLangPairCfg> supportedLanguagePairs =
+        translationServicesConfig.getTranslationConfig().getSupported();
     for (TranslationLangPairCfg langPair : supportedLanguagePairs) {
       // iterate src lang list
       for (String srcLang : langPair.getSrcLang()) {
@@ -204,7 +228,8 @@ public class TranslationServiceProvider {
       throws TranslationServiceConfigurationException {
 
     // check if available in language mappings
-    boolean isSupported = getLangMappings4TranslateServices().containsKey(LanguagePair.generateKey(srcLang, trgLang));
+    boolean isSupported =
+        getLangMappings4TranslateServices().containsKey(LanguagePair.generateKey(srcLang, trgLang));
     if (!isSupported && getDefaultTranslationService() != null) {
       // check if supported by default service
       isSupported = getDefaultTranslationService().isSupported(srcLang, trgLang);
@@ -218,7 +243,8 @@ public class TranslationServiceProvider {
 
   private void validateDefaultTranslationService() throws TranslationServiceConfigurationException {
     if (!getTranslationServices().containsKey(getDefaultTranslationServiceId())) {
-      throw new TranslationServiceConfigurationException("Translation default service id is invalid.");
+      throw new TranslationServiceConfigurationException(
+          "Translation default service id is invalid.");
     }
   }
 
@@ -230,11 +256,13 @@ public class TranslationServiceProvider {
     return getTranslationServices().getOrDefault(getDefaultTranslationServiceId(), null);
   }
 
-  private void validateTranslationServices() throws TranslationServiceConfigurationException {
-    for (TranslationServiceCfg translServiceConfig : translationServicesConfig.getTranslationConfig().getServices()) {
+  private void validateAndInitTranslationServices() throws TranslationServiceConfigurationException {
+    for (TranslationServiceCfg translServiceConfig : translationServicesConfig
+        .getTranslationConfig().getServices()) {
       // validate unique service ids
       if (getTranslationServices().containsKey(translServiceConfig.getId())) {
-        throw new TranslationServiceConfigurationException("Duplicate service id in the translation config.");
+        throw new TranslationServiceConfigurationException(
+            "Duplicate service id in the translation config.");
       }
       TranslationService translService;
       try {
@@ -245,6 +273,13 @@ public class TranslationServiceProvider {
             "Service bean not available: " + translServiceConfig.getClassname(), e);
       }
       translService.setServiceId(translServiceConfig.getId());
+      
+      boolean isPangeanic = translService.getClass().equals(PangeanicTranslationService.class);
+      if(isPangeanic) {
+        ((PangeanicTranslationService) translService).init(
+            loadPangeanicTranslationThresholds(FILE_PANGEANIC_LANGUAGE_THRESHOLDS));
+      }
+      
       getTranslationServices().put(translServiceConfig.getId(), translService);
     }
   }
@@ -257,7 +292,8 @@ public class TranslationServiceProvider {
       return;
     }
 
-    for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslationConfig().getMappings()) {
+    for (TranslationMappingCfg translMapping : translationServicesConfig.getTranslationConfig()
+        .getMappings()) {
       final String serviceId = translMapping.getServiceId();
       final TranslationService translationService = verifyRegisteredService(serviceId);
 
@@ -270,8 +306,8 @@ public class TranslationServiceProvider {
     }
   }
 
-  private void registerLanguageMapping(final TranslationService translationService, String srcLang, String trgLang)
-      throws TranslationServiceConfigurationException {
+  private void registerLanguageMapping(final TranslationService translationService, String srcLang,
+      String trgLang) throws TranslationServiceConfigurationException {
     // for each language pair
     if (srcLang.equals(trgLang)) {
       throw new TranslationServiceConfigurationException(
@@ -283,7 +319,8 @@ public class TranslationServiceProvider {
     if (!translationService.isSupported(srcLang, trgLang)) {
       throw new TranslationServiceConfigurationException(
           "Invalid service configuration! Translation service: " + translationService.getServiceId()
-              + ", does not support the language pair: " + key + ", declared in the mappings section.");
+              + ", does not support the language pair: " + key
+              + ", declared in the mappings section.");
     }
 
     // prevent duplicate language pair mappings
@@ -300,29 +337,27 @@ public class TranslationServiceProvider {
     // verify if bean is available
     final boolean isServiceBeanRegistered = getTranslationServices().containsKey(serviceId);
     if (!isServiceBeanRegistered) {
-      throw new TranslationServiceConfigurationException("Translation service id declared in the mappings is invalid.");
+      throw new TranslationServiceConfigurationException(
+          "Translation service id declared in the mappings is invalid.");
     }
     return getTranslationServices().get(serviceId);
   }
 
-  private void validateDetectServiceCfg() throws LangDetectionServiceConfigurationException {
-    /*
-     * Validate lang detection config
-     */
-    validateDeclaredLangDetectionServices();
-    // validate default lang detect service
-    validateDefaultLangDetectServiceConfig();
-  }
 
-  private void validateDefaultLangDetectServiceConfig() throws LangDetectionServiceConfigurationException {
-    final String defaultServiceId = translationServicesConfig.getLangDetectConfig().getDefaultServiceId();
+
+  private void validateDefaultLangDetectServiceConfig()
+      throws LangDetectionServiceConfigurationException {
+    final String defaultServiceId =
+        translationServicesConfig.getLangDetectConfig().getDefaultServiceId();
     if (!getLangDetectServices().containsKey(defaultServiceId)) {
-      throw new LangDetectionServiceConfigurationException("Language detection default service id is invalid.");
+      throw new LangDetectionServiceConfigurationException(
+          "Language detection default service id is invalid.");
     }
 
     // validate that the default service supports all languages from the supported
     // section
-    final LanguageDetectionService defaultLanguageDetectionService = getLangDetectServices().get(defaultServiceId);
+    final LanguageDetectionService defaultLanguageDetectionService =
+        getLangDetectServices().get(defaultServiceId);
 
     for (String supportedLang : translationServicesConfig.getLangDetectConfig().getSupported()) {
       if (!defaultLanguageDetectionService.isSupported(supportedLang)) {
@@ -333,32 +368,51 @@ public class TranslationServiceProvider {
     }
   }
 
-  private void validateDeclaredLangDetectionServices() throws LangDetectionServiceConfigurationException {
+  private void validateAndInitLangDetectionServices()
+      throws LangDetectionServiceConfigurationException {
     // validate and instantiate all services
-    for (DetectServiceCfg detectServiceCfg : translationServicesConfig.getLangDetectConfig().getServices()) {
+    for (DetectServiceCfg detectServiceCfg : translationServicesConfig.getLangDetectConfig()
+        .getServiceDefinition()) {
       // validate unique service ids
       if (getLangDetectServices().containsKey(detectServiceCfg.getId())) {
-        throw new LangDetectionServiceConfigurationException("Duplicate service id in the language detection config.");
+        throw new LangDetectionServiceConfigurationException(
+            "Duplicate service id in the language detection config.");
       }
       // find pre-registered bean
       LanguageDetectionService detectService;
+      
       try {
         final Class<?> beanClass = Class.forName(detectServiceCfg.getClassname());
         Map<String, ?> beansOfType = applicationContext.getBeansOfType(beanClass);
-        if(beansOfType.size()==1)
+        if (beansOfType.size() == 1) {
           detectService = (LanguageDetectionService) applicationContext.getBean(beanClass);
-        else 
+        } else {
           detectService = (LanguageDetectionService) beansOfType.get(detectServiceCfg.getId());
+        }
       } catch (BeansException | ClassNotFoundException e) {
         throw new LangDetectionServiceConfigurationException(
             "Service bean not available: " + detectServiceCfg.getClassname(), e);
       }
+      //set service ID
       detectService.setServiceId(detectServiceCfg.getId());
+      //set threshold configurations
+      if (StringUtils.isNotEmpty(detectServiceCfg.getConfigFilePath())) {
+        detectService.setThresholdsConf(loadLanguageDetectionThresholds(detectServiceCfg));
+      }
+      //instantiate referenced services
+      if(detectServiceCfg.getReferencedServices() != null) {
+        List<LanguageDetectionService> referencedServices = new ArrayList<>(detectServiceCfg.getReferencedServices().size());
+        for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
+          referencedServices.add(createServiceInstance(referencedServiceCfg));
+        }
+        detectService.setReferencedServices(referencedServices);
+      }
+      
       // add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }
   }
-
+  
   public String getServiceConfigLocation() {
     return serviceConfigLocation;
   }
@@ -373,5 +427,13 @@ public class TranslationServiceProvider {
 
   public TranslationService getTranslationServicePreProcessor() {
     return translationServicePreProcessor;
+  }
+
+  TranslationConfig getTranslationConfig() {
+    return translationConfig;
+  }
+
+  public TranslationServicesConfiguration getTranslationServicesConfig() {
+    return translationServicesConfig;
   }
 }

@@ -6,11 +6,12 @@ import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.*;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
-
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 import java.util.List;
 
 /**
@@ -61,7 +62,7 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
 
     // Language detection client
-    private class LanguageDetectionClient implements LanguageDetectionService {
+    private class LanguageDetectionClient extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
         @Override
         public boolean isSupported(String srcLang) {

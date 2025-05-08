@@ -16,7 +16,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 public class DetectCfg {
 
   private List<String> supported;
-  private List<DetectServiceCfg> services;
+  private List<DetectServiceCfg> serviceDefinition;
   private String defaultServiceId;
 
   public DetectCfg() {
@@ -34,13 +34,13 @@ public class DetectCfg {
   }
 
   @JsonGetter(TranslationAppConstants.SERVICES)
-  public List<DetectServiceCfg> getServices() {
-    return services;
+  public List<DetectServiceCfg> getServiceDefinition() {
+    return serviceDefinition;
   }
 
   @JsonSetter(TranslationAppConstants.SERVICES)
-  public void setServices(List<DetectServiceCfg> services) {
-    this.services = services;
+  public void setServiceDefinition(List<DetectServiceCfg> services) {
+    this.serviceDefinition = services;
   }
 
   @JsonGetter(TranslationAppConstants.DEFAULT_SERVICE_ID)

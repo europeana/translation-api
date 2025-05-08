@@ -73,7 +73,11 @@ public class PangeanicTranslationService extends AbstractTranslationService {
    * @throws IOException when there is a problem retrieving the first token
    * @throws JSONException when there is a problem decoding the received token
    */
-  private void init(Properties thresholds) throws TranslationServiceConfigurationException {
+  public void init(Properties thresholds) throws TranslationServiceConfigurationException {
+    if(thresholds == null) {
+      return;
+    }
+      
     initTranslateClient();
     initConfiguredThresholds(thresholds);
   }

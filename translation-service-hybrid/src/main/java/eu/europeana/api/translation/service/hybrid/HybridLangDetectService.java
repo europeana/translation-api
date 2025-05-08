@@ -1,11 +1,11 @@
 package eu.europeana.api.translation.service.hybrid;
 
-import java.util.Arrays;
 import java.util.List;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Language detection service that applies multiple language detectors. The
@@ -21,19 +21,39 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  * @author Nuno Freire
  * @since 05/02/2025
  */
-public class HybridLangDetectService implements LanguageDetectionService {
+public class HybridLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
-  private final LanguageDetectionService[] services;
+  private List<LanguageDetectionService> referencedServices;
   private String serviceId;
 
   /**
-   * Default constructor
+   * Constructor using referenced services as array
+   * 
+   * @param referencedServices language detection services to be used by the hybrid
+   *                 detector, ordered by priority in descending order
+   */
+  public HybridLangDetectService() {
+    //default constructor without services
+  }
+  
+  /**
+   * Constructor using referenced services as array
    * 
    * @param services language detection services to be used by the hybrid
    *                 detector, ordered by priority in descending order
    */
   public HybridLangDetectService(LanguageDetectionService... services) {
-    this.services = Arrays.copyOf(services, services.length);
+    this.referencedServices = List.of(services);
+  }
+
+  /**
+   * Constructor providing referenced services as list
+   * 
+   * @param services language detection services to be used by the hybrid
+   *                 detector, ordered by priority in descending order
+   */
+  public HybridLangDetectService(List<LanguageDetectionService> services) {
+    this.referencedServices = services;
   }
 
   @Override
@@ -43,17 +63,32 @@ public class HybridLangDetectService implements LanguageDetectionService {
     }
 
     for (LanguageDetectionObj obj : languageDetectionObjs) {
+      //create temporary hint from request and reset hint
       String savedHint = obj.getHint();
       obj.setHint(null);
-      List<LanguageDetectionObj> isolatedObj = List.of(obj);
-      for (LanguageDetectionService service : services) {
-        service.detectLang(isolatedObj);
-        if (obj.getDetectedLang() != null)
-          break;
-      }
-      if (obj.getDetectedLang() == null)
+      delegateLanguageDetection(obj);
+      //use hint if not detected with good confidence
+      if (obj.getDetectedLang() == null) {
         obj.setDetectedLang(savedHint);
+      }
+      //restore hint
       obj.setHint(savedHint);
+    }
+  }
+
+  private void delegateLanguageDetection(LanguageDetectionObj obj)
+      throws LanguageDetectionException {
+    
+    if(getReferencedServices() == null || getReferencedServices().isEmpty()) {
+      return;
+    }
+      
+    List<LanguageDetectionObj> isolatedObj = List.of(obj);
+    
+    for (LanguageDetectionService service : getReferencedServices()) {
+      service.detectLang(isolatedObj);
+      if (obj.getDetectedLang() != null)
+        break;
     }
   }
 
@@ -79,11 +114,26 @@ public class HybridLangDetectService implements LanguageDetectionService {
 
   @Override
   public boolean isSupported(String srcLang) {
-    for (LanguageDetectionService service : services) {
+    for (LanguageDetectionService service : referencedServices) {
       if (service.isSupported(srcLang))
         return true;
     }
     return false;
+  }
+
+  @Override
+  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
+    //not used for hybrid implementation
+    
+  }
+
+  @Override
+  public List<LanguageDetectionService> getReferencedServices() {
+    return referencedServices;
+  }
+
+  public void setReferencedServices(List<LanguageDetectionService> services) {
+    this.referencedServices = services;
   }
 
 }

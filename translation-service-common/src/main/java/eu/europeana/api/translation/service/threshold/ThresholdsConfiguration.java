@@ -1,22 +1,13 @@
 package eu.europeana.api.translation.service.threshold;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 
 /**
@@ -61,7 +52,7 @@ public class ThresholdsConfiguration {
   }
 
 
-  private void validateThresholds() throws LangDetectionServiceConfigurationException {
+  public void validateThresholds() throws LangDetectionServiceConfigurationException {
     validateThresholdRanges(hintThresholds);
     validateThresholdRanges(noHintThresholds);
   }
@@ -91,30 +82,6 @@ public class ThresholdsConfiguration {
       throw new LangDetectionServiceConfigurationException("The last threshold should be unbounded");
   }
 
-
-  /**
-   * Reads the configuration from a JSON file in the classpath
-   * 
-   * @param configResourceName JSON file in the classpath
-   * @return The configuration object
-   * @throws LangDetectionServiceConfigurationException when the configuration is not valid
-   */
-  public static ThresholdsConfiguration fromJson(String configResourceName)
-      throws LangDetectionServiceConfigurationException {
-    try (InputStream inputStream = ThresholdsConfiguration.class.getResourceAsStream(configResourceName);
-        InputStreamReader rawReader = new InputStreamReader(inputStream);
-        BufferedReader reader = new BufferedReader(rawReader)) {
-      String content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-      ThresholdsConfiguration thresholdsConf = new ObjectMapper().readValue(content, ThresholdsConfiguration.class);
-      thresholdsConf.validateThresholds();
-      LOG.info("Successfully loaded service configurations from classpath resources.");
-      return thresholdsConf;
-    } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException(
-          "Cannot read service configurations from classpath resource!", e);
-    }
-  }
-  
 
   /**
    * Checks if a detection is acceptable 
