@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europeana.api.commons.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
@@ -188,7 +189,7 @@ public abstract class AbstractServiceInstantiationUtils {
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
         logInfo("Successfully loaded pangeanic thresholds from config file, Values: {}",
-            thresholds.toString());
+            LoggingUtils.sanitizeUserInput(thresholds.toString()));
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
             "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
@@ -202,7 +203,7 @@ public abstract class AbstractServiceInstantiationUtils {
         if (input != null) {
           thresholds.load(input);
           logInfo("Successfully loaded pangeanic thresholds from resources, Values: {}",
-              thresholds.toString());
+              LoggingUtils.sanitizeUserInput(thresholds.toString()));
         }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
