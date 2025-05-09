@@ -25,55 +25,63 @@ import eu.europeana.api.translation.service.google.GoogleTranslationServiceClien
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 public abstract class AbstractServiceInstantiationUtils {
-  
-  private static final Logger logger = LogManager.getLogger(AbstractServiceInstantiationUtils.class);
-  
+
+  private static final Logger logger =
+      LogManager.getLogger(AbstractServiceInstantiationUtils.class);
+
   public static final char SLASH = '/';
 
-  abstract TranslationConfig getTranslationConfig(); 
-
-  @Deprecated
+  abstract TranslationConfig getTranslationConfig();
+  
+  abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper();
+  
   /**
-   * @deprecated() 
-   * this method should not be static and used only
-   *  
+   * Creates a new instance of googleTranslationClientWrapper. Use it carefully when creating beans,
+   * so that they are singletons in the end
+   * 
    * @param translationConfig translation configuration
    * @return new instance of GoogleTranslationServiceClientWrapper
    * @throws IOException if configuration cannot be read
    */
-  public static GoogleTranslationServiceClientWrapper createGoogleTranslationClientWrapperInstance(TranslationConfig translationConfig)
-      throws IOException {
+  public static GoogleTranslationServiceClientWrapper createGoogleTranslationClientWrapperInstance(
+      TranslationConfig translationConfig) throws IOException {
     return new GoogleTranslationServiceClientWrapper(
         translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
   }
-  
-  @Deprecated
+
   /**
-   * @deprecated() 
-   * this method should not be static and used only
+   * Creates a new instance of google language detection service
    * 
    * @param translationConfig translation configuration
    * @return new instance of GoogleLangDetectService
    * @throws IOException if configuration cannot be read
    */
-  public static GoogleLangDetectService createGoogleDetectServiceInstance(TranslationConfig translationConfig) throws IOException {
-    GoogleLangDetectService googleLangDetectService = new GoogleLangDetectService(
-        translationConfig.getGoogleTranslateProjectId(), createGoogleTranslationClientWrapperInstance(translationConfig));
+  public static GoogleLangDetectService createGoogleDetectServiceInstance(
+      TranslationConfig translationConfig,
+      GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper)
+      throws IOException {
+
+    GoogleTranslationServiceClientWrapper clientWrapper =
+        (googleTranslationServiceClientWrapper != null) ? googleTranslationServiceClientWrapper
+            : createGoogleTranslationClientWrapperInstance(translationConfig);
+
+    GoogleLangDetectService googleLangDetectService =
+        new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
     return googleLangDetectService;
   }
-  
+
   LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg)
       throws LangDetectionServiceConfigurationException {
-    
-    LanguageDetectionService service; 
-    
+
+    LanguageDetectionService service;
+
     try {
       Class<?> clazz = Class.forName(serviceCfg.getClassname());
-      if(GoogleLangDetectService.class.equals(clazz)){
-        //for google we need to call specific factory method
-        service = createGoogleDetectServiceInstance(getTranslationConfig());
-      }else {
-        //instantiate service with default constructor
+      if (GoogleLangDetectService.class.equals(clazz)) {
+        // for google we need to call specific factory method
+        service = createGoogleDetectServiceInstance(getTranslationConfig(), getGoogleTranslationServiceClientWrapper());
+      } else {
+        // instantiate service with default constructor
         service = (LanguageDetectionService) clazz.getDeclaredConstructor().newInstance();
       }
       service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
@@ -87,8 +95,8 @@ public abstract class AbstractServiceInstantiationUtils {
 
     return service;
   }
-  
-  
+
+
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * 
@@ -97,29 +105,29 @@ public abstract class AbstractServiceInstantiationUtils {
    */
   public ThresholdsConfiguration loadLanguageDetectionThresholds(DetectServiceCfg detectServiceCfg)
       throws LangDetectionServiceConfigurationException {
-    
+
     String configFileName = detectServiceCfg.getConfigFilePath();
     if (StringUtils.isEmpty(configFileName)) {
       return null;
     }
 
     InputStream inputStream;
-    File languageThresholdsFile =
-        getTranslationConfig().getConfigFile(configFileName);
+    File languageThresholdsFile = getTranslationConfig().getConfigFile(configFileName);
     if (languageThresholdsFile.exists()) {
       // thresholds config file found in config folder
       try {
         inputStream = new FileInputStream(languageThresholdsFile);
       } catch (FileNotFoundException e) {
-        //should actually not happen as the file exists
-        throw new LangDetectionServiceConfigurationException("Unexpected error occured when reading configFile: " + configFileName, e);
+        // should actually not happen as the file exists
+        throw new LangDetectionServiceConfigurationException(
+            "Unexpected error occured when reading configFile: " + configFileName, e);
       }
     } else {
       // load thresholds from resources if available, need to search in the root
       // folder of resources
-      String location = configFileName.startsWith(""+SLASH) ? configFileName : (SLASH + configFileName);
-      inputStream = TranslationApiAutoconfig.class
-          .getResourceAsStream(location);
+      String location =
+          configFileName.startsWith("" + SLASH) ? configFileName : (SLASH + configFileName);
+      inputStream = TranslationApiAutoconfig.class.getResourceAsStream(location);
     }
 
     if (inputStream == null) {
@@ -135,12 +143,14 @@ public abstract class AbstractServiceInstantiationUtils {
       ThresholdsConfiguration thresholdsConf =
           new ObjectMapper().readValue(configsAsJsonString, ThresholdsConfiguration.class);
       thresholdsConf.validateThresholds();
-      
+
       if (logger.isInfoEnabled()) {
-        logger.info("Successfully loaded language detection thresholds from config file {}, Values: {}", configFileName, thresholdsConf);
+        logger.info(
+            "Successfully loaded language detection thresholds from config file {}, Values: {}",
+            configFileName, thresholdsConf);
       }
       return thresholdsConf;
-    } catch( IOException e){
+    } catch (IOException e) {
       throw new LangDetectionServiceConfigurationException(
           "Cannot load language detection thresholds from file: " + languageThresholdsFile, e);
     }
@@ -150,12 +160,12 @@ public abstract class AbstractServiceInstantiationUtils {
     return reader.lines().collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public Properties loadPangeanicTranslationThresholds(String configFileName) throws TranslationServiceConfigurationException {
+  public Properties loadPangeanicTranslationThresholds(String configFileName)
+      throws TranslationServiceConfigurationException {
 
     Properties thresholds = new Properties();
 
-    File languageThresholdsFile =
-        getTranslationConfig().getConfigFile(configFileName);
+    File languageThresholdsFile = getTranslationConfig().getConfigFile(configFileName);
     if (languageThresholdsFile.exists()) {
       // load thresholds from config file if available
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
@@ -172,8 +182,8 @@ public abstract class AbstractServiceInstantiationUtils {
     } else {
       // load thresholds from resources if available, need to search in the root
       // folder of resources
-      try (InputStream input = TranslationApiAutoconfig.class
-          .getResourceAsStream("/" + configFileName)) {
+      try (InputStream input =
+          TranslationApiAutoconfig.class.getResourceAsStream("/" + configFileName)) {
         if (input != null) {
           thresholds.load(input);
           if (logger.isInfoEnabled()) {

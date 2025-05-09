@@ -2,13 +2,9 @@ package eu.europeana.api.translation.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.regex.Pattern;
-import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,9 +34,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.config.services.DetectServiceCfg;
-import eu.europeana.api.translation.service.LanguageDetectionService;
-import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationException;
@@ -194,8 +187,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
       GoogleLangDetectService googleLangDetectService =
-          AbstractServiceInstantiationUtils.createGoogleDetectServiceInstance(translationConfig);
-      //googleLangDetectService.loadThresholds(RESOURCE_GOOGLE_CONFIDENCE_THRESHOLDS);
+          AbstractServiceInstantiationUtils.createGoogleDetectServiceInstance(translationConfig, googleTranslationServiceClientWrapper);
       return googleLangDetectService;
     }
   }

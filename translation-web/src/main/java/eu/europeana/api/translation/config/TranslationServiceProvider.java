@@ -33,6 +33,7 @@ import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 
 /**
@@ -65,6 +66,10 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   @Resource(name = BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
   TranslationService translationServicePreProcessor;
+  
+  @Resource(name = BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) 
+  GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
+  
 
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
@@ -435,5 +440,9 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   public TranslationServicesConfiguration getTranslationServicesConfig() {
     return translationServicesConfig;
+  }
+
+  GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() {
+    return googleTranslationServiceClientWrapper;
   }
 }
