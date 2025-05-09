@@ -131,10 +131,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     if (translationConfig.isUseDummyServices()) {
       return new DummyApacheTikaLangDetectService();
     } else {
-      ApacheTikaLangDetectService apacheTikaLangDetectService = new ApacheTikaLangDetectService();
-      
-      //apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS);
-      return apacheTikaLangDetectService;
+      //apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS); 
+      return new ApacheTikaLangDetectService();
     }
   }
 
@@ -175,7 +173,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       //pangeanicLangDetectService.loadThresholds(RESOURCE_PANGEANIC_CONFIDENCE_THRESHOLDS);
       return new PangeanicTranslationService(
           translationConfig.getPangeanicTranslateEndpoint(),
-          pangeanicLangDetectService, null);
+          pangeanicLangDetectService);
     }
   }
 
@@ -375,8 +373,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    TranslationServiceProvider translationServiceProvider =
-        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
+//    TranslationServiceProvider translationServiceProvider =
+//        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
     translationServiceProvider.initTranslationServicesConfiguration();
   }
 

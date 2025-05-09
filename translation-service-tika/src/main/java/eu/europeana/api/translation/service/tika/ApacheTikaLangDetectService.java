@@ -10,19 +10,17 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Apache Tika language detection service
  *
  * @author Srdjan
  */
-public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
+public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService
+    implements LanguageDetectionService {
 
   private final LanguageDetector detector;
-  private String serviceId;
-  private ThresholdsConfiguration thresholdsConf;
-
+  
   /**
    * Default constructor
    */
@@ -36,7 +34,8 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   }
 
   @Override
-  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs)
+      throws LanguageDetectionException {
     if (languageDetectionObjs.isEmpty()) {
       return;
     }
@@ -46,14 +45,14 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     for (LanguageDetectionObj obj : languageDetectionObjs) {
       // returns all tika languages sorted by score
       tikaLanguages = this.detector.detectAll(obj.getText());
-
       detectedLangs.add(chooseDetectedLang(obj.getText(), tikaLanguages, obj.getHint()));
     }
 
     // fallback check - if the lang detection is complete / successful
     if (detectedLangs.size() != languageDetectionObjs.size()) {
-      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
-          + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
+      throw new LanguageDetectionException(
+          "The Language detection is not completed successfully. Expected "
+              + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
     }
     // build results
     for (int i = 0; i < detectedLangs.size(); i++) {
@@ -61,44 +60,55 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     }
   }
 
-  protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
+  protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages,
+      String langHint) {
     if (tikaLanguages.isEmpty())
       return null;
-    if (thresholdsConf!=null) 
+    if (getThresholdsConf() != null) {
       return chooseDetectedLangUsingThresholds(sourceText, tikaLanguages, langHint);
-      
-    //In case lang hint is not null, check if it myabe exists among the langs with
-    //the highest confidence, and if so return the langHint as a detected lang, if
-    //not return the first one.
+    }
+
+    // In case lang hint is not null, check if it myabe exists among the langs with
+    // the highest confidence, and if so return the langHint as a detected lang, if
+    // not return the first one.
     // if langHint is null, return the first detected language (has the highest
     // confidence)
     String detectedLang = tikaLanguages.get(0).getLanguage();
-    if (!StringUtils.isBlank(langHint)) {
-      if (langHint.equals(detectedLang)) 
-        return langHint;
-      float confidence = tikaLanguages.get(0).getRawScore();
-      for (int i = 1; i < tikaLanguages.size(); i++) {
-        if (tikaLanguages.get(i).getRawScore() >= confidence) {
-          if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
-            detectedLang = langHint;
-            break;
-          }
-        } else {
-          break;
-        }
-      }
+    if (StringUtils.isBlank(langHint)) {
+      return detectedLang;
+    } else if (langHint.equals(detectedLang) || containsHint(tikaLanguages, langHint)) {
+      // search hint above confidence level
+      detectedLang = langHint;
     }
     return detectedLang;
   }
 
-  protected String chooseDetectedLangUsingThresholds(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
+  boolean containsHint(List<LanguageResult> tikaLanguages, String langHint) {
+    if (langHint == null) {
+      return false;
+    }
+    boolean ret = false;
+    //enable when  float confidence = tikaLanguages.get(0).getRawScore();
+    for (int i = 1; i < tikaLanguages.size(); i++) {
+      // if (tikaLanguages.get(i).getRawScore() >= confidence) &&
+      // langHint.equals(tikaLanguages.get(i).getLanguage()))
+      if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
+        ret = true;
+        break;
+      }
+    }
+    return ret;
+  }
+
+  protected String chooseDetectedLangUsingThresholds(String sourceText,
+      List<LanguageResult> tikaLanguages, String langHint) {
     //
     String detectedLang = tikaLanguages.get(0).getLanguage();
     float confidence = tikaLanguages.get(0).getRawScore();
-    if (thresholdsConf.isAcceptableDetection(sourceText, langHint, confidence))
+    if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence))
       return detectedLang;
     else
-      return StringUtils.isBlank(langHint) ? null : langHint;    
+      return StringUtils.isBlank(langHint) ? null : langHint;
   }
 
   @Override
@@ -106,26 +116,5 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     // nothing to do
   }
 
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
 
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
-  @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
-
-  public ThresholdsConfiguration getThresholdsConf() {
-    return thresholdsConf;
-  }
-
-  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
-    this.thresholdsConf = thresholdsConf;
-  }
 }

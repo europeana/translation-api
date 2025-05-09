@@ -104,6 +104,11 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     this.serviceConfigLocation = null;
   }
 
+  /**
+   * get service definition by bean name
+   * @param beanName the name of the service
+   * @return optional including requested service if available
+   */
   public Optional<DetectServiceCfg> getLangDetectServiceDefinition(String beanName) {
     // if configuration not available
     if (translationServicesConfig == null

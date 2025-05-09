@@ -12,7 +12,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Translation service implementing remote invocation of google language
@@ -26,9 +25,7 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
   private GoogleTranslationServiceClientWrapper clientWrapper;
   protected final String googleProjectId;
   private LocationName locationName;
-  private String serviceId;
-  private ThresholdsConfiguration thresholdsConf;
-
+  
   /**
    * used mainly for testing purposes.
    * 
@@ -86,7 +83,7 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
    * more elaborate methods
    */
   protected String chooseDetectedLang(String sourceText, List<DetectedLanguage> detectedLanguages, String langHint) {
-    if (thresholdsConf == null) {
+    if (getThresholdsConf() == null) {
       // Display list of detected languages sorted by detection confidence. The most
       // probable language is first.
       // The language detected: getLanguageCode()
@@ -100,7 +97,7 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
         return null;
       String detectedLang = detectedLanguages.get(0).getLanguageCode();
       float confidence = detectedLanguages.get(0).getConfidence();
-      if (thresholdsConf.isAcceptableDetection(sourceText, langHint, confidence))
+      if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence))
         return detectedLang;
       else
         return StringUtils.isBlank(langHint) ? null : langHint;
@@ -108,31 +105,7 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
   }
 
   @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
-
-  ThresholdsConfiguration getThresholdsConf() {
-    return thresholdsConf;
-  }
-
-  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
-    this.thresholdsConf = thresholdsConf;
-  }
-  
-  @Override
   public void close() {
     clientWrapper.close();
   }
-
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
 }

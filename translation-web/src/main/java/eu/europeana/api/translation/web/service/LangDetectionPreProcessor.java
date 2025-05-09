@@ -6,7 +6,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Pre processing class for the Language detection flow
@@ -36,11 +35,7 @@ public class LangDetectionPreProcessor extends AbstractLanguageDetectionService 
         return "TEXT_PROCESSOR";
     }
 
-    @Override
-    public void setServiceId(String serviceId) {
-        // leave empty
-    }
-
+    
     /**
      * Check if the text present is an eligible value.
      * Eligible Value : Any value that has at least 2 unicode consecutive letters.

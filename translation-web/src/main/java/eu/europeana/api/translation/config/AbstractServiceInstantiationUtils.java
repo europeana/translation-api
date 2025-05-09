@@ -24,6 +24,9 @@ import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
+/**
+ * Class containing utility methods for service instantiation
+ */
 public abstract class AbstractServiceInstantiationUtils {
 
   private static final Logger logger =
@@ -53,6 +56,7 @@ public abstract class AbstractServiceInstantiationUtils {
    * Creates a new instance of google language detection service
    * 
    * @param translationConfig translation configuration
+   * @param googleTranslationServiceClientWrapper wrapper for google client, mainly used for mocking service implementation
    * @return new instance of GoogleLangDetectService
    * @throws IOException if configuration cannot be read
    */
@@ -62,12 +66,11 @@ public abstract class AbstractServiceInstantiationUtils {
       throws IOException {
 
     GoogleTranslationServiceClientWrapper clientWrapper =
-        (googleTranslationServiceClientWrapper != null) ? googleTranslationServiceClientWrapper
-            : createGoogleTranslationClientWrapperInstance(translationConfig);
+        (googleTranslationServiceClientWrapper == null) ? 
+            createGoogleTranslationClientWrapperInstance(translationConfig) : 
+              googleTranslationServiceClientWrapper;
 
-    GoogleLangDetectService googleLangDetectService =
-        new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
-    return googleLangDetectService;
+    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
   }
 
   LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg)
@@ -101,6 +104,7 @@ public abstract class AbstractServiceInstantiationUtils {
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * 
    * @param detectServiceCfg the service configuration
+   * @return thresholdsConfiguration object
    * @throws LangDetectionServiceConfigurationException when unable to read the configuration
    */
   public ThresholdsConfiguration loadLanguageDetectionThresholds(DetectServiceCfg detectServiceCfg)
@@ -127,7 +131,7 @@ public abstract class AbstractServiceInstantiationUtils {
       // folder of resources
       String location =
           configFileName.startsWith("" + SLASH) ? configFileName : (SLASH + configFileName);
-      inputStream = TranslationApiAutoconfig.class.getResourceAsStream(location);
+      inputStream = AbstractServiceInstantiationUtils.class.getResourceAsStream(location);
     }
 
     if (inputStream == null) {
@@ -160,6 +164,12 @@ public abstract class AbstractServiceInstantiationUtils {
     return reader.lines().collect(Collectors.joining(System.lineSeparator()));
   }
 
+  /**
+   * Load Pangeanic thresholds from config file
+   * @param configFileName the name for the config file
+   * @return thresholds as properties 
+   * @throws TranslationServiceConfigurationException if the configuration file cannot be parsed
+   */
   public Properties loadPangeanicTranslationThresholds(String configFileName)
       throws TranslationServiceConfigurationException {
 
@@ -170,10 +180,7 @@ public abstract class AbstractServiceInstantiationUtils {
       // load thresholds from config file if available
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
-        if (logger.isInfoEnabled()) {
-          logger.info("Successfully loaded pangeanic thresholds from config file, Values: {}",
-              thresholds);
-        }
+        logInfo("Successfully loaded pangeanic thresholds from config file, Values: {}", thresholds);
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
             "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
@@ -183,13 +190,10 @@ public abstract class AbstractServiceInstantiationUtils {
       // load thresholds from resources if available, need to search in the root
       // folder of resources
       try (InputStream input =
-          TranslationApiAutoconfig.class.getResourceAsStream("/" + configFileName)) {
+          AbstractServiceInstantiationUtils.class.getResourceAsStream("/" + configFileName)) {
         if (input != null) {
           thresholds.load(input);
-          if (logger.isInfoEnabled()) {
-            logger.info("Successfully loaded pangeanic thresholds from resources, Values: {}",
-                thresholds);
-          }
+          logInfo("Successfully loaded pangeanic thresholds from resources, Values: {}", thresholds);
         }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
@@ -199,12 +203,17 @@ public abstract class AbstractServiceInstantiationUtils {
 
     // load properties
     if (thresholds.isEmpty()) {
-      if (logger.isInfoEnabled()) {
-        logger.info("No configurations found for pangeanic language thresholds available.");
-      }
+      logInfo("No configurations found for pangeanic language thresholds available.");
     }
 
     return thresholds;
+  }
+
+  private void logInfo(final String message, Object... params) {
+    if (logger.isInfoEnabled()) {
+      logger.info(message,
+          params);
+    }
   }
 
 }

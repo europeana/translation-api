@@ -5,7 +5,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Language detection service that applies multiple language detectors. The
@@ -23,9 +22,6 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  */
 public class HybridLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
 
-  private List<LanguageDetectionService> referencedServices;
-  private String serviceId;
-
   /**
    * Constructor using referenced services as array
    * 
@@ -34,26 +30,6 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService im
    */
   public HybridLangDetectService() {
     //default constructor without services
-  }
-  
-  /**
-   * Constructor using referenced services as array
-   * 
-   * @param services language detection services to be used by the hybrid
-   *                 detector, ordered by priority in descending order
-   */
-  public HybridLangDetectService(LanguageDetectionService... services) {
-    this.referencedServices = List.of(services);
-  }
-
-  /**
-   * Constructor providing referenced services as list
-   * 
-   * @param services language detection services to be used by the hybrid
-   *                 detector, ordered by priority in descending order
-   */
-  public HybridLangDetectService(List<LanguageDetectionService> services) {
-    this.referencedServices = services;
   }
 
   @Override
@@ -98,42 +74,12 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService im
   }
 
   @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public String getExternalServiceEndPoint() {
-    return null;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
-  @Override
   public boolean isSupported(String srcLang) {
-    for (LanguageDetectionService service : referencedServices) {
+    for (LanguageDetectionService service : getReferencedServices()) {
       if (service.isSupported(srcLang))
         return true;
     }
     return false;
-  }
-
-  @Override
-  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
-    //not used for hybrid implementation
-    
-  }
-
-  @Override
-  public List<LanguageDetectionService> getReferencedServices() {
-    return referencedServices;
-  }
-
-  public void setReferencedServices(List<LanguageDetectionService> services) {
-    this.referencedServices = services;
   }
 
 }
