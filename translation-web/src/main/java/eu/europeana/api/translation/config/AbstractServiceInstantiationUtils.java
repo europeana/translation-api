@@ -188,7 +188,7 @@ public abstract class AbstractServiceInstantiationUtils {
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
         logInfo("Successfully loaded pangeanic thresholds from config file, Values: {}",
-            thresholds);
+            thresholds.toString());
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
             "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
@@ -202,7 +202,7 @@ public abstract class AbstractServiceInstantiationUtils {
         if (input != null) {
           thresholds.load(input);
           logInfo("Successfully loaded pangeanic thresholds from resources, Values: {}",
-              thresholds);
+              thresholds.toString());
         }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
