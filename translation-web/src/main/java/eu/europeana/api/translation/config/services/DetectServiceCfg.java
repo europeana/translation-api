@@ -12,7 +12,7 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
 
 @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ TranslationAppConstants.SERVICE_ID, TranslationAppConstants.CLASSNAME })
+@JsonPropertyOrder({TranslationAppConstants.SERVICE_ID, TranslationAppConstants.CLASSNAME})
 public class DetectServiceCfg {
 
   private String id;
@@ -63,5 +63,4 @@ public class DetectServiceCfg {
   public void setConfigFilePath(String configFilePath) {
     this.configFilePath = configFilePath;
   }
-
 }

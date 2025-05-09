@@ -356,8 +356,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       initTranslationServices(event.getApplicationContext());
     } catch (Exception e) {
       // gracefully stop the application in case of configuration problems (code 1
-      // means exception
-      // occured at startup)
+      // means exception occured at startup)
       logger.fatal(
           "Stopping application. Translation Service initialization failed due to configuration errors!",
           e);

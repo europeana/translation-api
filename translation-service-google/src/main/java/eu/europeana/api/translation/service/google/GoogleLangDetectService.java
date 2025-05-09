@@ -81,21 +81,6 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
     }
   }
 
-  @Override
-  public void close() {
-    clientWrapper.close();
-  }
-
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
   /**
    * Return the first one. Subclasses may override this method for choosing with
    * more elaborate methods
@@ -133,6 +118,21 @@ public class GoogleLangDetectService extends AbstractLanguageDetectionService im
 
   public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
     this.thresholdsConf = thresholdsConf;
+  }
+  
+  @Override
+  public void close() {
+    clientWrapper.close();
+  }
+
+  @Override
+  public String getServiceId() {
+    return serviceId;
+  }
+
+  @Override
+  public void setServiceId(String serviceId) {
+    this.serviceId = serviceId;
   }
 
 }

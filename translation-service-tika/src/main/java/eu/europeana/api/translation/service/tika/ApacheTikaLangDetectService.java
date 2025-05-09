@@ -61,17 +61,6 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     }
   }
 
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
-
   protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
     if (tikaLanguages.isEmpty())
       return null;
@@ -115,6 +104,16 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   @Override
   public void close() {
     // nothing to do
+  }
+
+  @Override
+  public String getServiceId() {
+    return serviceId;
+  }
+
+  @Override
+  public void setServiceId(String serviceId) {
+    this.serviceId = serviceId;
   }
 
   @Override

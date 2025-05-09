@@ -146,10 +146,10 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
    */
   void readServiceConfigurations() throws TranslationServiceConfigurationException {
     if (Objects.nonNull(serviceConfigFile)) {
-      // deployments should provide config files in the external configurations folder
+      //deployments should provide config files in the external configurations folder
       readServiceConfigurationsFromConfigFile();
     } else {
-      // mainly for integration testing purposes
+      //mainly for integration testing purposes
       readServiceConfigurationsFromClassPath();
     }
   }
@@ -290,8 +290,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   }
 
   private void validateAndInitLanguageMappings() throws TranslationServiceConfigurationException {
-    // validate that each service supports the languages declared in the mappings
-    // section
+    // validate that each service supports the languages declared in the mappings section
     if (translationServicesConfig.getTranslationConfig().getMappings() == null) {
       // nothing to validate
       return;
