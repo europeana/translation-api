@@ -66,7 +66,7 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
 
     // Language detection client
-    private class LanguageDetectionClient extends AbstractLanguageDetectionService implements LanguageDetectionService {
+    private class LanguageDetectionClient extends AbstractLanguageDetectionService{
 
         @Override
         public boolean isSupported(String srcLang) {

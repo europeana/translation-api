@@ -21,13 +21,12 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
  * Language detection service based on Pangeanic solution
  */
-public class PangeanicLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
+public class PangeanicLangDetectService extends AbstractLanguageDetectionService{
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
@@ -197,6 +196,7 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
     }
   }
 
+  @Override
   public String getExternalServiceEndPoint() {
     return externalServiceEndpoint;
   }

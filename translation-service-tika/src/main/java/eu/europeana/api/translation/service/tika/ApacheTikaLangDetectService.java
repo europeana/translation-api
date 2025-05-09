@@ -16,8 +16,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  *
  * @author Srdjan
  */
-public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService
-    implements LanguageDetectionService {
+public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService{
 
   private final LanguageDetector detector;
   
@@ -90,8 +89,6 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     boolean ret = false;
     //enable when  float confidence = tikaLanguages.get(0).getRawScore();
     for (int i = 1; i < tikaLanguages.size(); i++) {
-      // if (tikaLanguages.get(i).getRawScore() >= confidence) &&
-      // langHint.equals(tikaLanguages.get(i).getLanguage()))
       if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
         ret = true;
         break;

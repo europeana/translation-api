@@ -10,7 +10,6 @@ import com.google.cloud.translate.v3.DetectedLanguage;
 import com.google.cloud.translate.v3.LocationName;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
@@ -20,7 +19,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  * @author GordeaS
  *
  */
-public class GoogleLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
+public class GoogleLangDetectService extends AbstractLanguageDetectionService{
 
   private GoogleTranslationServiceClientWrapper clientWrapper;
   protected final String googleProjectId;

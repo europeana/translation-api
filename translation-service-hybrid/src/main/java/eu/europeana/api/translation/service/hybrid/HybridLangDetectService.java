@@ -20,7 +20,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  * @author Nuno Freire
  * @since 05/02/2025
  */
-public class HybridLangDetectService extends AbstractLanguageDetectionService implements LanguageDetectionService {
+public class HybridLangDetectService extends AbstractLanguageDetectionService{
 
   /**
    * Constructor using referenced services as array

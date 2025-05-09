@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.Properties;
@@ -29,15 +31,14 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
  */
 public abstract class AbstractServiceInstantiationUtils {
 
-  private static final Logger logger =
-      LogManager.getLogger(AbstractServiceInstantiationUtils.class);
+  private static final Logger LOG = LogManager.getLogger(AbstractServiceInstantiationUtils.class);
 
   public static final char SLASH = '/';
 
   abstract TranslationConfig getTranslationConfig();
-  
+
   abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper();
-  
+
   /**
    * Creates a new instance of googleTranslationClientWrapper. Use it carefully when creating beans,
    * so that they are singletons in the end
@@ -56,7 +57,8 @@ public abstract class AbstractServiceInstantiationUtils {
    * Creates a new instance of google language detection service
    * 
    * @param translationConfig translation configuration
-   * @param googleTranslationServiceClientWrapper wrapper for google client, mainly used for mocking service implementation
+   * @param googleTranslationServiceClientWrapper wrapper for google client, mainly used for mocking
+   *        service implementation
    * @return new instance of GoogleLangDetectService
    * @throws IOException if configuration cannot be read
    */
@@ -66,11 +68,12 @@ public abstract class AbstractServiceInstantiationUtils {
       throws IOException {
 
     GoogleTranslationServiceClientWrapper clientWrapper =
-        (googleTranslationServiceClientWrapper == null) ? 
-            createGoogleTranslationClientWrapperInstance(translationConfig) : 
-              googleTranslationServiceClientWrapper;
+        (googleTranslationServiceClientWrapper == null)
+            ? createGoogleTranslationClientWrapperInstance(translationConfig)
+            : googleTranslationServiceClientWrapper;
 
-    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
+    return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
+        clientWrapper);
   }
 
   LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg)
@@ -82,7 +85,8 @@ public abstract class AbstractServiceInstantiationUtils {
       Class<?> clazz = Class.forName(serviceCfg.getClassname());
       if (GoogleLangDetectService.class.equals(clazz)) {
         // for google we need to call specific factory method
-        service = createGoogleDetectServiceInstance(getTranslationConfig(), getGoogleTranslationServiceClientWrapper());
+        service = createGoogleDetectServiceInstance(getTranslationConfig(),
+            getGoogleTranslationServiceClientWrapper());
       } else {
         // instantiate service with default constructor
         service = (LanguageDetectionService) clazz.getDeclaredConstructor().newInstance();
@@ -91,7 +95,9 @@ public abstract class AbstractServiceInstantiationUtils {
       if (StringUtils.isNotEmpty(serviceCfg.getConfigFilePath())) {
         service.setThresholdsConf(loadLanguageDetectionThresholds(serviceCfg));
       }
-    } catch (Exception e) {
+    } catch (ClassNotFoundException | IOException | InstantiationException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+        | SecurityException e) {
       throw new LangDetectionServiceConfigurationException(
           "Cannot instantiate service for class: " + serviceCfg.getClassname(), e);
     }
@@ -140,7 +146,7 @@ public abstract class AbstractServiceInstantiationUtils {
               + configFileName);
     }
 
-    try (InputStreamReader rawReader = new InputStreamReader(inputStream);
+    try (InputStreamReader rawReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
         BufferedReader reader = new BufferedReader(rawReader)) {
 
       String configsAsJsonString = readLinesAsString(reader);
@@ -148,8 +154,8 @@ public abstract class AbstractServiceInstantiationUtils {
           new ObjectMapper().readValue(configsAsJsonString, ThresholdsConfiguration.class);
       thresholdsConf.validateThresholds();
 
-      if (logger.isInfoEnabled()) {
-        logger.info(
+      if (LOG.isInfoEnabled()) {
+        LOG.info(
             "Successfully loaded language detection thresholds from config file {}, Values: {}",
             configFileName, thresholdsConf);
       }
@@ -166,8 +172,9 @@ public abstract class AbstractServiceInstantiationUtils {
 
   /**
    * Load Pangeanic thresholds from config file
+   * 
    * @param configFileName the name for the config file
-   * @return thresholds as properties 
+   * @return thresholds as properties
    * @throws TranslationServiceConfigurationException if the configuration file cannot be parsed
    */
   public Properties loadPangeanicTranslationThresholds(String configFileName)
@@ -180,7 +187,8 @@ public abstract class AbstractServiceInstantiationUtils {
       // load thresholds from config file if available
       try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
         thresholds.load(input);
-        logInfo("Successfully loaded pangeanic thresholds from config file, Values: {}", thresholds);
+        logInfo("Successfully loaded pangeanic thresholds from config file, Values: {}",
+            thresholds);
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
             "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
@@ -193,7 +201,8 @@ public abstract class AbstractServiceInstantiationUtils {
           AbstractServiceInstantiationUtils.class.getResourceAsStream("/" + configFileName)) {
         if (input != null) {
           thresholds.load(input);
-          logInfo("Successfully loaded pangeanic thresholds from resources, Values: {}", thresholds);
+          logInfo("Successfully loaded pangeanic thresholds from resources, Values: {}",
+              thresholds);
         }
       } catch (IOException e) {
         throw new TranslationServiceConfigurationException(
@@ -210,9 +219,8 @@ public abstract class AbstractServiceInstantiationUtils {
   }
 
   private void logInfo(final String message, Object... params) {
-    if (logger.isInfoEnabled()) {
-      logger.info(message,
-          params);
+    if (LOG.isInfoEnabled()) {
+      LOG.info(message, params);
     }
   }
 

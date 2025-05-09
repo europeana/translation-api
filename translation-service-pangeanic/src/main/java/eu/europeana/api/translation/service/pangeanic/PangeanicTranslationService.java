@@ -40,9 +40,9 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 // TODO get api key, for now passed empty
 public class PangeanicTranslationService extends AbstractTranslationService {
 
-  private PangeanicLangDetectService langDetectService;
+  private final PangeanicLangDetectService langDetectService;
 
-  protected static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
+  private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
   public final String externalServiceEndpoint;
 
   protected CloseableHttpClient translateClient;

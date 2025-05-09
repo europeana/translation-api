@@ -8,7 +8,7 @@ import java.util.Set;
  * @author Nuno Freire
  * @since 29/01/2025
  */
-public class ApacheTikaConstants {
+public final class ApacheTikaConstants {
 
   protected static final Set<String> supportedLanguages = Set.of("af", "an", "ar", "ast", "be", "br", "ca", "bg", "bn",
       "cs", "cy", "da", "de", "el", "en", "es", "et", "eu", "fa", "fi", "fr", "ga", "gl", "gu", "he", "hi", "hr", "ht",
