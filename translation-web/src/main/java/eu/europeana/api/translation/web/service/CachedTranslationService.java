@@ -1,9 +1,12 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
+
 import javax.validation.constraints.NotNull;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import eu.europeana.api.translation.definitions.model.TranslationCachingStats;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
@@ -77,7 +80,7 @@ public class CachedTranslationService extends AbstractTranslationService {
     //logging the number of translated/cached lines and chars
     if(logger.isInfoEnabled()) {
       TranslationCachingStats stats = computeTranslationCachingStats(translationObjs);
-      logger.info("Tracking cache usage: numValuesCached={}, numCharsCached={}, numValuesToBeTranslated={}, "
+      logger.info("Tracking cache usage: numLinesCached={}, numCharsCached={}, numLinesToBeTranslated={}, "
           + "numCharsToBeTranslated={}", stats.getNumLinesCached(), stats.getNumCharsCached(), 
           stats.getNumLinesToBeTranslated(), stats.getNumCharsToBeTranslated());
     }

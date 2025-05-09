@@ -41,7 +41,9 @@ public class MockGServiceStub extends HttpJsonTranslationServiceStub{
   private static Map<String, String> initLangDetectMap() {
     try {
       return Map.of(
-          loadFile(LANG_DETECT_GOOGLE_REQUEST).replaceAll("\r", "\n").trim(), loadFile(LANG_DETECT_GOOGLE_RESPONSE)
+          loadFile(LANG_DETECT_GOOGLE_REQUEST).replaceAll("\r", "\n").trim(), loadFile(LANG_DETECT_GOOGLE_RESPONSE),
+          loadFile(LANG_DETECT_GOOGLE_REQUEST_2).replaceAll("\r", "\n").trim(), loadFile(LANG_DETECT_GOOGLE_RESPONSE_2)
+
       );
     } catch (IOException e) {
       throw new RuntimeException("Test initialization exception (lang detect map)!", e);
@@ -149,7 +151,10 @@ public class MockGServiceStub extends HttpJsonTranslationServiceStub{
         try {
           final com.google.cloud.translate.v3.DetectLanguageResponse.Builder responseBuilder = DetectLanguageResponse.newBuilder();
           String response = getResponse(request);
-          JsonFormat.parser().ignoringUnknownFields().merge(response, responseBuilder);
+          // FIX NPE if the response is null
+          if (response != null) {
+            JsonFormat.parser().ignoringUnknownFields().merge(response, responseBuilder);
+          }
           resp = responseBuilder.build();          
         } catch (IOException e) {
           throw new RuntimeException(e);

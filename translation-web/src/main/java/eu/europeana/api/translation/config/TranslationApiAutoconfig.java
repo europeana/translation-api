@@ -2,14 +2,9 @@ package eu.europeana.api.translation.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,12 +36,14 @@ import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.DummyGLangDetectService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.hybrid.HybridLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
@@ -61,27 +58,35 @@ import eu.europeana.api.translation.web.service.TranslationPreProcessor;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SslOptions;
 
+/**
+ * Translation API configuration class
+ */
 @Configuration()
 @PropertySource(value = "translation.user.properties", ignoreResourceNotFound = true)
 public class TranslationApiAutoconfig implements ApplicationListener<ApplicationStartedEvent> {
 
-  final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS = "pangeanic_language_thresholds.properties";
   private final Logger logger = LogManager.getLogger(TranslationApiAutoconfig.class);
 
   /**
-   * Any value that has at least 2 unicode consecutive letters. The condition considered the
-   * fact that there can be words with only 2 letters that retain sufficient meaning and are therefore reasonable to be translated,
-   * especially when looking at languages other than English (see article - https://www.grammarly.com/blog/the-shortest-words-in-the-english-language/).
+   * Any value that has at least 2 unicode consecutive letters. The condition considered the fact
+   * that there can be words with only 2 letters that retain sufficient meaning and are therefore
+   * reasonable to be translated, especially when looking at languages other than English (see
+   * article - https://www.grammarly.com/blog/the-shortest-words-in-the-english-language/).
    */
   private static final String PATTERN = "\\p{IsAlphabetic}{2,}";
   private static final Pattern IsAlphabetic = Pattern.compile(PATTERN);
 
   private final TranslationConfig translationConfig;
-  TranslationServiceProvider translationServiceConfigProvider;
-  
+  TranslationServiceProvider translationServiceProvider;
+
   @Value("${translation.service.config.file:}")
   private String serviceConfigFile;
-  
+
+  /**
+   * Constructor
+   * 
+   * @param translationConfig configuration object
+   */
   public TranslationApiAutoconfig(@Autowired TranslationConfig translationConfig) {
     this.translationConfig = translationConfig;
   }
@@ -117,18 +122,34 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
   public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper()
       throws IOException {
-    return new GoogleTranslationServiceClientWrapper(
-        translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
+    return AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
   }
 
   @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
-  public ApacheTikaLangDetectService getApacheTikaLangDetectService() {
+  public ApacheTikaLangDetectService getApacheTikaLangDetectService()
+      throws LangDetectionServiceConfigurationException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyApacheTikaLangDetectService();
     } else {
+      //apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS); 
       return new ApacheTikaLangDetectService();
     }
   }
+
+  /**
+   * Creates the hybrid language detector based on Tika and Google
+   * 
+   * @param googleTranslationServiceClientWrapper google wrapper
+   * @return hybrid detector
+   * @throws LangDetectionServiceConfigurationException on config error
+   */
+  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
+  public HybridLangDetectService getHybridLangDetectService()
+      throws LangDetectionServiceConfigurationException {
+
+    return new HybridLangDetectService();
+  }
+
 
   @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
   public PangeanicLangDetectService getPangeanicLangDetectService() {
@@ -141,68 +162,31 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
   public PangeanicTranslationService getPangeanicTranslationService(
-      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE) PangeanicLangDetectService pangeanicLangDetectService)
-      throws TranslationServiceConfigurationException {
+      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
+      PangeanicLangDetectService pangeanicLangDetectService) 
+          throws TranslationServiceConfigurationException {
+   
     if (translationConfig.isUseDummyServices()) {
       return new DummyPangTranslationService();
     } else {
-      return new PangeanicTranslationService(translationConfig.getPangeanicTranslateEndpoint(),
-          pangeanicLangDetectService, loadPangeanicThresholds());
+      //note: thresholds can be initialized only in service provider because of cyclic dependencies
+      //pangeanicLangDetectService.loadThresholds(RESOURCE_PANGEANIC_CONFIDENCE_THRESHOLDS);
+      return new PangeanicTranslationService(
+          translationConfig.getPangeanicTranslateEndpoint(),
+          pangeanicLangDetectService);
     }
   }
-
-  private Properties loadPangeanicThresholds() throws TranslationServiceConfigurationException {
-
-    Properties thresholds = new Properties();
-
-    File languageThresholdsFile = getConfigFile(FILE_PANGEANIC_LANGUAGE_THRESHOLDS);
-    if (languageThresholdsFile.exists()) {
-      // load thresholds from config file if available
-      try (Reader input = Files.newBufferedReader(languageThresholdsFile.toPath())) {
-        thresholds.load(input);
-        if(logger.isInfoEnabled()) {
-          logger.info("Successfully loaded pangeanic thresholds from config file, Values: {}", thresholds);
-        }
-      } catch (IOException e) {
-        throw new TranslationServiceConfigurationException(
-            "Cannot load pangeanic language thresholds from config file: " + languageThresholdsFile,
-            e);
-      }
-    } else {
-      // load thresholds from resources if available, need to search in the root folder of resources
-      try (InputStream input = TranslationApiAutoconfig.class
-          .getResourceAsStream("/" + FILE_PANGEANIC_LANGUAGE_THRESHOLDS)) {
-        if (input != null) {
-          thresholds.load(input);
-          if(logger.isInfoEnabled()) {
-            logger.info("Successfully loaded pangeanic thresholds from resources, Values: {}", thresholds);
-          }
-        }
-      } catch (IOException e) {
-        throw new TranslationServiceConfigurationException(
-            "Cannot load pangeanic languae thresholds from file: " + languageThresholdsFile, e);
-      }
-    }
-
-    // load properties
-    if (thresholds.isEmpty()) {
-      if (logger.isInfoEnabled()) {
-        logger.info("No configurations found for pangeanic language thresholds available.");
-      }
-    }
-
-    return thresholds;
-  }
-
 
   @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
   public GoogleLangDetectService getGoogleLangDetectService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper)
+      throws LangDetectionServiceConfigurationException, IOException {
     if (translationConfig.isUseDummyServices()) {
       return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
     } else {
-      return new GoogleLangDetectService(translationConfig.getGoogleTranslateProjectId(),
-          googleTranslationServiceClientWrapper);
+      GoogleLangDetectService googleLangDetectService =
+          AbstractServiceInstantiationUtils.createGoogleDetectServiceInstance(translationConfig, googleTranslationServiceClientWrapper);
+      return googleLangDetectService;
     }
   }
 
@@ -219,33 +203,36 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
   public ETranslationTranslationService getETranslationService(
-      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer) throws Exception {
-    return new ETranslationTranslationService(
-        translationConfig.getEtranslationBaseUrl(), 
-        translationConfig.getEtranslationDomain(), 
-        translationConfig.getTranslationApiBaseUrl(),
-        translationConfig.getEtranslationMaxWaitMillisec(), 
-        translationConfig.getEtranslationUsername(),
-        translationConfig.getEtranslationPassword(),
-        redisMessageListenerContainer);
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer)
+      throws AppConfigurationException {
+    try {
+      return new ETranslationTranslationService(translationConfig.getEtranslationBaseUrl(),
+          translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),
+          translationConfig.getEtranslationMaxWaitMillisec(),
+          translationConfig.getEtranslationUsername(), translationConfig.getEtranslationPassword(),
+          redisMessageListenerContainer);
+    } catch (TranslationException e) {
+      throw new AppConfigurationException(e.getLocalizedMessage(), e);
+    }
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
   @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE,
       BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
   public TranslationServiceProvider getTranslationServiceProvider() {
-    if(StringUtils.isNotEmpty(serviceConfigFile)) {
-      translationServiceConfigProvider = new TranslationServiceProvider(getConfigFile(serviceConfigFile));
+    if (StringUtils.isNotEmpty(serviceConfigFile)) {
+      translationServiceProvider =
+          new TranslationServiceProvider(translationConfig.getConfigFile(serviceConfigFile));
     } else {
-      translationServiceConfigProvider = new TranslationServiceProvider();  
+      translationServiceProvider = new TranslationServiceProvider();
     }
-    
-    return translationServiceConfigProvider;
+
+    return translationServiceProvider;
   }
 
   @Bean(BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
   public LangDetectionPreProcessor langDetectionPreProcessor() {
-   return new LangDetectionPreProcessor(IsAlphabetic);
+    return new LangDetectionPreProcessor(IsAlphabetic);
   }
 
   @Bean(BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
@@ -253,14 +240,13 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return new TranslationPreProcessor(IsAlphabetic);
   }
 
-
   /*
    * Help, see connect to a standalone redis server:
-   * https://medium.com/turkcell/making-first-connection-to-redis-with-java-application-spring-boot-
-   * 4fc58e6fa173 A separate connection factory bean is needed here because of the proper
-   * initialization, where some methods (e.g. afterPropertiesSet()) are called by spring after the
-   * bean creation. Otherwise all these methods would need to be called manually which is not the
-   * best solution.
+   * https://medium.com/turkcell/making-first-connection-to-redis-with-java-
+   * application-spring-boot- 4fc58e6fa173 A separate connection factory bean is needed here because
+   * of the proper initialization, where some methods (e.g. afterPropertiesSet()) are called by
+   * spring after the bean creation. Otherwise all these methods would need to be called manually
+   * which is not the best solution.
    */
   @Bean(BeanNames.BEAN_REDIS_CONNECTION_FACTORY)
   LettuceConnectionFactory getRedisConnectionFactory() throws AppConfigurationException {
@@ -295,7 +281,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
           "A trustore must be provided in configurations when confinguring redis ssl connection");
     }
     // allow configurations to use the full path, for backward compatibility
-    final File trustoreFile = getConfigFile(truststorePathConfig);
+    final File trustoreFile = translationConfig.getConfigFile(truststorePathConfig);
     if (!trustoreFile.exists()) {
       throw new AppConfigurationException(
           "Invalid config file location: " + trustoreFile.getAbsolutePath());
@@ -303,19 +289,10 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return trustoreFile;
   }
 
-  /**
-   * If the input is a full path, the filename will be extracted
-   * 
-   * @param configFile name of the config file
-   * @return the File object for the configFile within the config folder
-   */
-  private File getConfigFile(String configFile) {
-    return new File(translationConfig.getConfigFolder(), FilenameUtils.getName(configFile));
-  }
-
   @Bean(BeanNames.BEAN_REDIS_TEMPLATE)
   public RedisTemplate<String, CachedTranslation> getRedisTemplate(
-      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory) throws AppConfigurationException {
+      @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory)
+      throws AppConfigurationException {
     RedisTemplate<String, CachedTranslation> redisTemplate = new RedisTemplate<>();
     redisConnectionFactory.afterPropertiesSet();
     redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -325,34 +302,36 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
-  
+
   @Bean(BeanNames.BEAN_REDIS_CACHE_SERVICE)
   @ConditionalOnProperty(name = "redis.connection.url")
   public RedisCacheService getRedisCacheService(
-      @Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate) throws AppConfigurationException {
+      @Qualifier(BeanNames.BEAN_REDIS_TEMPLATE) RedisTemplate<String, CachedTranslation> redisTemplate)
+      throws AppConfigurationException {
     return new RedisCacheService(redisTemplate);
   }
 
   @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_ADAPTER)
   MessageListenerAdapter listenerAdapter() {
-      return new MessageListenerAdapter();
+    return new MessageListenerAdapter();
   }
-  
+
   @Bean(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
   RedisMessageListenerContainer getRedisMessageListenerContainer(
       @Qualifier(BeanNames.BEAN_REDIS_CONNECTION_FACTORY) LettuceConnectionFactory redisConnectionFactory,
-      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_ADAPTER) MessageListenerAdapter messageListenerAdapter
-      ) throws AppConfigurationException {
-    RedisMessageListenerContainer container  = new RedisMessageListenerContainer(); 
+      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_ADAPTER) MessageListenerAdapter messageListenerAdapter)
+      throws AppConfigurationException {
+    RedisMessageListenerContainer container = new RedisMessageListenerContainer();
     redisConnectionFactory.afterPropertiesSet();
-    container.setConnectionFactory(redisConnectionFactory); 
+    container.setConnectionFactory(redisConnectionFactory);
     /*
-     * This is needed to avoid some cases redis closes all channels and does not allow any subscriptions (please see here: https://github.com/spring-projects/spring-data-redis/issues/2425).
-     * In this case we create one channel that is never un-subscribed from.
+     * This is needed to avoid some cases redis closes all channels and does not allow any
+     * subscriptions (please see here:
+     * https://github.com/spring-projects/spring-data-redis/issues/2425). In this case we create one
+     * channel that is never un-subscribed from.
      */
     container.addMessageListener(messageListenerAdapter, ChannelTopic.of("default"));
-//    container.addMessageListener(messageListener(), topic()); 
-    return container; 
+    return container;
   }
 
   @Override
@@ -374,8 +353,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       // init translation services
       initTranslationServices(event.getApplicationContext());
     } catch (Exception e) {
-      // gracefully stop the application in case of configuration problems (code 1 means exception
-      // occured at startup)
+      // gracefully stop the application in case of configuration problems (code 1
+      // means exception occured at startup)
       logger.fatal(
           "Stopping application. Translation Service initialization failed due to configuration errors!",
           e);
@@ -394,8 +373,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    TranslationServiceProvider translationServiceProvider =
-        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
+//    TranslationServiceProvider translationServiceProvider =
+//        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
     translationServiceProvider.initTranslationServicesConfiguration();
   }
 
@@ -416,4 +395,3 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
 }
-

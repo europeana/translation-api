@@ -2,6 +2,7 @@ package eu.europeana.api.translation.config;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

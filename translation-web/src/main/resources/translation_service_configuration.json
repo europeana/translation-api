@@ -5,16 +5,30 @@
                      , "et", "pt", "lt", "ga", "en" ],
         "services": [
             {
-                "id": "PANGEANIC"
-              , "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService"
+                "id": "PANGEANIC",
+                "classname": "eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService"
             },
             {
-                "id": "GOOGLE"
-              , "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
+                "id": "GOOGLE",
+                "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             },
             {
-                "id": "TIKA"
-              , "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
+                "id": "TIKA",
+                "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
+            },    
+            {
+                "id": "HYBRID",
+                "classname": "eu.europeana.api.translation.service.hybrid.HybridLangDetectService",
+            	"services": [
+					{
+                		"classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService",
+                		"config": "/glang_detect_service_thresholds_medium_precision.json"
+            		},
+            		{
+                		"classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService",
+                		"config": "/tika_service_thresholds_medium_precision.json"
+            		}
+            	]	
             }          
         ],
         "default": "PANGEANIC"
@@ -50,9 +64,9 @@
         ],
 	 	"mappings": [
             {
-                "source": [ "sk", "hr", "pl", "ro", "it", "sv", "bg", "fr", "es"
-                     , "cs", "de", "lv", "el", "fi", "nl", "hu", "da", "sl"
-                     , "et", "pt", "lt", "ga" ],
+                "source": [ "sk", "hr", "pl", "ro", "it", "sv", "bg", "fr", "es",
+                "cs", "de", "lv", "el", "fi", "nl", "hu", "da", "sl",
+                "et", "pt", "lt", "ga" ],
                 "target": [ "en" ],
                 "service": "PANGEANIC"
             }

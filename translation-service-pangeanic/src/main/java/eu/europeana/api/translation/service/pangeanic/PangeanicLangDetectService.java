@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -21,16 +19,19 @@ import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
-public class PangeanicLangDetectService implements LanguageDetectionService {
+/**
+ * Language detection service based on Pangeanic solution
+ */
+public class PangeanicLangDetectService extends AbstractLanguageDetectionService{
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
   private final String externalServiceEndpoint;
-  private String serviceId;
-
+  
   private Set<String> supportedLanguages = Set.of("sk", "ro", "bg", "pl", "hr", "sv", "fr", "it",
       "es", "cs", "de", "lv", "nl", "el", "fi", "da", "sl", "hu", "pt", "et", "lt", "ga", "en");
 
@@ -66,7 +67,7 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
         getExternalServiceEndPoint());
     }
   }
-
+  
   @Override
   public boolean isSupported(String srcLang) {
     return supportedLanguages.contains(srcLang);
@@ -195,18 +196,8 @@ public class PangeanicLangDetectService implements LanguageDetectionService {
     }
   }
 
+  @Override
   public String getExternalServiceEndPoint() {
     return externalServiceEndpoint;
   }
-
-  @Override
-  public String getServiceId() {
-    return serviceId;
-  }
-
-  @Override
-  public void setServiceId(String serviceId) {
-    this.serviceId = serviceId;
-  }
-
 }

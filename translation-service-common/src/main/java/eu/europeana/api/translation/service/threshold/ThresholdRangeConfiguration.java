@@ -1,0 +1,86 @@
+package eu.europeana.api.translation.service.threshold;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
+/**
+ * Definition of a confidence threshold applicable to a text length range.
+ * Used by the Tika and Google language detection services
+ * 
+ * @author Nuno Freire
+ * @since 29/01/2025
+ */
+@JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ThresholdRangeConfiguration {
+  /**
+   * The minimum text length where the threshold is applicable (inclusive). Must
+   * never be null.
+   */
+  private Integer minLength;
+
+  /**
+   * The maximum text length where the threshold is applicable (inclusive). null
+   * means unbounded
+   */
+  private Integer maxLength;
+
+  /**
+   * The minimum confidence required for accepting a detection (inclusive). null
+   * means that results in this range are always be rejected.
+   */
+  private Double confidenceThreshold;
+
+  /**
+   * Checks if a detected language is above the threshold
+   * 
+   * @param confidence the confidence on the detected language
+   * @return true, when the detection is accepted, false otherwise. 
+   */
+  public boolean isAcceptableDetection(double confidence) {
+     return (confidenceThreshold != null && (confidence >= confidenceThreshold));
+  }
+    
+  /**
+   * Checks if a detected language is above the threshold
+   * 
+   * @param sourceText the text where a language was detected
+   * @return true if this threshold is applicable to the source text
+   */
+  public boolean isApplicableToText(String sourceText) {
+    return (sourceText.length() >= minLength) && (maxLength == null || (sourceText.length() <= maxLength));
+  }
+
+  @JsonGetter(ThresholdsConstants.MIN_LENGTH)
+  public Integer getMinLength() {
+    return minLength;
+  }
+
+  @JsonSetter(ThresholdsConstants.MIN_LENGTH)
+  public void setMinLength(Integer minLength) {
+    this.minLength = minLength;
+  }
+
+  @JsonGetter(ThresholdsConstants.MAX_LENGTH)
+  public Integer getMaxLength() {
+    return maxLength;
+  }
+
+  @JsonSetter(ThresholdsConstants.MAX_LENGTH)
+  public void setMaxLength(Integer maxLength) {
+    this.maxLength = maxLength;
+  }
+
+  @JsonGetter(ThresholdsConstants.CONFIDENCE_THRESHOLD)
+  public Double getConfidenceThreshold() {
+    return confidenceThreshold;
+  }
+
+  @JsonSetter(ThresholdsConstants.CONFIDENCE_THRESHOLD)
+  public void setConfidenceThreshold(Double confidenceThreshold) {
+    this.confidenceThreshold = confidenceThreshold;
+  }
+
+}

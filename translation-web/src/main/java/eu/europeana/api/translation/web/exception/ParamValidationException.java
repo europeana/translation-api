@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.web.exception;
 
 import org.springframework.http.HttpStatus;
+
 import eu.europeana.api.commons.error.EuropeanaI18nApiException;
 
 public class ParamValidationException extends EuropeanaI18nApiException {

@@ -1,11 +1,11 @@
 package eu.europeana.api.translation.web.service;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
-
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Pre processing class for the Translation flow

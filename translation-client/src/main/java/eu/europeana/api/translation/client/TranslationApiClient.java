@@ -1,17 +1,22 @@
 package eu.europeana.api.translation.client;
 
+import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import eu.europeana.api.translation.client.config.TranslationClientConfiguration;
 import eu.europeana.api.translation.client.exception.TranslationApiException;
 import eu.europeana.api.translation.client.utils.TranslationClientUtils;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
-import eu.europeana.api.translation.definitions.model.*;
+import eu.europeana.api.translation.definitions.model.LangDetectRequest;
+import eu.europeana.api.translation.definitions.model.LangDetectResponse;
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
+import eu.europeana.api.translation.definitions.model.TranslationRequest;
+import eu.europeana.api.translation.definitions.model.TranslationResponse;
+import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.exception.TranslationException;
-
-import java.util.List;
 
 /**
  * Translation API client class
@@ -61,7 +66,7 @@ public class TranslationApiClient extends BaseTranslationApiClient {
 
 
     // Language detection client
-    private class LanguageDetectionClient implements LanguageDetectionService {
+    private class LanguageDetectionClient extends AbstractLanguageDetectionService{
 
         @Override
         public boolean isSupported(String srcLang) {
@@ -73,11 +78,7 @@ public class TranslationApiClient extends BaseTranslationApiClient {
             return SERVICE_ID;
         }
 
-        @Override
-        public void setServiceId(String serviceId) {
-            // leave empty
-        }
-
+        
         @Override
         public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
             if (languageDetectionObjs.isEmpty()) {
@@ -107,11 +108,6 @@ public class TranslationApiClient extends BaseTranslationApiClient {
         @Override
         public void close() {
             TranslationApiClient.this.close();
-        }
-
-        @Override
-        public String getExternalServiceEndPoint() {
-            return null;
         }
     }
 

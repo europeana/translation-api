@@ -9,6 +9,7 @@ public interface BeanNames {
   String BEAN_GOOGLE_TRANSLATION_SERVICE = "googleTranslationService";
   String BEAN_E_TRANSLATION_SERVICE = "eTranslationService";
   String BEAN_GOOGLE_LANG_DETECT_SERVICE = "googleLangDetectService";
+  String BEAN_HYBRID_LANG_DETECT_SERVICE = "hybridLangDetectService";
   String BEAN_DUMMY_TRANSLATION_SERVICE = "dummyTranslationService";
   String BEAN_DUMMY_LANG_DETECT_SERVICE = "dummyLangDetectService";
 

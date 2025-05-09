@@ -1,9 +1,9 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
+import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * The interface for the language detection services
@@ -14,7 +14,9 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public interface LanguageDetectionService {
 
   /**
-   * indicates if the given language is supported by the service implementing the interface
+   * indicates if the given language is supported by the service implementing the
+   * interface
+   * 
    * @param srcLang language hint
    * @return true is supported
    */
@@ -30,8 +32,8 @@ public interface LanguageDetectionService {
   void setServiceId(String serviceId);
 
   /**
-   * To fetch the source language for the list of texts. If passed, langHint is used a hint in the
-   * method
+   * To fetch the source language for the list of texts. If passed, langHint is
+   * used a hint in the method
    * 
    * @param languageDetectionObjs languge detection input object list
    * @throws LanguageDetectionException if an error occurred when invoking the external service
@@ -48,6 +50,11 @@ public interface LanguageDetectionService {
    * 
    * @return the endpoint of the external service
    */
-  public String getExternalServiceEndPoint();
+  String getExternalServiceEndPoint();
 
+  void setThresholdsConf(ThresholdsConfiguration thresholdsConf);
+
+  void setReferencedServices(List<LanguageDetectionService> services) ;
+
+  List<LanguageDetectionService> getReferencedServices();
 }

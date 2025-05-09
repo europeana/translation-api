@@ -40,9 +40,9 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 // TODO get api key, for now passed empty
 public class PangeanicTranslationService extends AbstractTranslationService {
 
-  private PangeanicLangDetectService langDetectService;
+  private final PangeanicLangDetectService langDetectService;
 
-  protected static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
+  private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
   public final String externalServiceEndpoint;
 
   protected CloseableHttpClient translateClient;
@@ -53,15 +53,9 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
   
   public PangeanicTranslationService(String externalServiceEndpoint,
-      PangeanicLangDetectService langDetectService) throws TranslationServiceConfigurationException {
-    this(externalServiceEndpoint, langDetectService, null);
-  }
-  
-  public PangeanicTranslationService(String externalServiceEndpoint,
-      PangeanicLangDetectService langDetectService, Properties thresholds) throws TranslationServiceConfigurationException {
+      PangeanicLangDetectService langDetectService){
     this.externalServiceEndpoint = externalServiceEndpoint;
     this.langDetectService = langDetectService;
-    init(thresholds);
   }
 
 
@@ -69,11 +63,15 @@ public class PangeanicTranslationService extends AbstractTranslationService {
    * Creates a new client that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
    * @param thresholds optional properties containing threshold configurations for pangeanic languages
-   * @throws TranslationServiceConfigurationException 
+   * @throws TranslationServiceConfigurationException should not be thrown by client
    * @throws IOException when there is a problem retrieving the first token
    * @throws JSONException when there is a problem decoding the received token
    */
-  private void init(Properties thresholds) throws TranslationServiceConfigurationException {
+  public void init(Properties thresholds) throws TranslationServiceConfigurationException {
+    if(thresholds == null) {
+      return;
+    }
+      
     initTranslateClient();
     initConfiguredThresholds(thresholds);
   }
