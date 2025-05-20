@@ -25,6 +25,7 @@ import eu.europeana.api.translation.service.exception.LangDetectionServiceConfig
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
@@ -88,6 +89,8 @@ public abstract class AbstractServiceInstantiationUtils {
         // for google we need to call specific factory method
         service = createGoogleDetectServiceInstance(getTranslationConfig(),
             getGoogleTranslationServiceClientWrapper());
+      } else if(PangeanicLangDetectService.class.equals(clazz)){
+        service = new PangeanicLangDetectService(getTranslationConfig().getPangeanicDetectEndpoint());
       } else {
         // instantiate service with default constructor
         service = (LanguageDetectionService) clazz.getDeclaredConstructor().newInstance();

@@ -107,11 +107,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return messageSource;
   }
 
- 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
-  public PangeanicTranslationService getPangeanicTranslationService(
-      @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
-      PangeanicLangDetectService pangeanicLangDetectService) 
+  public PangeanicTranslationService getPangeanicTranslationService() 
           throws TranslationServiceConfigurationException {
    
     if (translationConfig.isUseDummyServices()) {
@@ -121,13 +118,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       //pangeanicLangDetectService.loadThresholds(RESOURCE_PANGEANIC_CONFIDENCE_THRESHOLDS);
       return new PangeanicTranslationService(
           translationConfig.getPangeanicTranslateEndpoint(),
-          pangeanicLangDetectService);
+          new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint())
+          );
     }
   }
 
   @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
-  public GoogleTranslationService getGoogleTranslationService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper) {
+  public GoogleTranslationService getGoogleTranslationService() throws IOException{
+    //TODO: refactor to use the getGoogleTranslateClientWrapper
+    final GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper =
+        AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
+        
     if (translationConfig.isUseDummyServices()) {
       return new DummyGTranslateService(googleTranslationServiceClientWrapper);
     } else {
@@ -152,8 +153,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
-  @DependsOn(value = {BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE,
-      BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE, BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE})
   public TranslationServiceProvider getTranslationServiceProvider() {
     if (StringUtils.isNotEmpty(serviceConfigFile)) {
       translationServiceProvider =

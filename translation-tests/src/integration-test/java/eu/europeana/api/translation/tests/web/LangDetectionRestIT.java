@@ -19,25 +19,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import eu.europeana.api.translation.config.AbstractServiceInstantiationUtils;
 import eu.europeana.api.translation.config.BeanNames;
-import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
-import eu.europeana.api.translation.tests.web.mock.MockGClient;
-import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class LangDetectionRestIT extends BaseTranslationTest {
 
-  @Autowired
-  TranslationConfig translationConfig;
-  
   @Autowired
   @Qualifier(BeanNames.BEAN_SERVICE_PROVIDER)
   private TranslationServiceProvider translationServiceProvider;
@@ -46,11 +39,13 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   void mockGoogleDetect() throws IOException {
     // mock google language detection client
     GoogleTranslationServiceClientWrapper clientWrapper = mockGoogleClientWrapper();
-    getGoogleLangDetectService().init(clientWrapper);
 
-    LanguageDetectionService hybridLangDetectService = 
-        translationServiceProvider.getLangDetectionService(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE);
-    
+    initGoogleService( BeanNames.SERVICE_GOOGLE_LANG_DETECT_SERVICE, clientWrapper);
+    initGoogleService( BeanNames.SERVICE_GOOGLE_TRSH_LANG_DETECT_SERVICE, clientWrapper);
+
+    LanguageDetectionService hybridLangDetectService = translationServiceProvider
+        .getLangDetectionService(BeanNames.SERVICE_HYBRID_LANG_DETECT_SERVICE);
+
     // mock client in referenced google language detection service
     if (hybridLangDetectService != null) {
       Optional<LanguageDetectionService> serviceOptional =
@@ -64,17 +59,19 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     }
   }
 
-  private GoogleTranslationServiceClientWrapper mockGoogleClientWrapper() throws IOException {
-    GoogleTranslationServiceClientWrapper clientWrapper = 
-    AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
-    clientWrapper.setClient( new MockGClient(new MockGServiceStub()));
-    return clientWrapper;
+
+
+  private void initGoogleService( final String SERVICENAME, 
+      GoogleTranslationServiceClientWrapper clientWrapper) {
+    GoogleLangDetectService googleLangDetectService =
+        (GoogleLangDetectService) translationServiceProvider
+            .getLangDetectionService(SERVICENAME);
+    if (googleLangDetectService != null) {
+      googleLangDetectService.init(clientWrapper);
+    }
   }
 
-  private GoogleLangDetectService getGoogleLangDetectService() {
-    return (GoogleLangDetectService) translationServiceProvider
-        .getLangDetectionService(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE);
-  }
+
 
   @Test
   void langDetection() throws Exception {
@@ -110,7 +107,25 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     assertTrue(langs.length() == 3 && "hr".equals(langs.getString(0))
         && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertEquals("TIKA", serviceFieldValue);
+    assertEquals(BeanNames.SERVICE_TIKA_LANG_DETECT_SERVICE, serviceFieldValue);
+  }
+  
+  @Test
+  void langDetectionApacheTikaTrsh() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA);
+    String result = mockMvc
+        .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .content(requestJson))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertTrue(langs.length() == 3 && "hr".equals(langs.getString(0))
+        && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertEquals(BeanNames.SERVIC_TIKA_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
   }
 
   @Test
@@ -128,6 +143,24 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     assertEquals(2, langs.length());
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
+  }
+
+  @Test
+  void langDetectionGoogleTrsh() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_GOOGLE_TRSH);
+    String result = mockMvc
+        .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .content(requestJson))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    assertEquals(2, langs.length());
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertNotNull(serviceFieldValue);
+    assertEquals(BeanNames.SERVICE_GOOGLE_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
   }
 
 
