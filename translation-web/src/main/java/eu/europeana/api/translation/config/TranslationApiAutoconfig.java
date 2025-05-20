@@ -38,18 +38,12 @@ import eu.europeana.api.translation.service.etranslation.ETranslationTranslation
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
-import eu.europeana.api.translation.service.google.DummyGLangDetectService;
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
-import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
-import eu.europeana.api.translation.service.hybrid.HybridLangDetectService;
-import eu.europeana.api.translation.service.pangeanic.DummyPangLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
-import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
-import eu.europeana.api.translation.service.tika.DummyApacheTikaLangDetectService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
@@ -113,53 +107,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return messageSource;
   }
 
-  /**
-   * Creates a new client wrapper that can send translation requests to Google Cloud Translate. Note
-   * that the client needs to be closed when it's not used anymore
-   * 
-   * @throws IOException
-   */
-  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
-  public GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper()
-      throws IOException {
-    return AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
-  }
-
-  @Bean(BeanNames.BEAN_APACHE_TIKA_LANG_DETECT_SERVICE)
-  public ApacheTikaLangDetectService getApacheTikaLangDetectService()
-      throws LangDetectionServiceConfigurationException {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyApacheTikaLangDetectService();
-    } else {
-      //apacheTikaLangDetectService.loadThresholds(RESOURCE_TIKA_CONFIDENCE_THRESHOLDS); 
-      return new ApacheTikaLangDetectService();
-    }
-  }
-
-  /**
-   * Creates the hybrid language detector based on Tika and Google
-   * 
-   * @param googleTranslationServiceClientWrapper google wrapper
-   * @return hybrid detector
-   * @throws LangDetectionServiceConfigurationException on config error
-   */
-  @Bean(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
-  public HybridLangDetectService getHybridLangDetectService()
-      throws LangDetectionServiceConfigurationException {
-
-    return new HybridLangDetectService();
-  }
-
-
-  @Bean(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
-  public PangeanicLangDetectService getPangeanicLangDetectService() {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyPangLangDetectService();
-    } else {
-      return new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint());
-    }
-  }
-
+ 
   @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
   public PangeanicTranslationService getPangeanicTranslationService(
       @Qualifier(BeanNames.BEAN_PANGEANIC_LANG_DETECT_SERVICE)
@@ -174,19 +122,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       return new PangeanicTranslationService(
           translationConfig.getPangeanicTranslateEndpoint(),
           pangeanicLangDetectService);
-    }
-  }
-
-  @Bean(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
-  public GoogleLangDetectService getGoogleLangDetectService(
-      @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper)
-      throws LangDetectionServiceConfigurationException, IOException {
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyGLangDetectService(googleTranslationServiceClientWrapper);
-    } else {
-      GoogleLangDetectService googleLangDetectService =
-          AbstractServiceInstantiationUtils.createGoogleDetectServiceInstance(translationConfig, googleTranslationServiceClientWrapper);
-      return googleLangDetectService;
     }
   }
 

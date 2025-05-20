@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
@@ -67,8 +67,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   @Resource(name = BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
   TranslationService translationServicePreProcessor;
   
-  @Resource(name = BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER) 
-  GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
+  private GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
   
 
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
@@ -358,7 +357,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
       throws LangDetectionServiceConfigurationException {
     final String defaultServiceId =
         translationServicesConfig.getLangDetectConfig().getDefaultServiceId();
-    if (!getLangDetectServices().containsKey(defaultServiceId)) {
+    if (!getAvailableLangDetectionServiceIds().contains(defaultServiceId)) {
       throw new LangDetectionServiceConfigurationException(
           "Language detection default service id is invalid.");
     }
@@ -383,45 +382,33 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     for (DetectServiceCfg detectServiceCfg : translationServicesConfig.getLangDetectConfig()
         .getServiceDefinition()) {
       // validate unique service ids
-      if (getLangDetectServices().containsKey(detectServiceCfg.getId())) {
+      if (getAvailableLangDetectionServiceIds().contains(detectServiceCfg.getId())) {
         throw new LangDetectionServiceConfigurationException(
             "Duplicate service id in the language detection config.");
       }
-      // find pre-registered bean
-      LanguageDetectionService detectService;
       
-      try {
-        final Class<?> beanClass = Class.forName(detectServiceCfg.getClassname());
-        Map<String, ?> beansOfType = applicationContext.getBeansOfType(beanClass);
-        if (beansOfType.size() == 1) {
-          detectService = (LanguageDetectionService) applicationContext.getBean(beanClass);
-        } else {
-          detectService = (LanguageDetectionService) beansOfType.get(detectServiceCfg.getId());
-        }
-      } catch (BeansException | ClassNotFoundException e) {
-        throw new LangDetectionServiceConfigurationException(
-            "Service bean not available: " + detectServiceCfg.getClassname(), e);
-      }
-      //set service ID
-      detectService.setServiceId(detectServiceCfg.getId());
-      //set threshold configurations
-      if (StringUtils.isNotEmpty(detectServiceCfg.getConfigFilePath())) {
-        detectService.setThresholdsConf(loadLanguageDetectionThresholds(detectServiceCfg));
-      }
+      //create service instance
+      LanguageDetectionService detectService = createServiceInstance(detectServiceCfg);
+      
       //instantiate referenced services
-      if(detectServiceCfg.getReferencedServices() != null) {
-        List<LanguageDetectionService> referencedServices = new ArrayList<>(detectServiceCfg.getReferencedServices().size());
-        for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
-          referencedServices.add(createServiceInstance(referencedServiceCfg));
-        }
-        detectService.setReferencedServices(referencedServices);
-      }
+      initReferencedServices(detectService, detectServiceCfg);
       
       // add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }
   }
-  
+
+  private void initReferencedServices(LanguageDetectionService detectService,
+      DetectServiceCfg detectServiceCfg) throws LangDetectionServiceConfigurationException {
+    if(detectServiceCfg.getReferencedServices() != null) {
+      List<LanguageDetectionService> referencedServices = new ArrayList<>(detectServiceCfg.getReferencedServices().size());
+      for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
+        referencedServices.add(createServiceInstance(referencedServiceCfg));
+      }
+      detectService.setReferencedServices(referencedServices);
+    }
+  }
+
   public String getServiceConfigLocation() {
     return serviceConfigLocation;
   }
@@ -446,7 +433,18 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     return translationServicesConfig;
   }
 
-  GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() {
+  GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException {
+    if(googleTranslationServiceClientWrapper == null) {
+      googleTranslationServiceClientWrapper = AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
+    }
     return googleTranslationServiceClientWrapper;
+  }
+  
+  public LanguageDetectionService getLangDetectionService(final String requestedServiceId) {
+    return getLangDetectServices().get(requestedServiceId);
+  }
+  
+  public Set<String> getAvailableLangDetectionServiceIds() {
+    return getLangDetectServices().keySet();
   }
 }

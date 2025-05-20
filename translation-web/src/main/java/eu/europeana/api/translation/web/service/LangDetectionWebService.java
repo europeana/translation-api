@@ -102,12 +102,12 @@ public class LangDetectionWebService extends BaseWebService {
   private LanguageDetectionService getServiceInstance(final String requestedServiceId,
       final String languageHint, boolean isFallbackService) throws ParamValidationException {
     LanguageDetectionService detectService =
-        translationServiceProvider.getLangDetectServices().get(requestedServiceId);
+        translationServiceProvider.getLangDetectionService(requestedServiceId);
     if (detectService == null) {
       final String paramName =
           isFallbackService ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
       final String availableServices =
-          translationServiceProvider.getLangDetectServices().keySet().toString();
+          translationServiceProvider.getAvailableLangDetectionServiceIds().toString();
       throw new ParamValidationException("Requested service is invalid:" + requestedServiceId,
           ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE, new String[] {paramName,
               requestedServiceId + " (available services: " + availableServices + ")"});

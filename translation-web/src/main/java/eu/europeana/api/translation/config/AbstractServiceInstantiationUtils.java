@@ -35,10 +35,9 @@ public abstract class AbstractServiceInstantiationUtils {
   private static final Logger LOG = LogManager.getLogger(AbstractServiceInstantiationUtils.class);
 
   public static final char SLASH = '/';
-
+  
   abstract TranslationConfig getTranslationConfig();
-
-  abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper();
+  abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException;
 
   /**
    * Creates a new instance of googleTranslationClientWrapper. Use it carefully when creating beans,
@@ -54,6 +53,7 @@ public abstract class AbstractServiceInstantiationUtils {
         translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
   }
 
+  
   /**
    * Creates a new instance of google language detection service
    * 
@@ -92,7 +92,15 @@ public abstract class AbstractServiceInstantiationUtils {
         // instantiate service with default constructor
         service = (LanguageDetectionService) clazz.getDeclaredConstructor().newInstance();
       }
-      service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      
+      //set service ID
+      if(StringUtils.isNotEmpty(serviceCfg.getId())) {
+        service.setServiceId(serviceCfg.getId());
+      }else {
+        service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      }
+      
+        
       if (StringUtils.isNotEmpty(serviceCfg.getConfigFilePath())) {
         service.setThresholdsConf(loadLanguageDetectionThresholds(serviceCfg));
       }
@@ -105,7 +113,6 @@ public abstract class AbstractServiceInstantiationUtils {
 
     return service;
   }
-
 
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language

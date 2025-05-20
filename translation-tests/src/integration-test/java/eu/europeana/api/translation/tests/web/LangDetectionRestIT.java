@@ -19,14 +19,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import com.google.cloud.translate.v3.TranslationServiceClient;
+import eu.europeana.api.translation.config.AbstractServiceInstantiationUtils;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
-import eu.europeana.api.translation.service.hybrid.HybridLangDetectService;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
 import eu.europeana.api.translation.tests.web.mock.MockGClient;
 import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
@@ -37,26 +37,20 @@ public class LangDetectionRestIT extends BaseTranslationTest {
 
   @Autowired
   TranslationConfig translationConfig;
-
+  
   @Autowired
-  @Qualifier(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE)
-  GoogleLangDetectService googleLangDetectService;
-
-  @Autowired
-  @Qualifier(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE)
-  HybridLangDetectService hybridLangDetectService;
-
-  @Autowired
-  @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
-  GoogleTranslationServiceClientWrapper clientWrapper;
+  @Qualifier(BeanNames.BEAN_SERVICE_PROVIDER)
+  private TranslationServiceProvider translationServiceProvider;
 
   @BeforeAll
   void mockGoogleDetect() throws IOException {
     // mock google language detection client
-    TranslationServiceClient googleClient = new MockGClient(new MockGServiceStub());
-    clientWrapper.setClient(googleClient);
-    googleLangDetectService.init(clientWrapper);
+    GoogleTranslationServiceClientWrapper clientWrapper = mockGoogleClientWrapper();
+    getGoogleLangDetectService().init(clientWrapper);
 
+    LanguageDetectionService hybridLangDetectService = 
+        translationServiceProvider.getLangDetectionService(BeanNames.BEAN_HYBRID_LANG_DETECT_SERVICE);
+    
     // mock client in referenced google language detection service
     if (hybridLangDetectService != null) {
       Optional<LanguageDetectionService> serviceOptional =
@@ -68,6 +62,18 @@ public class LangDetectionRestIT extends BaseTranslationTest {
         googleLangDetection.init(clientWrapper);
       }
     }
+  }
+
+  private GoogleTranslationServiceClientWrapper mockGoogleClientWrapper() throws IOException {
+    GoogleTranslationServiceClientWrapper clientWrapper = 
+    AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
+    clientWrapper.setClient( new MockGClient(new MockGServiceStub()));
+    return clientWrapper;
+  }
+
+  private GoogleLangDetectService getGoogleLangDetectService() {
+    return (GoogleLangDetectService) translationServiceProvider
+        .getLangDetectionService(BeanNames.BEAN_GOOGLE_LANG_DETECT_SERVICE);
   }
 
   @Test
