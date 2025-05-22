@@ -125,7 +125,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     assertTrue(langs.length() == 3 && "hr".equals(langs.getString(0))
         && "de".equals(langs.getString(1)) && "en".equals(langs.getString(2)));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
-    assertEquals(BeanNames.SERVIC_TIKA_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
+    assertEquals(BeanNames.SERVICE_TIKA_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
   }
 
   @Test

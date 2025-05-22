@@ -18,9 +18,11 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
@@ -31,10 +33,15 @@ import eu.europeana.api.translation.config.services.TranslationServicesConfigura
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.TranslationService;
+import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
+import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
+import eu.europeana.api.translation.web.exception.AppConfigurationException;
 
 /**
  * Class used to read the translation service configurations, validate them, initialize mapping for
@@ -43,13 +50,13 @@ import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationServic
  * @author GordeaS
  *
  */
-public class TranslationServiceProvider extends AbstractServiceInstantiationUtils{
+public class TranslationServiceProvider extends AbstractServiceInstantiationUtils {
 
   public static final String DEFAULT_SERVICE_CONFIG_FILE =
       "/translation_service_configuration.json";
   private static final String FILE_PANGEANIC_LANGUAGE_THRESHOLDS =
       "pangeanic_language_thresholds.properties";
-  
+
   private final Logger logger = LogManager.getLogger(TranslationServiceProvider.class);
 
   private final String serviceConfigLocation;
@@ -60,20 +67,23 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   @Resource(name = BeanNames.BEAN_TRANSLATION_CONFIG)
   TranslationConfig translationConfig;
-  
+
   @Resource(name = BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
   LanguageDetectionService languageDetectionPreProcessor;
 
   @Resource(name = BeanNames.BEAN_TRANSLATION_PRE_PROCESSOR_SERVICE)
   TranslationService translationServicePreProcessor;
   
+  @Resource(name = BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) 
+  RedisMessageListenerContainer redisMessageListenerContainer;
+
   private GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
-  
+
 
   Map<String, LanguageDetectionService> langDetectServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> translationServices = new ConcurrentHashMap<>();
   Map<String, TranslationService> langMappings4TranslateServices = new ConcurrentHashMap<>();
-  
+
   TranslationServicesConfiguration translationServicesConfig;
 
   /**
@@ -105,6 +115,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   /**
    * get service definition by bean name
+   * 
    * @param beanName the name of the service
    * @return optional including requested service if available
    */
@@ -136,7 +147,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
    * @throws LangDetectionServiceConfigurationException if language detection services are not
    *         properly configured
    */
-  public void initTranslationServicesConfiguration()
+  public void initTranslationServicesFromConfiguration()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
     // init translation services
     readServiceConfigurations();
@@ -150,10 +161,10 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
    */
   void readServiceConfigurations() throws TranslationServiceConfigurationException {
     if (Objects.nonNull(serviceConfigFile)) {
-      //deployments should provide config files in the external configurations folder
+      // deployments should provide config files in the external configurations folder
       readServiceConfigurationsFromConfigFile();
     } else {
-      //mainly for integration testing purposes
+      // mainly for integration testing purposes
       readServiceConfigurationsFromClassPath();
     }
   }
@@ -197,20 +208,21 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   private void validateAndInitServices()
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-    
+
     // init lang detection services
-    validateAndInitLangDetectionServices();
+    initLangDetectionServices();
     validateDefaultLangDetectServiceConfig();
-    
+
     // init translation services
     validateAndInitFromTranslationServiceCfg();
   }
 
-  private void validateAndInitFromTranslationServiceCfg() throws TranslationServiceConfigurationException {
+  private void validateAndInitFromTranslationServiceCfg()
+      throws TranslationServiceConfigurationException {
     /*
      * Validate translation config
      */
-    validateAndInitTranslationServices();
+    initTranslationServices();
     // check that a default service id is a valid one
     validateDefaultTranslationService();
     // init language mappings
@@ -265,31 +277,50 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     return getTranslationServices().getOrDefault(getDefaultTranslationServiceId(), null);
   }
 
-  private void validateAndInitTranslationServices() throws TranslationServiceConfigurationException {
+  private void initTranslationServices() throws TranslationServiceConfigurationException {
     for (TranslationServiceCfg translServiceConfig : translationServicesConfig
         .getTranslationConfig().getServices()) {
       // validate unique service ids
-      if (getTranslationServices().containsKey(translServiceConfig.getId())) {
+      final String serviceId = translServiceConfig.getId();
+      if (getAvailableTranslationServiceIds().contains(serviceId)) {
         throw new TranslationServiceConfigurationException(
             "Duplicate service id in the translation config.");
       }
-      TranslationService translService;
+
+      TranslationService translService = createServiceInstance(translServiceConfig);
+      initTranslationService(translService);    
+      getTranslationServices().put(translService.getServiceId(), translService);
+    }
+  }
+
+  private void initTranslationService(TranslationService translService)
+      throws TranslationServiceConfigurationException {
+    if (translService.getClass().equals(PangeanicTranslationService.class)) {
+      // init pangeanic service
+      ((PangeanicTranslationService) translService).init(
+          translationConfig.getPangeanicTranslateEndpoint(),
+          new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint()),
+          loadPangeanicTranslationThresholds(FILE_PANGEANIC_LANGUAGE_THRESHOLDS));
+    } else if (translService.getClass().equals(GoogleTranslationService.class)) {
+      //init google service
       try {
-        translService = (TranslationService) applicationContext
-            .getBean(Class.forName(translServiceConfig.getClassname()));
-      } catch (BeansException | ClassNotFoundException e) {
-        throw new TranslationServiceConfigurationException(
-            "Service bean not available: " + translServiceConfig.getClassname(), e);
+        ((GoogleTranslationService) translService).init(
+            translationConfig.getGoogleTranslateProjectId(),
+            getGoogleTranslationServiceClientWrapper());
+      } catch (IOException e) {
+        throw new TranslationServiceConfigurationException("Cannot instantiate google translation client wrapper!", e);
       }
-      translService.setServiceId(translServiceConfig.getId());
-      
-      boolean isPangeanic = translService.getClass().equals(PangeanicTranslationService.class);
-      if(isPangeanic) {
-        ((PangeanicTranslationService) translService).init(
-            loadPangeanicTranslationThresholds(FILE_PANGEANIC_LANGUAGE_THRESHOLDS));
+    } else if (translService.getClass().equals(ETranslationTranslationService.class)) {
+      //init google service
+      try {
+        ((ETranslationTranslationService) translService).init(translationConfig.getEtranslationBaseUrl(),
+            translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),
+            translationConfig.getEtranslationMaxWaitMillisec(),
+            translationConfig.getEtranslationUsername(), translationConfig.getEtranslationPassword(),
+            redisMessageListenerContainer);
+      } catch (TranslationException e) {
+        throw new TranslationServiceConfigurationException("Cannot instantiate google translation client wrapper!", e);
       }
-      
-      getTranslationServices().put(translServiceConfig.getId(), translService);
     }
   }
 
@@ -376,8 +407,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     }
   }
 
-  private void validateAndInitLangDetectionServices()
-      throws LangDetectionServiceConfigurationException {
+  private void initLangDetectionServices() throws LangDetectionServiceConfigurationException {
     // validate and instantiate all services
     for (DetectServiceCfg detectServiceCfg : translationServicesConfig.getLangDetectConfig()
         .getServiceDefinition()) {
@@ -386,13 +416,13 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
         throw new LangDetectionServiceConfigurationException(
             "Duplicate service id in the language detection config.");
       }
-      
-      //create service instance
+
+      // create service instance
       LanguageDetectionService detectService = createServiceInstance(detectServiceCfg);
-      
-      //instantiate referenced services
+
+      // instantiate referenced services
       initReferencedServices(detectService, detectServiceCfg);
-      
+
       // add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
     }
@@ -400,8 +430,9 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
 
   private void initReferencedServices(LanguageDetectionService detectService,
       DetectServiceCfg detectServiceCfg) throws LangDetectionServiceConfigurationException {
-    if(detectServiceCfg.getReferencedServices() != null) {
-      List<LanguageDetectionService> referencedServices = new ArrayList<>(detectServiceCfg.getReferencedServices().size());
+    if (detectServiceCfg.getReferencedServices() != null) {
+      List<LanguageDetectionService> referencedServices =
+          new ArrayList<>(detectServiceCfg.getReferencedServices().size());
       for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
         referencedServices.add(createServiceInstance(referencedServiceCfg));
       }
@@ -433,18 +464,28 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     return translationServicesConfig;
   }
 
-  GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException {
-    if(googleTranslationServiceClientWrapper == null) {
-      googleTranslationServiceClientWrapper = AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
+  GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper()
+      throws IOException {
+    if (googleTranslationServiceClientWrapper == null) {
+      googleTranslationServiceClientWrapper = AbstractServiceInstantiationUtils
+          .createGoogleTranslationClientWrapperInstance(translationConfig);
     }
     return googleTranslationServiceClientWrapper;
   }
-  
+
   public LanguageDetectionService getLangDetectionService(final String requestedServiceId) {
     return getLangDetectServices().get(requestedServiceId);
+  }
+
+  public TranslationService getTranslationService(final String requestedServiceId) {
+    return getTranslationServices().get(requestedServiceId);
   }
   
   public Set<String> getAvailableLangDetectionServiceIds() {
     return getLangDetectServices().keySet();
+  }
+
+  public Set<String> getAvailableTranslationServiceIds() {
+    return getTranslationServices().keySet();
   }
 }

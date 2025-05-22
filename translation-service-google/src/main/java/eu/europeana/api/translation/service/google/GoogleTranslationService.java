@@ -21,23 +21,33 @@ import eu.europeana.api.translation.service.exception.TranslationException;
 public class GoogleTranslationService extends AbstractTranslationService {
 
   private static final String MIME_TYPE_TEXT = "text/plain";
-  private final String googleProjectId;
+  private String googleProjectId;
 
   private GoogleTranslationServiceClientWrapper clientWrapper;
   private LocationName locationName;
   private String serviceId;
 
-  public GoogleTranslationService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapperBean) {
-    this.googleProjectId = googleProjectId;
-    this.locationName = LocationName.of(googleProjectId, "global");
-    this.clientWrapper = clientWrapperBean;
+  /**
+   * Default constructor without service initialization, see {@link #init(String, GoogleTranslationServiceClientWrapper)} 
+   */
+  public GoogleTranslationService() {
+    super();
+  }
+  /**
+   * Constructor performing service initialization
+   * @param googleProjectId
+   * @param clientWrapper
+   */
+  public GoogleTranslationService(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapper) {
+    init(googleProjectId, clientWrapper);
   }
   
   /**
    * used mainly for testing purposes. 
    * @param client
    */
-  public void init(GoogleTranslationServiceClientWrapper clientWrapper) {
+  public void init(String googleProjectId, GoogleTranslationServiceClientWrapper clientWrapper) {
+    this.googleProjectId = googleProjectId;
     this.clientWrapper = clientWrapper;
     this.locationName = LocationName.of(getGoogleProjectId(), "global");
   }

@@ -20,7 +20,9 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.commons.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
+import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
@@ -117,6 +119,33 @@ public abstract class AbstractServiceInstantiationUtils {
     return service;
   }
 
+  TranslationService createServiceInstance(TranslationServiceCfg serviceCfg)
+      throws TranslationServiceConfigurationException {
+
+    TranslationService service;
+
+    try {
+      Class<?> clazz = Class.forName(serviceCfg.getClassname());
+      service = (TranslationService) clazz.getDeclaredConstructor().newInstance();
+      
+      //set service ID
+      if(StringUtils.isNotEmpty(serviceCfg.getId())) {
+        service.setServiceId(serviceCfg.getId());
+      }else {
+        service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      }
+      
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+        | SecurityException e) {
+      throw new TranslationServiceConfigurationException(
+          "Cannot instantiate service for class: " + serviceCfg.getClassname(), e);
+    }
+
+    return service;
+  }
+  
+  
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * 

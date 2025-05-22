@@ -17,13 +17,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
@@ -38,7 +41,9 @@ public class TranslationRestIT extends BaseTranslationTest {
  
   @Autowired TranslationConfig translationConfig;
   
-  @Autowired GoogleTranslationService googleTranslationService;  
+  @Autowired
+  @Qualifier(BeanNames.BEAN_SERVICE_PROVIDER)
+  private TranslationServiceProvider translationServiceProvider;
   
   @Autowired
   RedisCacheService redisCacheService;
@@ -49,7 +54,8 @@ public class TranslationRestIT extends BaseTranslationTest {
   @BeforeAll
   void startMockServers() throws IOException {
     GoogleTranslationServiceClientWrapper clientWrapper = mockGoogleClientWrapper();
-    googleTranslationService.init(clientWrapper);
+    ((GoogleTranslationService)translationServiceProvider.getTranslationService(BeanNames.SERVICE_GOOGLE_TRANSLATION))
+        .init(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
   }
     
   @Test

@@ -41,9 +41,6 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 import eu.europeana.api.translation.service.google.DummyGTranslateService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
-import eu.europeana.api.translation.service.pangeanic.DummyPangTranslationService;
-import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
-import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
@@ -107,52 +104,8 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return messageSource;
   }
 
-  @Bean(BeanNames.BEAN_PANGEANIC_TRANSLATION_SERVICE)
-  public PangeanicTranslationService getPangeanicTranslationService() 
-          throws TranslationServiceConfigurationException {
-   
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyPangTranslationService();
-    } else {
-      //note: thresholds can be initialized only in service provider because of cyclic dependencies
-      //pangeanicLangDetectService.loadThresholds(RESOURCE_PANGEANIC_CONFIDENCE_THRESHOLDS);
-      return new PangeanicTranslationService(
-          translationConfig.getPangeanicTranslateEndpoint(),
-          new PangeanicLangDetectService(translationConfig.getPangeanicDetectEndpoint())
-          );
-    }
-  }
-
-  @Bean(BeanNames.BEAN_GOOGLE_TRANSLATION_SERVICE)
-  public GoogleTranslationService getGoogleTranslationService() throws IOException{
-    //TODO: refactor to use the getGoogleTranslateClientWrapper
-    final GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper =
-        AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
-        
-    if (translationConfig.isUseDummyServices()) {
-      return new DummyGTranslateService(googleTranslationServiceClientWrapper);
-    } else {
-      return new GoogleTranslationService(translationConfig.getGoogleTranslateProjectId(),
-          googleTranslationServiceClientWrapper);
-    }
-  }
-
-  @Bean(BeanNames.BEAN_E_TRANSLATION_SERVICE)
-  public ETranslationTranslationService getETranslationService(
-      @Qualifier(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) RedisMessageListenerContainer redisMessageListenerContainer)
-      throws AppConfigurationException {
-    try {
-      return new ETranslationTranslationService(translationConfig.getEtranslationBaseUrl(),
-          translationConfig.getEtranslationDomain(), translationConfig.getTranslationApiBaseUrl(),
-          translationConfig.getEtranslationMaxWaitMillisec(),
-          translationConfig.getEtranslationUsername(), translationConfig.getEtranslationPassword(),
-          redisMessageListenerContainer);
-    } catch (TranslationException e) {
-      throw new AppConfigurationException(e.getLocalizedMessage(), e);
-    }
-  }
-
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
+  @DependsOn(BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER)
   public TranslationServiceProvider getTranslationServiceProvider() {
     if (StringUtils.isNotEmpty(serviceConfigFile)) {
       translationServiceProvider =
@@ -309,7 +262,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
 //    TranslationServiceProvider translationServiceProvider =
 //        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
-    translationServiceProvider.initTranslationServicesConfiguration();
+    translationServiceProvider.initTranslationServicesFromConfiguration();
   }
 
   /**
