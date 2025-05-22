@@ -112,7 +112,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   
   @Test
   void langDetectionApacheTikaTrsh() throws Exception {
-    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA);
+    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA_TRSH);
     String result = mockMvc
         .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
