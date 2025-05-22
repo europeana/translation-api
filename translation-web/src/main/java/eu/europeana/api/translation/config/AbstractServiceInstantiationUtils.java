@@ -20,11 +20,14 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.commons.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
+import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
@@ -35,10 +38,9 @@ public abstract class AbstractServiceInstantiationUtils {
   private static final Logger LOG = LogManager.getLogger(AbstractServiceInstantiationUtils.class);
 
   public static final char SLASH = '/';
-
+  
   abstract TranslationConfig getTranslationConfig();
-
-  abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper();
+  abstract GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper() throws IOException;
 
   /**
    * Creates a new instance of googleTranslationClientWrapper. Use it carefully when creating beans,
@@ -54,6 +56,7 @@ public abstract class AbstractServiceInstantiationUtils {
         translationConfig.getGoogleTranslateProjectId(), translationConfig.useGoogleHttpClient());
   }
 
+  
   /**
    * Creates a new instance of google language detection service
    * 
@@ -88,11 +91,21 @@ public abstract class AbstractServiceInstantiationUtils {
         // for google we need to call specific factory method
         service = createGoogleDetectServiceInstance(getTranslationConfig(),
             getGoogleTranslationServiceClientWrapper());
+      } else if(PangeanicLangDetectService.class.equals(clazz)){
+        service = new PangeanicLangDetectService(getTranslationConfig().getPangeanicDetectEndpoint());
       } else {
         // instantiate service with default constructor
         service = (LanguageDetectionService) clazz.getDeclaredConstructor().newInstance();
       }
-      service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      
+      //set service ID
+      if(StringUtils.isNotEmpty(serviceCfg.getId())) {
+        service.setServiceId(serviceCfg.getId());
+      }else {
+        service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      }
+      
+        
       if (StringUtils.isNotEmpty(serviceCfg.getConfigFilePath())) {
         service.setThresholdsConf(loadLanguageDetectionThresholds(serviceCfg));
       }
@@ -106,7 +119,33 @@ public abstract class AbstractServiceInstantiationUtils {
     return service;
   }
 
+  TranslationService createServiceInstance(TranslationServiceCfg serviceCfg)
+      throws TranslationServiceConfigurationException {
 
+    TranslationService service;
+
+    try {
+      Class<?> clazz = Class.forName(serviceCfg.getClassname());
+      service = (TranslationService) clazz.getDeclaredConstructor().newInstance();
+      
+      //set service ID
+      if(StringUtils.isNotEmpty(serviceCfg.getId())) {
+        service.setServiceId(serviceCfg.getId());
+      }else {
+        service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
+      }
+      
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+        | SecurityException e) {
+      throw new TranslationServiceConfigurationException(
+          "Cannot instantiate service for class: " + serviceCfg.getClassname(), e);
+    }
+
+    return service;
+  }
+  
+  
   /**
    * Sets the confidence thresholds for accepting/rejecting a detected language
    * 

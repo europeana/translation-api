@@ -24,17 +24,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import com.google.cloud.translate.v3.TranslationServiceClient;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
+import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.tests.BaseTranslationTest;
-import eu.europeana.api.translation.tests.web.mock.MockGClient;
-import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
 import eu.europeana.api.translation.web.service.RedisCacheService;
 
 @SpringBootTest
@@ -43,7 +41,9 @@ public class TranslationRestIT extends BaseTranslationTest {
  
   @Autowired TranslationConfig translationConfig;
   
-  @Autowired GoogleTranslationService googleTranslationService;  
+  @Autowired
+  @Qualifier(BeanNames.BEAN_SERVICE_PROVIDER)
+  private TranslationServiceProvider translationServiceProvider;
   
   @Autowired
   RedisCacheService redisCacheService;
@@ -51,15 +51,11 @@ public class TranslationRestIT extends BaseTranslationTest {
   public static final String LANGUAGE_EN = "en";
   
   
-  @Autowired 
-  @Qualifier(BeanNames.BEAN_GOOGLE_TRANSLATION_CLIENT_WRAPPER)
-  GoogleTranslationServiceClientWrapper clientWrapper;
-  
   @BeforeAll
   void startMockServers() throws IOException {
-    TranslationServiceClient googleClient = new MockGClient(new MockGServiceStub());
-    clientWrapper.setClient(googleClient);
-    googleTranslationService.init(clientWrapper);
+    GoogleTranslationServiceClientWrapper clientWrapper = mockGoogleClientWrapper();
+    ((GoogleTranslationService)translationServiceProvider.getTranslationService(BeanNames.SERVICE_GOOGLE_TRANSLATION))
+        .init(translationConfig.getGoogleTranslateProjectId(), clientWrapper);
   }
     
   @Test

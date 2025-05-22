@@ -17,7 +17,7 @@ public class DummyPangTranslationService extends PangeanicTranslationService{
    * @throws TranslationServiceConfigurationException is actually not thrown by the dummy implementation
    */
   public DummyPangTranslationService() throws TranslationServiceConfigurationException {
-    super(null, null);
+    super();
   }
   
   @Override

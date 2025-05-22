@@ -40,10 +40,10 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 // TODO get api key, for now passed empty
 public class PangeanicTranslationService extends AbstractTranslationService {
 
-  private final PangeanicLangDetectService langDetectService;
+  private PangeanicLangDetectService langDetectService;
 
   private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
-  public final String externalServiceEndpoint;
+  public String externalServiceEndpoint;
 
   protected CloseableHttpClient translateClient;
   private String serviceId;
@@ -51,14 +51,14 @@ public class PangeanicTranslationService extends AbstractTranslationService {
   
   private final EnumMap<PangeanicThresholds, Double> configuredThresholds = new EnumMap<>(PangeanicThresholds.class);
 
-  
-  public PangeanicTranslationService(String externalServiceEndpoint,
-      PangeanicLangDetectService langDetectService){
-    this.externalServiceEndpoint = externalServiceEndpoint;
-    this.langDetectService = langDetectService;
+  /**
+   * Default constructor without service initialization, see init method
+   */
+  public PangeanicTranslationService() {
+    super();
   }
-
-
+  
+  
   /**
    * Creates a new client that can send translation requests to Google Cloud Translate. Note that
    * the client needs to be closed when it's not used anymore
@@ -67,11 +67,12 @@ public class PangeanicTranslationService extends AbstractTranslationService {
    * @throws IOException when there is a problem retrieving the first token
    * @throws JSONException when there is a problem decoding the received token
    */
-  public void init(Properties thresholds) throws TranslationServiceConfigurationException {
-    if(thresholds == null) {
-      return;
-    }
-      
+  public void init(String externalServiceEndpoint,
+      PangeanicLangDetectService langDetectService, Properties thresholds) throws TranslationServiceConfigurationException {
+    
+    this.externalServiceEndpoint = externalServiceEndpoint;
+    this.langDetectService = langDetectService;
+    
     initTranslateClient();
     initConfiguredThresholds(thresholds);
   }

@@ -52,16 +52,23 @@ public class ETranslationTranslationService extends AbstractTranslationService {
   
   
   private String serviceId;
-  private final String baseUrl;
-  private final String domain;
-  private final String translationApiBaseUrl;
-  private final String credentialUsername;
-  private final String credentialPwd;
-  private final int maxWaitMillisec;
-  private final RedisMessageListenerContainer redisMessageListenerContainer;
+  private String baseUrl;
+  private String domain;
+  private String translationApiBaseUrl;
+  private String credentialUsername;
+  private String credentialPwd;
+  private int maxWaitMillisec;
+  private RedisMessageListenerContainer redisMessageListenerContainer;
 
   /**
-   * Contructor for etranslation service using dependency injection
+   * Default constructor without service initialization, see {@link #init(String, String, String, int, String, String, RedisMessageListenerContainer)}
+   */
+  public ETranslationTranslationService() {
+    super();
+  }
+  
+  /**
+   * Contructor for etranslation service with initialization
    * @param etranslationServiceBaseUrl base uRL of eTranslation service
    * @param domain eTranslation domain
    * @param translationApiBaseUrl the base URL of the translation API deployment
@@ -73,6 +80,24 @@ public class ETranslationTranslationService extends AbstractTranslationService {
    */
   public ETranslationTranslationService(String etranslationServiceBaseUrl, String domain,
       String translationApiBaseUrl, int maxWaitMillisec, String username, String password,
+      RedisMessageListenerContainer redisMessageListenerContainer) throws TranslationException {
+    init(etranslationServiceBaseUrl, domain, translationApiBaseUrl, maxWaitMillisec, username,
+        password, redisMessageListenerContainer);
+  }
+
+  /**
+   * Method for service initialization
+   * @param etranslationServiceBaseUrl base uRL of eTranslation service
+   * @param domain eTranslation domain
+   * @param translationApiBaseUrl the base URL of the translation API deployment
+   * @param maxWaitMillisec timeout for eTranslation callback 
+   * @param username eTranslation credential
+   * @param password eTranslation credential
+   * @param redisMessageListenerContainer container for PUB/SUB redis message listeners
+   * @throws TranslationException thrown in case that the translation cannot be performed/retrieved 
+   */
+  public void init(String etranslationServiceBaseUrl, String domain, String translationApiBaseUrl,
+      int maxWaitMillisec, String username, String password,
       RedisMessageListenerContainer redisMessageListenerContainer) throws TranslationException {
     if (!FAKE_BASE_URL_FOR_TESTING.equals(etranslationServiceBaseUrl)) {
       validateETranslConfigParams(etranslationServiceBaseUrl, domain, translationApiBaseUrl,

@@ -13,8 +13,19 @@
                 "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService"
             },
             {
+                "id": "GOOGLE_TRSH",
+                "classname": "eu.europeana.api.translation.service.google.GoogleLangDetectService",
+                "config": "/glang_detect_service_thresholds_medium_precision.json"
+                
+            },
+            {
                 "id": "TIKA",
                 "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService"
+            },
+            {
+                "id": "TIKA_TRSH",
+                "classname": "eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService",
+                "config": "/tika_service_thresholds_medium_precision.json"
             },    
             {
                 "id": "HYBRID",

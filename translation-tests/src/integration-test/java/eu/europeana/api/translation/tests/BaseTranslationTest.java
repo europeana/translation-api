@@ -25,10 +25,15 @@ import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 import eu.europeana.api.translation.TranslationApp;
+import eu.europeana.api.translation.config.AbstractServiceInstantiationUtils;
+import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
+import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
+import eu.europeana.api.translation.tests.web.mock.MockGClient;
+import eu.europeana.api.translation.tests.web.mock.MockGServiceStub;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -40,6 +45,9 @@ import okhttp3.mockwebserver.RecordedRequest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
+  @Autowired
+  protected TranslationConfig translationConfig;
+  
   protected MockMvc mockMvc;
   
   protected static final Logger LOG = LogManager.getLogger(BaseTranslationTest.class);
@@ -167,6 +175,13 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
     }
   }
 
+  protected GoogleTranslationServiceClientWrapper mockGoogleClientWrapper() throws IOException {
+    GoogleTranslationServiceClientWrapper clientWrapper = 
+    AbstractServiceInstantiationUtils.createGoogleTranslationClientWrapperInstance(translationConfig);
+    clientWrapper.setClient( new MockGClient(new MockGServiceStub()));
+    return clientWrapper;
+  }
+  
   private static Dispatcher setupPangeanicDispatcher() {
     return new Dispatcher() {
       @NotNull
