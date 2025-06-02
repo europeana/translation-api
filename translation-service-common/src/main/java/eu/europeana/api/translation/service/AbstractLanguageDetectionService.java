@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
+
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
@@ -13,7 +15,7 @@ public abstract class AbstractLanguageDetectionService implements LanguageDetect
   private String serviceId;
   
   @Override
-  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) {
+  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException {
     this.thresholdsConf = thresholdsConf;
   }
 

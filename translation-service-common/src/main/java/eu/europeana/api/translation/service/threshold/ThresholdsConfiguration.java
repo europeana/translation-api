@@ -21,6 +21,7 @@ import eu.europeana.api.translation.service.exception.LangDetectionServiceConfig
 public class ThresholdsConfiguration {
   protected static final Logger LOG = LogManager.getLogger(ThresholdsConfiguration.class);
 
+  private Float nonSupportedLangPrior;
   private List<ThresholdRangeConfiguration> hintThresholds;
   private List<ThresholdRangeConfiguration> noHintThresholds;
 
@@ -51,6 +52,15 @@ public class ThresholdsConfiguration {
     this.noHintThresholds = noHintThresholds;
   }
 
+  @JsonGetter(ThresholdsConstants.NON_SUPPORTED_LANG_PRIOR)
+  public Float getNonSupportedLangPrior() {
+    return nonSupportedLangPrior;
+  }
+
+  @JsonSetter(ThresholdsConstants.NON_SUPPORTED_LANG_PRIOR)
+  public void setNonSupportedLangPrior(float nonSupportedLangPrior) {
+    this.nonSupportedLangPrior = nonSupportedLangPrior;
+  }
 
   public void validateThresholds() throws LangDetectionServiceConfigurationException {
     validateThresholdRanges(hintThresholds);
@@ -101,6 +111,7 @@ public class ThresholdsConfiguration {
     }
     return false;
   }
+
   
   
   
