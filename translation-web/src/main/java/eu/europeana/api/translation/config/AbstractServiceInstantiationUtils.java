@@ -13,8 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -113,8 +111,8 @@ public abstract class AbstractServiceInstantiationUtils {
         service.setThresholdsConf(loadLanguageDetectionThresholds(serviceCfg));
       }
       
-      if(service instanceof ApacheTikaLangDetectService && detectCfg.getSupported()!= null) {
-        ((ApacheTikaLangDetectService) service).setExpectedLanguages(Set.copyOf(detectCfg.getSupported()));
+      if(detectCfg.getSupported()!= null && service instanceof ApacheTikaLangDetectService tikaService) {
+        tikaService.initDetectorPriors(detectCfg.getSupported());
       }
       
     } catch (ClassNotFoundException | IOException | InstantiationException | IllegalAccessException

@@ -35,25 +35,45 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   @Override
   public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException {
     super.setThresholdsConf(thresholdsConf);
-    if (getThresholdsConf() != null && getThresholdsConf().getNonSupportedLangPrior()!=null) {
-      
-      HashMap<String, Float> defaultPriors=new HashMap<String, Float>(ApacheTikaConstants.supportedLanguages.size());
-      for(String  lang: ApacheTikaConstants.supportedLanguages) {
-        if(detector.hasModel(lang)) {
-          if(getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
-            defaultPriors.put(lang, 1f);
-          } else {
-            defaultPriors.put(lang, thresholdsConf.getNonSupportedLangPrior());
-          }
-        }
-      }
-      try {
-        detector.setPriors(defaultPriors);
-      } catch (IOException e) {
-        throw new LangDetectionServiceConfigurationException(
-            "Error setting Tika's language priors", e);
-      }
+  }
+
+  public void initDetectorPriors(List<String> expectedLanguages) throws LangDetectionServiceConfigurationException {
+    if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior()==null) {
+      //no config for unsupported language priors
+      return;
     }
+      
+    setExpectedLanguages(expectedLanguages);
+     
+    //build priors  
+    HashMap<String, Float> defaultPriors =
+        new HashMap<>(ApacheTikaConstants.supportedLanguages.size());
+    for (String lang : ApacheTikaConstants.supportedLanguages) {
+      //only if model available
+      if(!detector.hasModel(lang)) {
+        continue;
+      }
+      
+      //add prior
+      addPrior(lang, defaultPriors);
+    }
+    
+    // set priors
+    try {
+      detector.setPriors(defaultPriors);
+    } catch (IOException e) {
+      throw new LangDetectionServiceConfigurationException("Error setting Tika's language priors",
+          e);
+    }
+    
+  }
+
+  private void addPrior(String lang, HashMap<String, Float> defaultPriors) {
+    if (getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
+        defaultPriors.put(lang, 1F);
+    } else {
+        defaultPriors.put(lang, getThresholdsConf().getNonSupportedLangPrior());
+     }
   }
 
   @Override
@@ -146,8 +166,8 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     return expectedLanguages;
   }
 
-  public void setExpectedLanguages(Set<String> expectedLanguages) {
-    this.expectedLanguages = expectedLanguages;
+  public void setExpectedLanguages(List<String> expectedLanguages) {
+    this.expectedLanguages = Set.copyOf(expectedLanguages);
   }
 
 

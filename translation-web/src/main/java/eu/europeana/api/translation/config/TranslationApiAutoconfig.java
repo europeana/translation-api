@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -34,13 +33,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import eu.europeana.api.commons.config.i18n.I18nService;
 import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
 import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
-import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
-import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
-import eu.europeana.api.translation.service.google.DummyGTranslateService;
-import eu.europeana.api.translation.service.google.GoogleTranslationService;
-import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import eu.europeana.api.translation.web.service.LangDetectionPreProcessor;
