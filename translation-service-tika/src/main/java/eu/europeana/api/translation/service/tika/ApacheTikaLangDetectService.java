@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
@@ -13,7 +14,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
 /**
  * Apache Tika language detection service
@@ -32,11 +32,11 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     this.detector = new OptimaizeLangDetector().loadModels();
   }
 
-  @Override
-  public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException {
-    super.setThresholdsConf(thresholdsConf);
-  }
-
+  /**
+   * Set detector's priors based on service configurations for API's supported languages 
+   * @param expectedLanguages the languages supported by the API
+   * @throws LangDetectionServiceConfigurationException if the priori cannot be set
+   */
   public void initDetectorPriors(List<String> expectedLanguages) throws LangDetectionServiceConfigurationException {
     if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior()==null) {
       //no config for unsupported language priors
@@ -68,7 +68,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     
   }
 
-  private void addPrior(String lang, HashMap<String, Float> defaultPriors) {
+  private void addPrior(String lang, Map<String, Float> defaultPriors) {
     if (getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
         defaultPriors.put(lang, 1F);
     } else {
