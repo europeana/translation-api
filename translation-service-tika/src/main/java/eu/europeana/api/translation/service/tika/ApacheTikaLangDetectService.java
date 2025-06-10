@@ -2,19 +2,15 @@ package eu.europeana.api.translation.service.tika;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
@@ -27,6 +23,7 @@ import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService{
 
   private final LanguageDetector detector;
+  private Set<String> expectedLanguages;
   
   /**
    * Default constructor
@@ -39,15 +36,15 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException {
     super.setThresholdsConf(thresholdsConf);
     if (getThresholdsConf() != null && getThresholdsConf().getNonSupportedLangPrior()!=null) {
-      Set<String> supportedLangsSet=null;//TODO: obtain the set of languagest supported for language detection in the API
       
       HashMap<String, Float> defaultPriors=new HashMap<String, Float>(ApacheTikaConstants.supportedLanguages.size());
       for(String  lang: ApacheTikaConstants.supportedLanguages) {
         if(detector.hasModel(lang)) {
-          if(supportedLangsSet.contains(lang))
+          if(getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
             defaultPriors.put(lang, 1f);
-          else
+          } else {
             defaultPriors.put(lang, thresholdsConf.getNonSupportedLangPrior());
+          }
         }
       }
       try {
@@ -58,7 +55,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       }
     }
   }
-  
+
   @Override
   public boolean isSupported(String srcLang) {
     return ApacheTikaConstants.supportedLanguages.contains(srcLang);
@@ -143,6 +140,14 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   @Override
   public void close() {
     // nothing to do
+  }
+
+  public Set<String> getExpectedLanguages() {
+    return expectedLanguages;
+  }
+
+  public void setExpectedLanguages(Set<String> expectedLanguages) {
+    this.expectedLanguages = expectedLanguages;
   }
 
 
