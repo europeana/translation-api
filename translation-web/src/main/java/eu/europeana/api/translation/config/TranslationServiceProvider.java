@@ -19,12 +19,11 @@ import javax.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europeana.api.translation.config.services.DetectCfg;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
 import eu.europeana.api.translation.config.services.TranslationMappingCfg;
@@ -41,7 +40,6 @@ import eu.europeana.api.translation.service.google.GoogleTranslationService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.pangeanic.PangeanicTranslationService;
-import eu.europeana.api.translation.web.exception.AppConfigurationException;
 
 /**
  * Class used to read the translation service configurations, validate them, initialize mapping for
@@ -418,10 +416,10 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
       }
 
       // create service instance
-      LanguageDetectionService detectService = createServiceInstance(detectServiceCfg);
+      LanguageDetectionService detectService = createServiceInstance(detectServiceCfg, translationServicesConfig.getLangDetectConfig());
 
       // instantiate referenced services
-      initReferencedServices(detectService, detectServiceCfg);
+      initReferencedServices(detectService, detectServiceCfg, translationServicesConfig.getLangDetectConfig());
 
       // add bean to service map
       getLangDetectServices().put(detectServiceCfg.getId(), detectService);
@@ -429,12 +427,12 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   }
 
   private void initReferencedServices(LanguageDetectionService detectService,
-      DetectServiceCfg detectServiceCfg) throws LangDetectionServiceConfigurationException {
+      DetectServiceCfg detectServiceCfg, DetectCfg detectCfg) throws LangDetectionServiceConfigurationException {
     if (detectServiceCfg.getReferencedServices() != null) {
       List<LanguageDetectionService> referencedServices =
           new ArrayList<>(detectServiceCfg.getReferencedServices().size());
       for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
-        referencedServices.add(createServiceInstance(referencedServiceCfg));
+        referencedServices.add(createServiceInstance(referencedServiceCfg, detectCfg));
       }
       detectService.setReferencedServices(referencedServices);
     }

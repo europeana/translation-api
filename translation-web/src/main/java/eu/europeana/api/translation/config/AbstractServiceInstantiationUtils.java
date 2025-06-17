@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.translation.config.services.DetectCfg;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.service.LanguageDetectionService;
@@ -29,6 +30,7 @@ import eu.europeana.api.translation.service.google.GoogleLangDetectService;
 import eu.europeana.api.translation.service.google.GoogleTranslationServiceClientWrapper;
 import eu.europeana.api.translation.service.pangeanic.PangeanicLangDetectService;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
+import eu.europeana.api.translation.service.tika.ApacheTikaLangDetectService;
 
 /**
  * Class containing utility methods for service instantiation
@@ -80,7 +82,7 @@ public abstract class AbstractServiceInstantiationUtils {
         clientWrapper);
   }
 
-  LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg)
+  LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg, DetectCfg detectCfg)
       throws LangDetectionServiceConfigurationException {
 
     LanguageDetectionService service;
@@ -105,10 +107,14 @@ public abstract class AbstractServiceInstantiationUtils {
         service.setServiceId(clazz.getSimpleName().toUpperCase(Locale.ENGLISH));
       }
       
-        
       if (StringUtils.isNotEmpty(serviceCfg.getConfigFilePath())) {
         service.setThresholdsConf(loadLanguageDetectionThresholds(serviceCfg));
       }
+      
+      if(detectCfg.getSupported()!= null && service instanceof ApacheTikaLangDetectService tikaService) {
+        tikaService.initDetectorPriors(detectCfg.getSupported());
+      }
+      
     } catch (ClassNotFoundException | IOException | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
         | SecurityException e) {

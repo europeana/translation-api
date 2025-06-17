@@ -1,4 +1,5 @@
 {
+	"nonSupportedLangPrior": 0.01,
 	"hintThresholds": [
 		{
 			"minLength": 0,

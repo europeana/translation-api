@@ -1,14 +1,18 @@
 package eu.europeana.api.translation.service.tika;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
 /**
@@ -19,12 +23,57 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService{
 
   private final LanguageDetector detector;
+  private Set<String> expectedLanguages;
   
   /**
    * Default constructor
    */
   public ApacheTikaLangDetectService() {
     this.detector = new OptimaizeLangDetector().loadModels();
+  }
+
+  /**
+   * Set detector's priors based on service configurations for API's supported languages 
+   * @param expectedLanguages the languages supported by the API
+   * @throws LangDetectionServiceConfigurationException if the priori cannot be set
+   */
+  public void initDetectorPriors(List<String> expectedLanguages) throws LangDetectionServiceConfigurationException {
+    if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior()==null) {
+      //no config for unsupported language priors
+      return;
+    }
+      
+    setExpectedLanguages(expectedLanguages);
+     
+    //build priors  
+    HashMap<String, Float> defaultPriors =
+        new HashMap<>(ApacheTikaConstants.supportedLanguages.size());
+    for (String lang : ApacheTikaConstants.supportedLanguages) {
+      //only if model available
+      if(!detector.hasModel(lang)) {
+        continue;
+      }
+      
+      //add prior
+      addPrior(lang, defaultPriors);
+    }
+    
+    // set priors
+    try {
+      detector.setPriors(defaultPriors);
+    } catch (IOException e) {
+      throw new LangDetectionServiceConfigurationException("Error setting Tika's language priors",
+          e);
+    }
+    
+  }
+
+  private void addPrior(String lang, Map<String, Float> defaultPriors) {
+    if (getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
+        defaultPriors.put(lang, 1F);
+    } else {
+        defaultPriors.put(lang, getThresholdsConf().getNonSupportedLangPrior());
+     }
   }
 
   @Override
@@ -111,6 +160,14 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   @Override
   public void close() {
     // nothing to do
+  }
+
+  public Set<String> getExpectedLanguages() {
+    return expectedLanguages;
+  }
+
+  public void setExpectedLanguages(List<String> expectedLanguages) {
+    this.expectedLanguages = Set.copyOf(expectedLanguages);
   }
 
 

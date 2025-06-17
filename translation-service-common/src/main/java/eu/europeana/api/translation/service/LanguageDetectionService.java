@@ -2,6 +2,7 @@ package eu.europeana.api.translation.service;
 
 import java.util.List;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
@@ -52,7 +53,7 @@ public interface LanguageDetectionService {
    */
   String getExternalServiceEndPoint();
 
-  void setThresholdsConf(ThresholdsConfiguration thresholdsConf);
+  void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException;
 
   void setReferencedServices(List<LanguageDetectionService> services) ;
 
