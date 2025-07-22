@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>translation-api</artifactId>
 		<groupId>eu.europeana.api</groupId>
-		<version>0.1.3-SNAPSHOT</version>
+		<version>0.1.3</version>
 	</parent>
 
 	<artifactId>translation-definitions</artifactId>
