@@ -45,7 +45,7 @@ public class LangDetectionWebService extends BaseWebService {
       // send the values which are not yet translated (isTranslated=false)
       filteredObjs = languageDetectionObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList());
       if(logger.isDebugEnabled()) {
-        logger.debug("Requesting lang detection from service: {}", langDetectService.getServiceId(), 
+        logger.debug("Requesting lang detection from service: {}, for text: {}", langDetectService.getServiceId(), 
             filteredObjs.stream().map(to -> to.getText()).toList());
       }
       
@@ -57,7 +57,7 @@ public class LangDetectionWebService extends BaseWebService {
         throwApiException(originalError);
       } else {
         try {
-          logger.debug("Requesting lang detection from falback service: {}", fallback.getServiceId(), 
+          logger.debug("Requesting lang detection from falback service: {}, for text: {}", fallback.getServiceId(), 
               filteredObjs.stream().map(to -> to.getText()).toList());
           
           fallback.detectLang(filteredObjs);
