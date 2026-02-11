@@ -55,4 +55,6 @@ translation.eTranslation.password=
 # 	eTranslation domain could be "SPD" (for neural and speed-optimized statistical engines on the cloud. This is the default.) else "Europeana"
 translation.eTranslation.domain=
 translation.eTranslation.maxWaitMillisec=
+#if longer texts need to be split in chunks for eTranslation service
+translation.eTranslation.truncate=true
 

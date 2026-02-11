@@ -1,6 +1,8 @@
 package eu.europeana.api.translation.service.hybrid;
 
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageDetectionService;
@@ -22,6 +24,8 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class HybridLangDetectService extends AbstractLanguageDetectionService{
 
+  private final Logger logger = LogManager.getLogger(getClass());
+  
   /**
    * Constructor using referenced services as array
    * 
@@ -63,8 +67,16 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
     
     for (LanguageDetectionService service : getReferencedServices()) {
       service.detectLang(isolatedObj);
-      if (obj.getDetectedLang() != null)
+      if (obj.getDetectedLang() != null) {
+        if(logger.isDebugEnabled()) {
+          logger.debug("Language: {} detected with service: {} for text: {} ", obj.getDetectedLang(), service.getServiceId(), obj.getText());
+        }
         break;
+      } else {
+        if(logger.isDebugEnabled()) {
+          logger.debug("No Language: detected with service: {} with hint: {} for text: {} ", service.getServiceId(), obj.getHint(), obj.getText());
+        }
+      }
     }
   }
 

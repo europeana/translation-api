@@ -75,7 +75,7 @@ public class TranslationConfig{
   @Value("${translation.eTranslation.baseUrl:#{null}}")
   private String etranslationBaseUrl;
   
-  @Value("${translation.eTranslation.truncate:#{null}}")
+  @Value("${translation.eTranslation.truncate:false}")
   private boolean etranslationTruncate;
 
   @Value("${translation.dummy.services:false}")
