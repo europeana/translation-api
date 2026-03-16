@@ -9,10 +9,6 @@
   <artifactId>translation-service-tika</artifactId>
   <name>translation-service-tika</name>
   <description>The Java APIs for the Apache Tika language detection services (part of Translation API)</description>
-
-  <properties>
-  	<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
   
   <dependencies>
 	<dependency>

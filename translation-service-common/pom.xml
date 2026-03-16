@@ -11,10 +11,6 @@
   <name>translation-service-common</name>
   <description>Common functionality to be reused by specific implementation of language detection and translation services</description>
 
-  <properties>
-  	<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
-  
   	<dependencies>
 		<dependency>
             <groupId>eu.europeana.api.commons</groupId>

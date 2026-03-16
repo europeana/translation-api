@@ -11,10 +11,6 @@
   <name>translation-service-google</name>
   <description>The Java APIs for the Google language detection and translation services (part of Translation API)</description>
 
-  <properties>
-  	<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
-  
   	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>

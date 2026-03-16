@@ -11,11 +11,8 @@
   <name>translation-service-pangeanic</name>
   <description>The Java APIs for the Pangeanic language detection (and translation) services (part of Translation API)</description>
 
-  <properties>
-  	<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
 
-	<dependencies>
+  <dependencies>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-common</artifactId>
@@ -27,7 +24,7 @@
 		    <artifactId>httpclient</artifactId>
 		</dependency>		
 	
-	</dependencies>
+  </dependencies>
 
   
 </project>

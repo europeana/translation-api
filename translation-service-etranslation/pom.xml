@@ -10,10 +10,6 @@
   <name>translation-service-etranslation</name>
   <description>The Java APIs for the eTranslation service</description>
 
-  <properties>
-  	<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-  </properties>
-  
   <dependencies>
 	  <dependency>
 		  <groupId>org.springframework.boot</groupId>

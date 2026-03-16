@@ -10,10 +10,6 @@
 	<name>translation-service-hybrid</name>
 	<description>The Java APIs for an hybrid language detection service (part of Translation API)</description>
 
-	<properties>
-		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>	
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
