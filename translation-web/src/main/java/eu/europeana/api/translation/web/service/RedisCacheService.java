@@ -5,16 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.util.TranslationUtils;
 import eu.europeana.api.translation.web.model.CachedTranslation;
-import io.micrometer.core.instrument.util.StringUtils;
+import io.micrometer.common.util.StringUtils;
 
 public class RedisCacheService {
 
@@ -163,7 +161,7 @@ public class RedisCacheService {
   public void deleteAll() {
     RedisConnectionFactory connFact = redisTemplate.getConnectionFactory();
     if (connFact != null) {
-      connFact.getConnection().flushAll();
+      connFact.getConnection().serverCommands().flushAll();
     }
   }
 

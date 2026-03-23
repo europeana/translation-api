@@ -1,18 +1,17 @@
 package eu.europeana.api.translation.web.service;
 
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_UNSUPPORTED_LANG;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import eu.europeana.api.commons.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.exceptions.InvalidParamException;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.model.LangDetectRequest;
@@ -21,7 +20,6 @@ import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
 public class LangDetectionWebService extends BaseWebService {
@@ -78,7 +76,7 @@ public class LangDetectionWebService extends BaseWebService {
   }
 
   private LanguageDetectionService getFallbackService(LangDetectRequest langDetectRequest)
-      throws ParamValidationException {
+      throws InvalidParamException {
     // only if indicated in request
     if (langDetectRequest.getFallback() == null) {
       return null;
@@ -89,7 +87,7 @@ public class LangDetectionWebService extends BaseWebService {
   }
 
   private LanguageDetectionService getLangDetectService(LangDetectRequest langDetectRequest)
-      throws ParamValidationException {
+      throws InvalidParamException {
     final String requestedServiceId = langDetectRequest.getService();
     final String languageHint = langDetectRequest.getLang();
 
@@ -103,12 +101,12 @@ public class LangDetectionWebService extends BaseWebService {
   }
 
   private LanguageDetectionService getServiceInstance(final String requestedServiceId,
-      final String languageHint) throws ParamValidationException {
+      final String languageHint) throws InvalidParamException {
     return getServiceInstance(requestedServiceId, languageHint, false);
   }
 
   private LanguageDetectionService getServiceInstance(final String requestedServiceId,
-      final String languageHint, boolean isFallbackService) throws ParamValidationException {
+      final String languageHint, boolean isFallbackService) throws InvalidParamException {
     LanguageDetectionService detectService =
         translationServiceProvider.getLangDetectionService(requestedServiceId);
     if (detectService == null) {
@@ -116,20 +114,17 @@ public class LangDetectionWebService extends BaseWebService {
           isFallbackService ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
       final String availableServices =
           translationServiceProvider.getAvailableLangDetectionServiceIds().toString();
-      throw new ParamValidationException("Requested service is invalid:" + requestedServiceId,
-          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE, new String[] {paramName,
-              requestedServiceId + " (available services: " + availableServices + ")"});
+      throw new InvalidParamException (List.of(paramName,
+              requestedServiceId + " (available services: " + availableServices + ")"));
     }
     // check if the "lang" is supported
     if (languageHint != null && !detectService.isSupported(languageHint)) {
-      throw new ParamValidationException("Language hint not supported:" + languageHint,
-          ERROR_INVALID_PARAM_VALUE, ERROR_UNSUPPORTED_LANG,
-          new String[] {TranslationAppConstants.LANG, requestedServiceId});
+      throw new InvalidParamException ((List.of(TranslationAppConstants.LANG, requestedServiceId)));
     }
     return detectService;
   }
 
-  public boolean isLangDetectionSupported(@NotNull String lang) {
+  public boolean isLangDetectionSupported(@NonNull String lang) {
     return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig()
         .getSupported().contains(lang.toLowerCase(Locale.ENGLISH));
   }

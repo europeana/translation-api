@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +15,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.lang.NonNull;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -186,9 +186,9 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   
   private static Dispatcher setupPangeanicDispatcher() {
     return new Dispatcher() {
-      @NotNull
+      @NonNull
       @Override
-      public MockResponse dispatch(@NotNull RecordedRequest request) throws InterruptedException {
+      public MockResponse dispatch(@NonNull RecordedRequest request) throws InterruptedException {
         try {
           
           String requestBody = Objects.requireNonNull(request.getBody().readUtf8());

@@ -15,12 +15,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
   
   MediaType jsonLdMediaType =
-      MediaType.valueOf(eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD);
+      MediaType.valueOf(eu.europeana.api.commons_sb3.definitions.http.HttpHeaders.CONTENT_TYPE_JSONLD);
   Map<String, MediaType> mediaTypesMaping = new HashMap<String, MediaType>();
 
   /** Setup CORS for all GET, HEAD and OPTIONS, requests. */
   @Override
-  @SuppressWarnings({"external_findsecbugs:PERMISSIVE_CORS", "PERMISSIVE_CORS", "java:S5122"}) //the API is public
   public void addCorsMappings(CorsRegistry registry) {
     registry
         .addMapping("/**")

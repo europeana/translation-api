@@ -15,12 +15,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.lang.NonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europeana.api.translation.config.services.DetectCfg;
@@ -243,7 +243,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
     }
   }
 
-  private void validateSupportedLanguagePair(@NotNull String srcLang, @NotNull String trgLang)
+  private void validateSupportedLanguagePair(@NonNull String srcLang, @NonNull String trgLang)
       throws TranslationServiceConfigurationException {
 
     // check if available in language mappings

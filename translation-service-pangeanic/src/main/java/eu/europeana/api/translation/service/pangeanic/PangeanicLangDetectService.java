@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -58,8 +61,9 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(PangeanicTranslationUtils.MAX_CONNECTIONS);
     cm.setDefaultMaxPerRoute(PangeanicTranslationUtils.MAX_CONNECTIONS_PER_ROUTE);
+    int keepAliveTimeut = 60;
     cm.setDefaultSocketConfig(
-        SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
+        SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(Timeout.of(keepAliveTimeut, TimeUnit.MINUTES)).build());
     detectClient = HttpClients.custom().setConnectionManager(cm).build();
     if(LOG.isInfoEnabled()) {
       LOG.info(
@@ -119,12 +123,12 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
     try (CloseableHttpResponse response = detectClient.execute(post)) {
       // Pageanic BUG - sometimes language detect sends 400 Bad request with proper response and
       // error message
-      if (response == null || response.getStatusLine() == null) {
+      if (response == null) {
         throw new LanguageDetectionException(
             "Invalid reponse received from Pangeanic service, no response or status line available!");
       } 
       
-      remoteStatusCode = response.getStatusLine().getStatusCode(); 
+      remoteStatusCode = response.getCode(); 
       boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
       String json = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
       if ( failedRequest ) {
@@ -151,10 +155,10 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
     } catch (ClientProtocolException e) {
       throw new LanguageDetectionException("Remote service invocation error.",
           remoteStatusCode, e);
-    } catch (JSONException | IOException e) {
+    } catch (JSONException | ParseException | IOException e) {
       throw new LanguageDetectionException("Cannot read pangeanic service response.",
           remoteStatusCode, e);
-    }
+    } 
   }
 
   private List<String> extractDetectedLanguages(JSONObject obj) throws JSONException {

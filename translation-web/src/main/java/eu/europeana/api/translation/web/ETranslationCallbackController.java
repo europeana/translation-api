@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.web.model.CachedTranslation;
 import io.swagger.v3.oas.annotations.tags.Tag;

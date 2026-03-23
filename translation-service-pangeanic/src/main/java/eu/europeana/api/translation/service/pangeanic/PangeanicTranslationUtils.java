@@ -6,20 +6,19 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
-import eu.europeana.api.translation.definitions.model.TranslationObj;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
+import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.exception.TranslationException;
 
 public class PangeanicTranslationUtils {
@@ -90,10 +89,10 @@ public class PangeanicTranslationUtils {
     post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
     post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Sending POST {}", post.getURI());
+      LOG.trace("Sending POST {}", post);
       LOG.trace("  body {}", body);
       LOG.trace("  headers:");
-      for (Header header : post.getAllHeaders()) {
+      for (Header header : post.getHeaders()) {
         LOG.trace("  {}: {}", header.getName(), header.getValue());
       }
     }
@@ -109,10 +108,10 @@ public class PangeanicTranslationUtils {
     post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
     post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Sending POST {}", post.getURI());
+      LOG.trace("Sending POST {}", post);
       LOG.trace("  body {}", body);
       LOG.trace("  headers:");
-      for (Header header : post.getAllHeaders()) {
+      for (Header header : post.getHeaders()) {
         LOG.trace("  {}: {}", header.getName(), header.getValue());
       }
     }

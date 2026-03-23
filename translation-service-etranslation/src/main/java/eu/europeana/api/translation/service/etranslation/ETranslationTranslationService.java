@@ -7,20 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.CredentialsStore;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.utils.Base64;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -186,12 +185,9 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       // read translation response
       readTranslationResponseFromRedis(redisMessageListenerAdapter, translationObjs, eTranslJointStr.length());
       
-    } catch (JSONException | UnsupportedEncodingException e) {
+    } catch (JSONException e) {
       throw new TranslationException(
           "Exception during the eTranslation http request body creation.", 0, e);
-    } catch (IOException e) {
-      throw new TranslationException(
-          "Exception during sending the eTranslation http request.", 0, e);
     } finally {
       /*
        * unsubscibe this listener which automatically deletes the created pub/sub channel, which
@@ -229,7 +225,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
 
     if (response.contains(ETranslationTranslationService.ERROR_CALLBACK_MARKUP)) {
       // eTtransl error callback received
-      throw new TranslationException(response, HttpStatus.SC_UNPROCESSABLE_ENTITY);
+      throw new TranslationException(response, HttpStatus.SC_UNPROCESSABLE_CONTENT);
     }
 
     // fill translations into the provided translation list
@@ -431,39 +427,40 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     return jsonBody.toString();
   }
 
-  private long sendTranslationRequest(String content) throws TranslationException, IOException {
-    CredentialsProvider credsProvider = new BasicCredentialsProvider();
-    credsProvider.setCredentials(AuthScope.ANY,
-        new UsernamePasswordCredentials(credentialUsername, credentialPwd));
+  private long sendTranslationRequest(String content) throws TranslationException{
+    CredentialsStore credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials( new AuthScope(baseUrl, -1),
+        new UsernamePasswordCredentials(credentialUsername, credentialPwd.toCharArray()));
     CloseableHttpClient httpClient =
         HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+    
     HttpPost request = new HttpPost(baseUrl);
-    StringEntity body = new StringEntity(content, "UTF-8");
-    request.addHeader("content-type", "application/json");
+    StringEntity body = new StringEntity(content, StandardCharsets.UTF_8);
+    request.addHeader("content-type", ContentType.APPLICATION_JSON.getMimeType());
     request.setEntity(body);
-
-    CloseableHttpResponse response = httpClient.execute(request);
-    StatusLine respStatusLine = response.getStatusLine();
-    String respBody = EntityUtils.toString(response.getEntity(), "UTF-8");
-
-    if (HttpStatus.SC_OK != respStatusLine.getStatusCode()) {
-      throw new TranslationException(
-          "The translation request could not be successfully registered. ETranslation response: "
-              + respStatusLine.getStatusCode() + ", response body: " + respBody);
-    }
-
+    
+    BasicHttpClientResponseHandler responseHandler = new BasicHttpClientResponseHandler();
+    
+    String responseBody; 
+    try {
+      responseBody = httpClient.execute(request, responseHandler);
+     }catch (IOException e) {
+       throw new TranslationException(
+           "The translation request could not be successfully registered. ETranslation response: " + e.getMessage());
+    } 
+   
     long requestNumber;
     try {
-      requestNumber = Long.parseLong(respBody);
+      requestNumber = Long.parseLong(responseBody);
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("eTranslation request sent with the request-id: {} and body: {}.",
             requestNumber, sanitizeRequestBodyForLogging(content));
       }
       if (requestNumber < 0) {
-        throw wrapETranslationErrorResponse(respBody);
+        throw wrapETranslationErrorResponse(responseBody);
       }
     } catch (NumberFormatException e) {
-      throw wrapETranslationErrorResponse(respBody);
+      throw wrapETranslationErrorResponse(responseBody);
     }
 
     return requestNumber;

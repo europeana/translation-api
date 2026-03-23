@@ -18,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.config.services.DetectCfg;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServiceCfg;

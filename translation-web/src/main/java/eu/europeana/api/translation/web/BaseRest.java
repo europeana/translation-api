@@ -3,37 +3,36 @@ package eu.europeana.api.translation.web;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-
-import eu.europeana.api.commons.error.EuropeanaApiException;
-import eu.europeana.api.commons.web.controller.BaseRestController;
-import eu.europeana.api.commons.web.exception.ApplicationAuthenticationException;
-import eu.europeana.api.commons.web.http.HttpHeaders;
+import eu.europeana.api.commons_sb3.definitions.http.HttpHeaders;
+import eu.europeana.api.commons_sb3.error.ApiRequestPathMethodService;
+import eu.europeana.api.commons_sb3.error.EuropeanaApiException;
+import eu.europeana.api.commons_sb3.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.exceptions.ApplicationAuthenticationException;
+import eu.europeana.api.commons_sb3.oauth2.BaseRestController;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.serialization.JsonLdSerializer;
-import eu.europeana.api.translation.web.service.RequestPathMethodService;
 import eu.europeana.api.translation.web.service.TranslationAuthorizationService;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 public abstract class BaseRest extends BaseRestController {
 
-  @Autowired private TranslationAuthorizationService translAuthorizationService;
+  @Resource private TranslationAuthorizationService translAuthorizationService;
 
-  @Autowired protected BuildProperties translationBuildInfo;
+  @Resource protected BuildProperties translationBuildInfo;
 
-  @Autowired protected JsonLdSerializer jsonLdSerializer;
+  @Resource protected JsonLdSerializer jsonLdSerializer;
 
-  @Autowired private RequestPathMethodService requestMethodService;
+  @Resource
+  private ApiRequestPathMethodService requestMethodService;
 
-  @Autowired protected TranslationConfig translationConfig;
+  @Resource protected TranslationConfig translationConfig;
 
   protected Logger logger = LogManager.getLogger(getClass());
 
@@ -63,7 +62,7 @@ public abstract class BaseRest extends BaseRestController {
       throws EuropeanaApiException {
     // HttpHeaders.ALLOW
     org.springframework.http.HttpHeaders headers = createAllowHeader(request);
-    headers.add(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSON_UTF8);
+    headers.add(org.springframework.http.HttpHeaders .CONTENT_TYPE, HttpHeaders.CONTENT_TYPE_JSON_UTF8);
 
     return ResponseEntity.status(HttpStatus.OK).headers(headers).body(result);
   }
@@ -93,7 +92,7 @@ public abstract class BaseRest extends BaseRestController {
 
   @Override
   public Authentication verifyWriteAccess(String operation, HttpServletRequest request)
-      throws ApplicationAuthenticationException {
+      throws EuropeanaI18nApiException {
     if (translationConfig.isAuthWriteEnabled()) {
       return super.verifyWriteAccess(operation, request);
     }

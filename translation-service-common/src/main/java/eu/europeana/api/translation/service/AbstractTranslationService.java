@@ -2,8 +2,8 @@ package eu.europeana.api.translation.service;
 
 import java.util.List;
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 
 public abstract class AbstractTranslationService implements TranslationService {
@@ -12,7 +12,7 @@ public abstract class AbstractTranslationService implements TranslationService {
    * sets the value of the translation with the text to be translated for translations objects in which the source language is the same as the target language 
    * @param translationObjs objects to process
    */
-  protected void fillTranslationForSameLanguage(@NotNull List<TranslationObj> translationObjs) {
+  protected void fillTranslationForSameLanguage(@NonNull List<TranslationObj> translationObjs) {
     for (TranslationObj translationObj : translationObjs) {
       fillTranslationForSameLanguage(translationObj);
     } 
