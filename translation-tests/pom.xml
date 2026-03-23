@@ -11,11 +11,6 @@
 	<name>translation-tests</name>
 	<description>A simple translation-tests.</description>
 
-	<properties>
-		<!-- Sonar - jacoco xmlReportPaths needs to be defined in each module -->
-		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../${aggregate.report.xml}</sonar.coverage.jacoco.xmlReportPaths>
-	</properties>
-
 	<dependencies>
 		<!-- add here all modules for which the code coverage needs to be computed -->
 		<dependency>
@@ -78,17 +73,22 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-data-redis</artifactId>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>${version.testcontainers}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
-		<dependency> 
-		    <groupId>org.testcontainers</groupId> 
-		    <artifactId>testcontainers</artifactId> 
-		    <version>${version.testcontainers}</version>
-		    <scope>test</scope> 
-		</dependency>
-
+		
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>mockwebserver</artifactId>

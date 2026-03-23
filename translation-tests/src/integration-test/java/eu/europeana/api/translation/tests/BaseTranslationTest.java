@@ -61,17 +61,19 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
   /** Maps Metis dereferenciation URIs to mocked XML responses */
   public static final Map<String, String> LANG_DETECT_RESPONSE_MAP = initLanguageDetectMap();
   public static final Map<String, String> TRANSLATION_RESPONSE_MAP = initTranslationMap();
-
+  public static final String REDIS_IMAGE_NAME = "redis:8-alpine";
+  
   //start redis test container
   protected final static int redisContainerPort=6379;
-  private static GenericContainer<?> redis_container = startRedisTestContainer();
+  private static GenericContainer<?> redisContainer = startRedisTestContainer();
   private static GenericContainer<?> startRedisTestContainer() {
     @SuppressWarnings("resource")
     GenericContainer<?> redis = 
-      new GenericContainer<>(DockerImageName.parse("redis:5.0.3-alpine")).withExposedPorts(redisContainerPort);
+      new GenericContainer<>(DockerImageName.parse(REDIS_IMAGE_NAME)).withExposedPorts(redisContainerPort);
     redis.start();
     return redis;
   }
+  
   
   /** MockWebServer needs to be static, so we can inject its port into the Spring context. */
   private static MockWebServer mockPangeanic = startPangeanicMockServer();
@@ -151,7 +153,7 @@ public abstract class BaseTranslationTest extends IntegrationTestUtils {
 
     registry.add("translation.google.projectId", () -> "project-id-test");
     registry.add("translation.google.usehttpclient", () -> "true");
-    registry.add("redis.connection.url", () -> "redis://"+ redis_container.getHost() + ":" + redis_container.getMappedPort(redisContainerPort).toString() + "/");
+    registry.add("redis.connection.url", () -> "redis://"+ redisContainer.getHost() + ":" + redisContainer.getMappedPort(redisContainerPort) + "/");
     registry.add("translation.eTranslation.baseUrl", () -> ETranslationTranslationService.FAKE_BASE_URL_FOR_TESTING);
     registry.add("translation.eTranslation.credentials", () -> "");
     registry.add("translation.eTranslation.truncate", () -> false);

@@ -1,5 +1,10 @@
 name: Build, Run Tests and Sonar Analysis
-on: push
+on:
+  push:
+    branches:
+      - develop  # Trigger new analysis for each Merge/Push into the main-Branch (i.e. develop)
+  pull_request:
+    types: [opened, synchronize, reopened] # Trigger for each PR
 
 jobs:
   build:
