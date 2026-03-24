@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import eu.europeana.api.commons_sb3.error.config.ErrorMessage;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
@@ -257,7 +258,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     //there is a MOCKMvc issue that doesn't deliver correct encoding, therefore we check only the end of the string
     assertTrue(translations.getString(2).endsWith("another cat"));
     //translation is set to null for texts where the language detection returns null
-    assertTrue(translations.isNull(3));
+    assertTrue(JSONObject.EXPLICIT_NULL.equals(translations.opt(3)));
     
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);
@@ -357,7 +358,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     JSONObject obj = new JSONObject(response);
     Assertions.assertEquals(obj.get("success"), false);
     Assertions.assertEquals(obj.get("status"), HttpStatus.BAD_REQUEST.value());
-    Assertions.assertEquals(obj.get("code"), "mandatory_param_empty");
+    Assertions.assertEquals(obj.get("code"),  ErrorMessage.PARAM_MISSING_400.getCode());
     Assertions.assertTrue(obj.has("error"));
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));

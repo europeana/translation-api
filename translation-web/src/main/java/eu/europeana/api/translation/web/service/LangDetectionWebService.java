@@ -114,8 +114,8 @@ public class LangDetectionWebService extends BaseWebService {
           isFallbackService ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
       final String availableServices =
           translationServiceProvider.getAvailableLangDetectionServiceIds().toString();
-      throw new InvalidParamException (List.of(paramName,
-              requestedServiceId + " (available services: " + availableServices + ")"));
+      throw new InvalidParamException (List.of(paramName, "one of: " + availableServices, 
+              requestedServiceId));
     }
     // check if the "lang" is supported
     if (languageHint != null && !detectService.isSupported(languageHint)) {

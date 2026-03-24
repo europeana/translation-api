@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons_sb3.definitions.http.HttpHeaders;
 import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
+import eu.europeana.api.commons_sb3.error.EuropeanaI18nApiException;
 import eu.europeana.api.commons_sb3.error.exceptions.InvalidParamException;
+import eu.europeana.api.commons_sb3.error.exceptions.MissingParamException;
 import eu.europeana.api.translation.definitions.model.LangDetectRequest;
 import eu.europeana.api.translation.definitions.model.LangDetectResponse;
 import eu.europeana.api.translation.web.service.LangDetectionWebService;
@@ -47,15 +49,15 @@ public class LangDetectionController extends BaseRest {
   }
 
   private void validateRequest(LangDetectRequest langDetectRequest)
-      throws InvalidParamException {
+      throws EuropeanaI18nApiException {
     // validate mandatory params
     if (langDetectRequest.getText() == null || containsNullValues(langDetectRequest.getText())) {
-      throw new InvalidParamException(List.of(TEXT));
+      throw new MissingParamException(List.of(TEXT));
     }
     // validate language hint if provided
     if (langDetectRequest.getLang() != null
         && !langDetectionService.isLangDetectionSupported(langDetectRequest.getLang())) {
-      throw new InvalidParamException(List.of(LANG, langDetectRequest.getLang()));
+      throw new InvalidParamException(List.of(LANG, "one of supported languages by detection service" , langDetectRequest.getLang()));
     }
   }
 

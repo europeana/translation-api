@@ -86,7 +86,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     return clientDetailsService;
   }
   
-  @Bean("apiRequestPathMethodService")
+  @Bean("requestMethodService")
   public ApiRequestPathMethodService getRequestPathMethodService() {
     return new ApiRequestPathMethodService();
   }
