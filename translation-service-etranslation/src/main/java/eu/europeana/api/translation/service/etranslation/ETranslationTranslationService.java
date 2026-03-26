@@ -254,7 +254,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       throw new IllegalArgumentException("ETranslation callback handling was not propetly initilized, the message listener must not be null!");
     }
     
-    synchronized (new Object()) {
+    synchronized (redisMessageListener) {
       /*
        * While loop as a good practice to ensure spurious wake-ups
        * (https://www.baeldung.com/java-wait-notify). In addition, time is measured to not wait

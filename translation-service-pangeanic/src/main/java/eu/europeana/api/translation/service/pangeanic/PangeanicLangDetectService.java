@@ -30,7 +30,7 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
-  private static int KEEP_ALIVE_TIMEOUT = 60;
+  private static final int KEEP_ALIVE_TIMEOUT = 60;
   
   private final String externalServiceEndpoint;
 

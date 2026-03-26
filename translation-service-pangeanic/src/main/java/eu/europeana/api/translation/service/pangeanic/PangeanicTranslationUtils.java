@@ -182,7 +182,7 @@ public class PangeanicTranslationUtils {
    */
   public static Map<String, List<String>> getDetectedLangValueMap(List<String> texts,
       List<String> detectedLanguage) {
-    Map<String, List<String>> map = new LinkedHashMap<>();
+    LinkedHashMap<String, List<String>> map = new LinkedHashMap<>();
     int i = 0;
     for (String langDetected : detectedLanguage) {
       if (map.containsKey(langDetected)) {

@@ -5,13 +5,10 @@ package eu.europeana.api.translation.service.exception;
  */
 public class TranslationException extends Exception {
 
-  /**
-  * 
-  */
+  public static final int NO_STATUS_CODE = -1;
   private static final long serialVersionUID = -1787377732687111908L;
   private final int remoteStatusCode;
-  public static final int NO_STATUS_CODE = -1;
-
+  
   /**
    * Constructor for exception to indicate that an error occurred during invocation of the remote
    * service or parsing of service response

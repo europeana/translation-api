@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,7 @@ import eu.europeana.api.translation.service.util.TranslationUtils;
 @Service
 public class TranslationWebService extends BaseWebService {
 
-  @Autowired
+  @Resource
   protected TranslationConfig translationConfig;
 
   @Autowired
@@ -73,7 +74,7 @@ public class TranslationWebService extends BaseWebService {
         serviceId = cachedTranslationService.getServiceId();
         // send the values which are not yet translated (isTranslated=false) for the translations
         cachedTranslationService.translate(
-            translObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList()));
+            translObjs.stream().filter(to -> !to.isTranslated()).toList());
         // update service ID after the translate() method, because the serviceId may change
         // (depending if there is sth in the cache)
         // NOTE: is this really needed?
@@ -86,9 +87,7 @@ public class TranslationWebService extends BaseWebService {
         if (translationError == null) {
           translationError = ex;
         }
-        if (logger.isDebugEnabled()) {
-          logger.debug("Error when calling translation service: " + serviceId, ex);
-        }
+        logger.debug("Error when calling translation service: {}",  serviceId, ex);
       }
     }
 
@@ -120,12 +119,6 @@ public class TranslationWebService extends BaseWebService {
     if (fallback != null) {
       cachedTranslationServices.add(instantiateCachedTranslationService(useCaching, fallback));
     }
-    // } else {
-    // translServicesToCall.add(translationService);
-    // if(fallback!=null) {
-    // translServicesToCall.add(fallback);
-    // }
-    // }
     return cachedTranslationServices;
   }
 

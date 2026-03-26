@@ -43,7 +43,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
 
   
   private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
-  private static int KEEP_ALIVE_TIMEOUT = 60;
+  private static final int KEEP_ALIVE_TIMEOUT = 60;
   
   private PangeanicLangDetectService langDetectService;
 
