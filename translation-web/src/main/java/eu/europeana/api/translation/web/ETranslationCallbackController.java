@@ -97,6 +97,8 @@ public class ETranslationCallbackController extends BaseRestController{
       try {
         Thread.sleep(timeout * SECONDS_MILIS);
       } catch (InterruptedException e) {
+        /* Clean up whatever needs to be handled before interrupting  */
+        Thread.currentThread().interrupt();
         throw new EuropeanaApiException("Cannot sleep thread!", e);
       }
       return ResponseEntity.status(HttpStatus.ACCEPTED).build();
