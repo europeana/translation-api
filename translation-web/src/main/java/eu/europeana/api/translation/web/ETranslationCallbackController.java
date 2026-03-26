@@ -22,11 +22,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController
-@Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")
 /**
  * Callback to fetch eTranslation response
  */
+@RestController
+@Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")
 public class ETranslationCallbackController extends BaseRestController{
 
   private static final Logger LOGGER = LogManager.getLogger(ETranslationCallbackController.class);
