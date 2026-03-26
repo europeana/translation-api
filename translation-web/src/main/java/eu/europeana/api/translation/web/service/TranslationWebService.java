@@ -134,7 +134,7 @@ public class TranslationWebService extends BaseWebService {
   private List<TranslationObj> buildTranslationObjectList(TranslationRequest translationRequest) {
     // create a list of objects to be translated
     List<TranslationObj> translObjs =
-        new ArrayList<TranslationObj>(translationRequest.getText().size());
+        new ArrayList<>(translationRequest.getText().size());
     if (shouldTruncateText(translationRequest)) {
       limitTextSizeForETranslation(translationRequest, translObjs);
     } else {
@@ -236,10 +236,10 @@ public class TranslationWebService extends BaseWebService {
   private TranslationService selectTranslationService(TranslationRequest translationRequest,
       LanguagePair languagePair) throws InvalidParamException {
     final String serviceId = translationRequest.getService();
-    if (serviceId != null) {
+    if (StringUtils.isNotBlank(serviceId)) {
       // get the translation service by id
       return getTranslationService(serviceId, languagePair);
-    } else if (languagePair.getSrcLang() != null) {
+    } else if (StringUtils.isNotEmpty(languagePair.getSrcLang())) {
       // search in language mappings
       TranslationService translationService = selectFromLanguageMappings(languagePair);
       if (translationService != null) {

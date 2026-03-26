@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
 import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.error.EuropeanaApiException;
 import eu.europeana.api.commons_sb3.oauth2.BaseRestController;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.web.model.CachedTranslation;
@@ -23,6 +24,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")
+/**
+ * Callback to fetch eTranslation response
+ */
 public class ETranslationCallbackController extends BaseRestController{
 
   private static final Logger LOGGER = LogManager.getLogger(ETranslationCallbackController.class);
@@ -83,14 +87,18 @@ public class ETranslationCallbackController extends BaseRestController{
       @RequestParam(value = "request-id", required = false) String requestId,
       @RequestParam(value = "external-reference", required = false) String externalReference,
       @RequestParam(value = "timeout", required = false) Integer timeout,
-      HttpServletRequest request) throws Exception {
+      HttpServletRequest request) throws EuropeanaApiException {
     
     verifyWriteAccess(Operations.CREATE, request);
     
     if (timeout != null && timeout > 0) {
       // for simulation purposes, wait for $timeout seconds
       final long SECONDS_MILIS = 1000;
-      Thread.sleep(timeout * SECONDS_MILIS);
+      try {
+        Thread.sleep(timeout * SECONDS_MILIS);
+      } catch (InterruptedException e) {
+        throw new EuropeanaApiException("Cannot sleep thread!", e);
+      }
       return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
