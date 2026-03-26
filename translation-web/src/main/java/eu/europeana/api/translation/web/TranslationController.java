@@ -70,8 +70,10 @@ public class TranslationController extends BaseRest {
         new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
     if (!translationService.isTranslationSupported(languagePair)) {
       throw new InvalidParamException(
-          List.of(LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
-              TranslationAppConstants.TARGET_LANG), languagePair.toString()));
+          List.of( 
+              LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG),
+              "valid language pair",
+              languagePair.toString()));
     }
   }
 

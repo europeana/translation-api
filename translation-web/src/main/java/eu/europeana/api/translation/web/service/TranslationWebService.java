@@ -73,8 +73,8 @@ public class TranslationWebService extends BaseWebService {
       try {
         serviceId = cachedTranslationService.getServiceId();
         // send the values which are not yet translated (isTranslated=false) for the translations
-        cachedTranslationService.translate(
-            translObjs.stream().filter(to -> !to.isTranslated()).toList());
+        cachedTranslationService
+            .translate(translObjs.stream().filter(to -> !to.isTranslated()).toList());
         // update service ID after the translate() method, because the serviceId may change
         // (depending if there is sth in the cache)
         // NOTE: is this really needed?
@@ -87,7 +87,7 @@ public class TranslationWebService extends BaseWebService {
         if (translationError == null) {
           translationError = ex;
         }
-        logger.debug("Error when calling translation service: {}",  serviceId, ex);
+        logger.debug("Error when calling translation service: {}", serviceId, ex);
       }
     }
 
@@ -133,8 +133,7 @@ public class TranslationWebService extends BaseWebService {
 
   private List<TranslationObj> buildTranslationObjectList(TranslationRequest translationRequest) {
     // create a list of objects to be translated
-    List<TranslationObj> translObjs =
-        new ArrayList<>(translationRequest.getText().size());
+    List<TranslationObj> translObjs = new ArrayList<>(translationRequest.getText().size());
     if (shouldTruncateText(translationRequest)) {
       limitTextSizeForETranslation(translationRequest, translObjs);
     } else {
@@ -269,13 +268,18 @@ public class TranslationWebService extends BaseWebService {
     TranslationService result = translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new InvalidParamException(List.of(param, serviceId + " (available services: "
-          + String.join(", ", translationServiceProvider.getTranslationServices().keySet()) + ")"));
+      throw new InvalidParamException(List.of(
+          param,
+          "one of available services: "
+              + String.join(", ", translationServiceProvider.getTranslationServices().keySet()),
+          serviceId));
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new InvalidParamException(
-          List.of(LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
-              TranslationAppConstants.TARGET_LANG), languagePair.toString()));
+      throw new InvalidParamException(List.of(
+          LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
+              TranslationAppConstants.TARGET_LANG),
+          "one of the language pairs supported by hte service", 
+          languagePair.toString()));
     }
     return result;
   }
