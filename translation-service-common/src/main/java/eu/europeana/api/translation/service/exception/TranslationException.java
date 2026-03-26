@@ -10,7 +10,7 @@ public class TranslationException extends Exception {
   */
   private static final long serialVersionUID = -1787377732687111908L;
   private final int remoteStatusCode;
-
+  public static final int NO_STATUS_CODE = -1;
 
   /**
    * Constructor for exception to indicate that an error occurred during invocation of the remote
@@ -45,7 +45,7 @@ public class TranslationException extends Exception {
    * @param remoteStatusCode the status code from the remote service
    */
   public TranslationException(String msg) {
-    this(msg, -1);
+    this(msg, NO_STATUS_CODE);
   }
 
   public int getRemoteStatusCode() {

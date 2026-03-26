@@ -13,8 +13,8 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
  */
 public class LanguagePair implements Comparable<LanguagePair> {
 
-  private String srcLang;
-  private String targetLang;
+  private final String srcLang;
+  private final String targetLang;
 
   public LanguagePair(String srcLang, @NonNull String targetLang) {
     this.srcLang = srcLang;

@@ -6,16 +6,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.SocketConfig;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,14 +26,17 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
 /**
  * Language detection service based on Pangeanic solution
  */
-public class PangeanicLangDetectService extends AbstractLanguageDetectionService{
+public class PangeanicLangDetectService extends AbstractLanguageDetectionService {
 
   protected static final Logger LOG = LogManager.getLogger(PangeanicLangDetectService.class);
   private static final double THRESHOLD = 0.5;
-  private final String externalServiceEndpoint;
+  private static int KEEP_ALIVE_TIMEOUT = 60;
   
-  private Set<String> supportedLanguages = Set.of("sk", "ro", "bg", "pl", "hr", "sv", "fr", "it",
-      "es", "cs", "de", "lv", "nl", "el", "fi", "da", "sl", "hu", "pt", "et", "lt", "ga", "en");
+  private final String externalServiceEndpoint;
+
+  private final Set<String> supportedLanguages =
+      Set.of("sk", "ro", "bg", "pl", "hr", "sv", "fr", "it", "es", "cs", "de", "lv", "nl", "el",
+          "fi", "da", "sl", "hu", "pt", "et", "lt", "ga", "en");
 
   protected CloseableHttpClient detectClient;
 
@@ -54,24 +54,23 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
    * @throws JSONException when there is a problem decoding the received token
    */
   private void init() {
-    if(StringUtils.isBlank(getExternalServiceEndPoint())) {
+    if (StringUtils.isBlank(getExternalServiceEndPoint())) {
       return;
     }
-    
+
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(PangeanicTranslationUtils.MAX_CONNECTIONS);
     cm.setDefaultMaxPerRoute(PangeanicTranslationUtils.MAX_CONNECTIONS_PER_ROUTE);
-    int keepAliveTimeut = 60;
-    cm.setDefaultSocketConfig(
-        SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(Timeout.of(keepAliveTimeut, TimeUnit.MINUTES)).build());
+    cm.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true)
+        .setSoTimeout(Timeout.of(KEEP_ALIVE_TIMEOUT, TimeUnit.MINUTES)).build());
     detectClient = HttpClients.custom().setConnectionManager(cm).build();
-    if(LOG.isInfoEnabled()) {
+    if (LOG.isInfoEnabled()) {
       LOG.info(
           "Pangeanic Language Detection service is initialized with detect language Endpoint - {}",
-        getExternalServiceEndPoint());
+          getExternalServiceEndPoint());
     }
   }
-  
+
   @Override
   public boolean isSupported(String srcLang) {
     return supportedLanguages.contains(srcLang);
@@ -96,12 +95,13 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
 
     // fallback check - if the lang detection is complete / successful
     if (results.size() != languageDetectionObjs.size()) {
-      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
+      throw new LanguageDetectionException(
+          "The Language detection is not completed successfully. Expected "
               + languageDetectionObjs.size() + " but received: " + results.size());
     }
 
     // build results
-    for(int i=0; i< results.size(); i++) {
+    for (int i = 0; i < results.size(); i++) {
       languageDetectionObjs.get(i).setDetectedLang(results.get(i));
     }
   }
@@ -118,47 +118,37 @@ public class PangeanicLangDetectService extends AbstractLanguageDetectionService
    * @throws LanguageDetectionException
    */
   private List<String> sendDetectRequestAndParse(HttpPost post) throws LanguageDetectionException {
-    //initialize with unknown
+    // initialize with unknown
     int remoteStatusCode = -1;
-    try (CloseableHttpResponse response = detectClient.execute(post)) {
+    BasicHttpClientResponseHandler responseHandler = new BasicHttpClientResponseHandler();
+    String responseBody;
+    try {
       // Pageanic BUG - sometimes language detect sends 400 Bad request with proper response and
       // error message
-      if (response == null) {
-        throw new LanguageDetectionException(
-            "Invalid reponse received from Pangeanic service, no response or status line available!");
-      } 
-      
-      remoteStatusCode = response.getCode(); 
-      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
-      String json = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
-      if ( failedRequest ) {
-        throw new LanguageDetectionException(
-            "Error from Pangeanic Language Detect API: " + json,
+      responseBody = detectClient.execute(post, responseHandler);
+
+      // sometimes language detect sends 200 ok status with empty response data
+      if (StringUtils.isBlank(responseBody)) {
+        throw new LanguageDetectionException("Language detect returned an empty response",
             remoteStatusCode);
-      } else {
-        // sometimes language detect sends 200 ok status with empty response data
-        if (json.isEmpty()) {
-          throw new LanguageDetectionException("Language detect returned an empty response",
-              remoteStatusCode);
-        }
-        JSONObject obj = new JSONObject(json);
-
-        // if json doesn't have detected lanaguge throw a error
-        if (!obj.has(PangeanicTranslationUtils.DETECTED_LANGUAGE)) {
-          throw new LanguageDetectionException(
-              "Language detect response doesn't have detected_langs tags",
-              remoteStatusCode);
-        }
-
-        return extractDetectedLanguages(obj);
       }
-    } catch (ClientProtocolException e) {
-      throw new LanguageDetectionException("Remote service invocation error.",
-          remoteStatusCode, e);
-    } catch (JSONException | ParseException | IOException e) {
+      JSONObject obj = new JSONObject(responseBody);
+
+      // if json doesn't have detected lanaguge throw a error
+      if (!obj.has(PangeanicTranslationUtils.DETECTED_LANGUAGE)) {
+        throw new LanguageDetectionException(
+            "Language detect response doesn't have detected_langs tags", remoteStatusCode);
+      }
+
+      return extractDetectedLanguages(obj);
+
+    } catch (HttpResponseException e) {
+      throw new LanguageDetectionException("Remote service invocation error.", e.getStatusCode(),
+          e);
+    } catch (JSONException | IOException e) {
       throw new LanguageDetectionException("Cannot read pangeanic service response.",
           remoteStatusCode, e);
-    } 
+    }
   }
 
   private List<String> extractDetectedLanguages(JSONObject obj) throws JSONException {

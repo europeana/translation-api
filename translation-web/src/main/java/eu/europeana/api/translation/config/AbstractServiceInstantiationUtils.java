@@ -172,8 +172,9 @@ public abstract class AbstractServiceInstantiationUtils {
     if (languageThresholdsFile.exists()) {
       // thresholds config file found in config folder
       try {
-        inputStream = new FileInputStream(languageThresholdsFile);
-      } catch (FileNotFoundException e) {
+        inputStream =  Files.newInputStream(languageThresholdsFile.toPath());
+        
+      } catch (IOException e) {
         // should actually not happen as the file exists
         throw new LangDetectionServiceConfigurationException(
             "Unexpected error occured when reading configFile: " + configFileName, e);

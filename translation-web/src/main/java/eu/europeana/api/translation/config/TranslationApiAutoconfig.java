@@ -266,8 +266,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-//    TranslationServiceProvider translationServiceProvider =
-//        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
     translationServiceProvider.initTranslationServicesFromConfiguration();
   }
 
@@ -283,8 +281,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
     Arrays.sort(beanNames);
-    logger.debug("Instantiated beans:");
-    logger.debug(StringUtils.join(beanNames, "\n"));
+    logger.debug("Instantiated beans: {}", () -> StringUtils.join(beanNames, "\n"));  
   }
 
 }

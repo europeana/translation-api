@@ -15,9 +15,11 @@ public class CachedTranslationService extends AbstractTranslationService {
   private final RedisCacheService redisCacheService;
   private final TranslationService translationService;
   
-  /*
+  /**
    * The pangeanic translation service is used to detect the source languages of the input texts,
    * before the lookup to the cache is made.
+   * @param redisCacheService cache service
+   * @param translationService translation service instance
    */
   public CachedTranslationService(RedisCacheService redisCacheService, @NonNull TranslationService translationService) {
     super();

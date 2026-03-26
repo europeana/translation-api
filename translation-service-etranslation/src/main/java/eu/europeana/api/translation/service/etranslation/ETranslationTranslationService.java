@@ -254,8 +254,7 @@ public class ETranslationTranslationService extends AbstractTranslationService {
       throw new IllegalArgumentException("ETranslation callback handling was not propetly initilized, the message listener must not be null!");
     }
     
-    
-    synchronized (redisMessageListener) {
+    synchronized (new Object()) {
       /*
        * While loop as a good practice to ensure spurious wake-ups
        * (https://www.baeldung.com/java-wait-notify). In addition, time is measured to not wait
@@ -445,8 +444,9 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     try {
       responseBody = httpClient.execute(request, responseHandler);
      }catch (IOException e) {
+       int noStatusCode = -1;
        throw new TranslationException(
-           "The translation request could not be successfully registered. ETranslation response: " + e.getMessage());
+           "The translation request could not be successfully registered. ETranslation response: " + e.getMessage(), noStatusCode,  e);
     } 
    
     long requestNumber;
@@ -457,10 +457,10 @@ public class ETranslationTranslationService extends AbstractTranslationService {
             requestNumber, sanitizeRequestBodyForLogging(content));
       }
       if (requestNumber < 0) {
-        throw wrapETranslationErrorResponse(responseBody);
+        throw wrapETranslationErrorResponse(responseBody, null);
       }
     } catch (NumberFormatException e) {
-      throw wrapETranslationErrorResponse(responseBody);
+      throw wrapETranslationErrorResponse(responseBody, e);
     }
 
     return requestNumber;
@@ -475,10 +475,10 @@ public class ETranslationTranslationService extends AbstractTranslationService {
     return content;
   }
 
-  TranslationException wrapETranslationErrorResponse(String respBody) {
+  TranslationException wrapETranslationErrorResponse(String respBody, Exception e) {
     return new TranslationException(
         "The translation request could not be successfully registered. ETranslation error response: "
-            + respBody);
+            + respBody, TranslationException.NO_STATUS_CODE, e);
   }
 
   @Override

@@ -1,10 +1,10 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -57,12 +57,13 @@ public class RedisCacheService {
       
     // get cached translations
     List<CachedTranslation> redisResponse = redisTemplate.opsForValue().multiGet(cacheKeys);
-    if (redisResponse == null || redisResponse.size() != cacheableTranslations.size()) {
+    int requestSize = cacheableTranslations.size();
+    if (redisResponse == null || redisResponse.size() != requestSize) {
       // ensure that the response size corresponds to request size
       // this should not happen, but better use defensive programming
       int redisSize = redisResponse == null ? 0 : redisResponse.size();
       logger.warn("Redis response size {} doesn't match the request size{}, for keys: {}",
-          redisSize, cacheableTranslations.size(), cacheKeys);
+          redisSize, requestSize, cacheKeys);
       return;
     }
 
@@ -128,7 +129,7 @@ public class RedisCacheService {
    * @param translationStrings the translations to be written into the cache
    */
   public void store(List<TranslationObj> translationStrings) {
-    Map<String, CachedTranslation> valueMap = new HashMap<>();
+    Map<String, CachedTranslation> valueMap = new ConcurrentHashMap<>();
     String key;
     for (TranslationObj translObj : translationStrings) {
       if (isCacheable(translObj) && hasTranslation(translObj) && !translObj.isRetrievedFromCache()) {

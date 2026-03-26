@@ -29,6 +29,12 @@ public class LangDetectionWebService extends BaseWebService {
 
   private final Logger logger = LogManager.getLogger(getClass());
 
+  /**
+   * Method for invocation of language detection
+   * @param langDetectRequest request
+   * @return detection response
+   * @throws EuropeanaI18nApiException if service invocation fails
+   */
   public LangDetectResponse detectLang(LangDetectRequest langDetectRequest)
       throws EuropeanaI18nApiException {
     List<LanguageDetectionObj> languageDetectionObjs = buildLangDetectionObjectList(langDetectRequest);
@@ -124,6 +130,11 @@ public class LangDetectionWebService extends BaseWebService {
     return detectService;
   }
 
+  /**
+   * indicates if the detection is supported for the given language
+   * @param lang to verify
+   * @return true if supported
+   */
   public boolean isLangDetectionSupported(@NonNull String lang) {
     return translationServiceProvider.getTranslationServicesConfig().getLangDetectConfig()
         .getSupported().contains(lang.toLowerCase(Locale.ENGLISH));

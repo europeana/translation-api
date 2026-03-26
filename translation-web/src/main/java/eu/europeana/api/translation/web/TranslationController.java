@@ -21,6 +21,7 @@ import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @Tag(name = "Translation endpoint", description = "Perform text translation")
 public class TranslationController extends BaseRest {
@@ -41,11 +42,11 @@ public class TranslationController extends BaseRest {
     verifyWriteAccess(Operations.CREATE, request);
 
     validateRequest(translRequest);
-    
-    if(logger.isTraceEnabled()) {
+
+    if (logger.isTraceEnabled()) {
       logger.trace("Translation request: {}", jsonLdSerializer.serializeObject(translRequest));
     }
-        
+
     TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);
@@ -53,7 +54,8 @@ public class TranslationController extends BaseRest {
     return generateResponseEntity(request, resultJson);
   }
 
-  private void validateRequest(TranslationRequest translationRequest) throws EuropeanaI18nApiException {
+  private void validateRequest(TranslationRequest translationRequest)
+      throws EuropeanaI18nApiException {
     // validate mandatory params
     if (translationRequest.getText() == null || containsNullValues(translationRequest.getText())) {
       throw new MissingParamException(List.of(TranslationAppConstants.TEXT));
@@ -62,13 +64,16 @@ public class TranslationController extends BaseRest {
     if (StringUtils.isEmpty(translationRequest.getTarget())) {
       throw new MissingParamException(List.of(TranslationAppConstants.TARGET_LANG));
     }
-    
-    //validate language pair
-    final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
-    if(!translationService.isTranslationSupported(languagePair)) {
-      throw new InvalidParamException(List.of(LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG), languagePair.toString()));
+
+    // validate language pair
+    final LanguagePair languagePair =
+        new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
+    if (!translationService.isTranslationSupported(languagePair)) {
+      throw new InvalidParamException(
+          List.of(LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
+              TranslationAppConstants.TARGET_LANG), languagePair.toString()));
     }
   }
-  
-  
+
+
 }

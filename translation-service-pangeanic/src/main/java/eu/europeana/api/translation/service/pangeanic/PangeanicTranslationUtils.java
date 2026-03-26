@@ -9,7 +9,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
@@ -82,38 +81,27 @@ public class PangeanicTranslationUtils {
    */
   public static HttpPost createTranslateRequest(String translateEndpoint, List<String> texts,
       String targetLanguage, String sourceLanguage, String apikey) throws JSONException {
-    HttpPost post = new HttpPost(translateEndpoint);
+    
     JSONObject body = PangeanicTranslationUtils.createTranslateRequestBody(texts, targetLanguage,
         sourceLanguage, apikey, true);
-    post.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
-    post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-    post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Sending POST {}", post);
-      LOG.trace("  body {}", body);
-      LOG.trace("  headers:");
-      for (Header header : post.getHeaders()) {
-        LOG.trace("  {}: {}", header.getName(), header.getValue());
-      }
-    }
-    return post;
+    
+    return createPostRequest(translateEndpoint, body);
   }
 
 
   public static HttpPost createDetectlanguageRequest(String detectEndpoint, List<String> texts,
       String hint, String apikey) {
-    HttpPost post = new HttpPost(detectEndpoint);
     JSONObject body = PangeanicTranslationUtils.createDetectRequestBody(texts, hint, apikey);
+    return createPostRequest(detectEndpoint, body);
+  }
+
+  static HttpPost createPostRequest(String endpoint, JSONObject body) {
+    HttpPost post = new HttpPost(endpoint);
     post.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
     post.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
     post.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Sending POST {}", post);
-      LOG.trace("  body {}", body);
-      LOG.trace("  headers:");
-      for (Header header : post.getHeaders()) {
-        LOG.trace("  {}: {}", header.getName(), header.getValue());
-      }
+      LOG.trace("Sending POST: {} with body: {} and headers: {}", post, body, post.getHeaders());
     }
     return post;
   }
@@ -231,22 +219,9 @@ public class PangeanicTranslationUtils {
           "The number of retieved translations doesn't match the number of requestes translations. "
               + translateResult.size() + ":" + texts.size());
     }
-    // if (texts.size() != translateResult.size()) {
-    // for (String text : texts) {
-    // if (translateResult.containsKey(text)) {
-    // translations.add(translateResult.get(text));
-    // } else {
-    // //if (nonTranslatedDataExists) {
-    // // add non-translated values as it is. Only if "zxx" or no-lang detected responses were
-    // present.
-    // translations.add(text);
-    // }
-    // }
-    // } else {
     for (Map.Entry<String, String> entry : translateResult.entrySet()) {
       translations.add(entry.getValue());
     }
-    // }
     return translations;
   }
 }

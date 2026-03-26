@@ -258,7 +258,7 @@ public class TranslationRestIT extends BaseTranslationTest {
     //there is a MOCKMvc issue that doesn't deliver correct encoding, therefore we check only the end of the string
     assertTrue(translations.getString(2).endsWith("another cat"));
     //translation is set to null for texts where the language detection returns null
-    assertTrue(JSONObject.EXPLICIT_NULL.equals(translations.opt(3)));
+    assertEquals(JSONObject.EXPLICIT_NULL, translations.opt(3));
     
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertNotNull(serviceFieldValue);

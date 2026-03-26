@@ -271,6 +271,6 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONObject json = new JSONObject(result);
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     assertEquals(1, langs.length());
-    assertTrue(JSONObject.EXPLICIT_NULL.equals(langs.opt(0)));
+    assertEquals(JSONObject.EXPLICIT_NULL, langs.opt(0));
   }
 }
