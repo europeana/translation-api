@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.web.auth;
 
-import eu.europeana.api.commons.definitions.vocabulary.Role;
-import eu.europeana.api.commons.web.model.vocabulary.Operations;
+import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
+import eu.europeana.api.commons_sb3.definitions.oauth.Role;
 
 /** Mapping between user role and operations Reproduced from Sets API */
 public enum Roles implements Role {

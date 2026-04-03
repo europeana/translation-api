@@ -2,8 +2,6 @@ package eu.europeana.api.translation.config;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.config.services.DetectCfg;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServiceCfg;
@@ -172,8 +170,9 @@ public abstract class AbstractServiceInstantiationUtils {
     if (languageThresholdsFile.exists()) {
       // thresholds config file found in config folder
       try {
-        inputStream = new FileInputStream(languageThresholdsFile);
-      } catch (FileNotFoundException e) {
+        inputStream =  Files.newInputStream(languageThresholdsFile.toPath());
+        
+      } catch (IOException e) {
         // should actually not happen as the file exists
         throw new LangDetectionServiceConfigurationException(
             "Unexpected error occured when reading configFile: " + configFileName, e);

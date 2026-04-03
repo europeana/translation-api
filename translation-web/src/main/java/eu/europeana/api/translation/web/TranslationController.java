@@ -1,10 +1,6 @@
 package eu.europeana.api.translation.web;
 
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_MANDATORY_PARAM_EMPTY;
-
-import javax.servlet.http.HttpServletRequest;
-
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,17 +8,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import eu.europeana.api.commons.web.http.HttpHeaders;
-import eu.europeana.api.commons.web.model.vocabulary.Operations;
+import eu.europeana.api.commons_sb3.definitions.http.HttpHeaders;
+import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
+import eu.europeana.api.commons_sb3.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.exceptions.InvalidParamException;
+import eu.europeana.api.commons_sb3.error.exceptions.MissingParamException;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.definitions.model.TranslationRequest;
 import eu.europeana.api.translation.definitions.model.TranslationResponse;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
-import eu.europeana.api.translation.web.exception.ParamValidationException;
 import eu.europeana.api.translation.web.service.TranslationWebService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @Tag(name = "Translation endpoint", description = "Perform text translation")
 public class TranslationController extends BaseRest {
@@ -43,11 +42,11 @@ public class TranslationController extends BaseRest {
     verifyWriteAccess(Operations.CREATE, request);
 
     validateRequest(translRequest);
-    
-    if(logger.isTraceEnabled()) {
+
+    if (logger.isTraceEnabled()) {
       logger.trace("Translation request: {}", jsonLdSerializer.serializeObject(translRequest));
     }
-        
+
     TranslationResponse result = translationService.translate(translRequest);
 
     String resultJson = serialize(result);
@@ -55,22 +54,28 @@ public class TranslationController extends BaseRest {
     return generateResponseEntity(request, resultJson);
   }
 
-  private void validateRequest(TranslationRequest translationRequest) throws ParamValidationException {
+  private void validateRequest(TranslationRequest translationRequest)
+      throws EuropeanaI18nApiException {
     // validate mandatory params
     if (translationRequest.getText() == null || containsNullValues(translationRequest.getText())) {
-      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TEXT});
+      throw new MissingParamException(List.of(TranslationAppConstants.TEXT));
     }
 
     if (StringUtils.isEmpty(translationRequest.getTarget())) {
-      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_MANDATORY_PARAM_EMPTY, new String[] {TranslationAppConstants.TARGET_LANG});
+      throw new MissingParamException(List.of(TranslationAppConstants.TARGET_LANG));
     }
-    
-    //validate language pair
-    final LanguagePair languagePair = new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
-    if(!translationService.isTranslationSupported(languagePair)) {
-      throw new ParamValidationException(null, ERROR_MANDATORY_PARAM_EMPTY, ERROR_INVALID_PARAM_VALUE, new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG) , languagePair.toString()});
+
+    // validate language pair
+    final LanguagePair languagePair =
+        new LanguagePair(translationRequest.getSource(), translationRequest.getTarget());
+    if (!translationService.isTranslationSupported(languagePair)) {
+      throw new InvalidParamException(
+          List.of( 
+              LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG, TranslationAppConstants.TARGET_LANG),
+              "valid language pair",
+              languagePair.toString()));
     }
   }
-  
-  
+
+
 }

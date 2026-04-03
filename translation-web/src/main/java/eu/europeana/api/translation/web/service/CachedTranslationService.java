@@ -1,12 +1,9 @@
 package eu.europeana.api.translation.web.service;
 
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.springframework.lang.NonNull;
 import eu.europeana.api.translation.definitions.model.TranslationCachingStats;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
@@ -18,11 +15,13 @@ public class CachedTranslationService extends AbstractTranslationService {
   private final RedisCacheService redisCacheService;
   private final TranslationService translationService;
   
-  /*
+  /**
    * The pangeanic translation service is used to detect the source languages of the input texts,
    * before the lookup to the cache is made.
+   * @param redisCacheService cache service
+   * @param translationService translation service instance
    */
-  public CachedTranslationService(RedisCacheService redisCacheService, @NotNull TranslationService translationService) {
+  public CachedTranslationService(RedisCacheService redisCacheService, @NonNull TranslationService translationService) {
     super();
     this.redisCacheService = redisCacheService;
     this.translationService = translationService;

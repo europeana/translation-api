@@ -1,6 +1,7 @@
 package eu.europeana.api.translation.config;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -30,9 +31,11 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import eu.europeana.api.commons.config.i18n.I18nService;
-import eu.europeana.api.commons.config.i18n.I18nServiceImpl;
-import eu.europeana.api.commons.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.commons_sb3.error.ApiRequestPathMethodService;
+import eu.europeana.api.commons_sb3.error.config.ErrorConfig;
+import eu.europeana.api.commons_sb3.error.i18n.I18nService;
+import eu.europeana.api.commons_sb3.error.i18n.I18nServiceImpl;
+import eu.europeana.api.commons_sb3.oauth2.service.impl.EuropeanaClientDetailsService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
@@ -82,11 +85,12 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     clientDetailsService.setApiKeyServiceUrl(translationConfig.getApiKeyUrl());
     return clientDetailsService;
   }
-
-  @Bean(BeanNames.BEAN_I18N_SERVICE)
-  public I18nService getI18nService() {
-    return new I18nServiceImpl();
+  
+  @Bean("requestMethodService")
+  public ApiRequestPathMethodService getRequestPathMethodService() {
+    return new ApiRequestPathMethodService();
   }
+  
 
   @Bean("messageSource")
   public MessageSource getMessageSource() {
@@ -96,6 +100,14 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     messageSource.setDefaultEncoding("utf-8");
     messageSource.setDefaultLocale(Locale.ENGLISH);
     return messageSource;
+  }
+  
+  @Bean(name = ErrorConfig.BEAN_I18nService)
+  public I18nService getI18nService() {
+    ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+    messageSource.setBasenames(ErrorConfig.COMMON_MESSAGE_SOURCE, "classpath:messages");
+    messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+    return new I18nServiceImpl(messageSource);
   }
 
   @Bean(BeanNames.BEAN_SERVICE_PROVIDER)
@@ -254,8 +266,6 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
    */
   public void initTranslationServices(ApplicationContext ctx)
       throws TranslationServiceConfigurationException, LangDetectionServiceConfigurationException {
-//    TranslationServiceProvider translationServiceProvider =
-//        (TranslationServiceProvider) ctx.getBean(BeanNames.BEAN_SERVICE_PROVIDER);
     translationServiceProvider.initTranslationServicesFromConfiguration();
   }
 
@@ -271,8 +281,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
     Arrays.sort(beanNames);
-    logger.debug("Instantiated beans:");
-    logger.debug(StringUtils.join(beanNames, "\n"));
+    logger.debug("Instantiated beans: {}", () -> StringUtils.join(beanNames, "\n"));  
   }
 
 }

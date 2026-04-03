@@ -9,22 +9,23 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.HttpResponseException;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.BasicHttpClientResponseHandler;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.definitions.model.TranslationObj;
 import eu.europeana.api.translation.service.AbstractTranslationService;
@@ -40,9 +41,12 @@ import eu.europeana.api.translation.service.exception.TranslationServiceConfigur
 // TODO get api key, for now passed empty
 public class PangeanicTranslationService extends AbstractTranslationService {
 
+  
+  private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
+  private static final int KEEP_ALIVE_TIMEOUT = 60;
+  
   private PangeanicLangDetectService langDetectService;
 
-  private static final Logger LOG = LogManager.getLogger(PangeanicTranslationService.class);
   public String externalServiceEndpoint;
 
   protected CloseableHttpClient translateClient;
@@ -102,7 +106,7 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     cm.setMaxTotal(PangeanicTranslationUtils.MAX_CONNECTIONS);
     cm.setDefaultMaxPerRoute(PangeanicTranslationUtils.MAX_CONNECTIONS_PER_ROUTE);
     cm.setDefaultSocketConfig(
-        SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build());
+        SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(Timeout.of(KEEP_ALIVE_TIMEOUT, TimeUnit.MINUTES)).build());
     // SocketConfig socketConfig =
     // SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(3600000).build(); //We need to set
     // socket keep alive
@@ -242,32 +246,28 @@ public class PangeanicTranslationService extends AbstractTranslationService {
     }
   }
 
-  private void sendTranslateRequestAndFillTranslations(HttpPost post, List<TranslationObj> translationObjs, String sourceLanguage) throws TranslationException {
+  private void sendTranslateRequestAndFillTranslations(HttpPost post, List<TranslationObj> translationObjs, String sourceLanguage) throws TranslationException{
     // initialize with unknown
     int remoteStatusCode = -1;
-    try (CloseableHttpResponse response = translateClient.execute(post)) {
-      if (response == null || response.getStatusLine() == null) {
+    BasicHttpClientResponseHandler responseHandler = new BasicHttpClientResponseHandler();
+    String responseBody;
+    try {
+      responseBody = translateClient.execute(post, responseHandler);
+      if (responseBody == null) {
         throw new TranslationException(
             "Invalid reponse received from Pangeanic service, no response or status line available!");
       }
 
-      remoteStatusCode = response.getStatusLine().getStatusCode();
-      boolean failedRequest = remoteStatusCode != HttpStatus.SC_OK;
-      String responseBody = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
-      if (failedRequest) {
-        throw new TranslationException(
-            "Error from Pangeanic Translation API: " + responseBody, remoteStatusCode);
-      } else {
-        JSONObject obj = new JSONObject(responseBody);
+      JSONObject obj = new JSONObject(responseBody);
         // there are cases where we get an empty response
         if (!obj.has(PangeanicTranslationUtils.TRANSLATIONS)) {
           throw new TranslationException("Pangeanic Translation API returned empty response",
               remoteStatusCode);
         }
         extractTranslations(obj, translationObjs, sourceLanguage, remoteStatusCode);
-      }
-    } catch (ClientProtocolException e) {
-      throw new TranslationException("Remote service invocation error.", remoteStatusCode, e);
+      
+    } catch (HttpResponseException e) {
+      throw new TranslationException("Remote service invocation error.", e.getStatusCode(), e);
     } catch (JSONException | IOException e) {
       throw new TranslationException("Cannot read pangeanic service response.", remoteStatusCode,
           e);

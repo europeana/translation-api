@@ -1,7 +1,7 @@
 package eu.europeana.api.translation.definitions.language;
 
-import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
 
 /**
@@ -13,10 +13,10 @@ import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstan
  */
 public class LanguagePair implements Comparable<LanguagePair> {
 
-  private String srcLang;
-  private String targetLang;
+  private final String srcLang;
+  private final String targetLang;
 
-  public LanguagePair(String srcLang, @NotNull String targetLang) {
+  public LanguagePair(String srcLang, @NonNull String targetLang) {
     this.srcLang = srcLang;
     this.targetLang = targetLang;
   }

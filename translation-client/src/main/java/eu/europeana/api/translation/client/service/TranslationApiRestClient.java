@@ -90,7 +90,7 @@ public class TranslationApiRestClient {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(ERROR_MESSAGE + " {} ", e.getMessage());
             }
-            throw new TranslationApiException(ERROR_MESSAGE + e.getMessage(), e.getRawStatusCode(), e);
+            throw new TranslationApiException(ERROR_MESSAGE + e.getMessage(), e.getStatusCode().value(), e);
         }
     }
 
@@ -124,7 +124,7 @@ public class TranslationApiRestClient {
         } catch (WebClientResponseException e) {
             String message = getErrorMessage(e.getResponseBodyAsString(), e.getMessage());
             LOGGER.debug(ERROR_MESSAGE + " {} ", message);
-            throw new TranslationApiException(ERROR_MESSAGE + message, e.getRawStatusCode(), e);
+            throw new TranslationApiException(ERROR_MESSAGE + message,  e.getStatusCode().value(), e);
         }
     }
 

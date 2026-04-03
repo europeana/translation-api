@@ -50,7 +50,7 @@
 		<!-- spring doc dependencies -->
 		<dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
 
@@ -86,10 +86,11 @@
 		</dependency>	
 
 		<dependency>
-			<groupId>eu.europeana.api.commons</groupId>
-			<artifactId>commons-web</artifactId>
-			<version>${api-commons.version}</version>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>commons-sb3-web</artifactId>
+			<version>${api-commons.sb3.version}</version>
 			<exclusions>
+				<!--
 				<exclusion>
 					<groupId>org.mongodb</groupId>
 					<artifactId>mongo-java-driver</artifactId>
@@ -98,26 +99,21 @@
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>io.springfox</groupId>
-					<artifactId>springfox-swagger2</artifactId>
-				</exclusion>
+				-->
 			</exclusions>
 		</dependency>
-		<!--
+		
 		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-data-redis</artifactId>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>commons-sb3-oauth</artifactId>
+			<version>${api-commons.sb3.version}</version>
 		</dependency>
-		-->		
-
-<!--
+		
 		<dependency>
-			<groupId>eu.europeana.api2</groupId>
-			<artifactId>api2-model</artifactId>
-			<version>2.16.3-SNAPSHOT</version>
+			<groupId>eu.europeana.api</groupId>
+			<artifactId>commons-sb3-nosql</artifactId>
+			<version>${api-commons.sb3.version}</version>
 		</dependency>
--->		
 	</dependencies>
 
 	<build>

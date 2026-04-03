@@ -1,19 +1,17 @@
 package eu.europeana.api.translation.web.service;
 
-import static eu.europeana.api.translation.web.I18nErrorMessageKeys.ERROR_INVALID_PARAM_VALUE;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.PreDestroy;
-
+import javax.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import eu.europeana.api.commons.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.EuropeanaI18nApiException;
+import eu.europeana.api.commons_sb3.error.exceptions.InvalidParamException;
 import eu.europeana.api.translation.config.TranslationConfig;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.config.services.TranslationLangPairCfg;
@@ -26,12 +24,12 @@ import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.TranslationException;
 import eu.europeana.api.translation.service.util.TranslationUtils;
-import eu.europeana.api.translation.web.exception.ParamValidationException;
 
 @Service
 public class TranslationWebService extends BaseWebService {
-  
-  @Autowired protected TranslationConfig translationConfig;
+
+  @Resource
+  protected TranslationConfig translationConfig;
 
   @Autowired
   private final TranslationServiceProvider translationServiceProvider;
@@ -52,7 +50,7 @@ public class TranslationWebService extends BaseWebService {
     try {
       translationServiceProvider.getTranslationServicePreProcessor().translate(translObjs);
     } catch (TranslationException e) {
-     logger.error("Error during the pre processing ", e);
+      logger.error("Error during the pre processing ", e);
     }
     // get the configured translation services
     LanguagePair languagePair =
@@ -75,9 +73,11 @@ public class TranslationWebService extends BaseWebService {
       try {
         serviceId = cachedTranslationService.getServiceId();
         // send the values which are not yet translated (isTranslated=false) for the translations
-        cachedTranslationService.translate(translObjs.stream().filter(to -> !to.isTranslated()).collect(Collectors.toList()));
-        // update service ID after the translate() method, because the serviceId may change (depending if there is sth in the cache)
-        //NOTE: is this really needed?
+        cachedTranslationService
+            .translate(translObjs.stream().filter(to -> !to.isTranslated()).toList());
+        // update service ID after the translate() method, because the serviceId may change
+        // (depending if there is sth in the cache)
+        // NOTE: is this really needed?
         serviceId = cachedTranslationService.getServiceId();
         // clear translation error if the invocation is successfull
         translationError = null;
@@ -87,9 +87,7 @@ public class TranslationWebService extends BaseWebService {
         if (translationError == null) {
           translationError = ex;
         }
-        if (logger.isDebugEnabled()) {
-          logger.debug("Error when calling translation service: " + serviceId, ex);
-        }
+        logger.debug("Error when calling translation service: {}", serviceId, ex);
       }
     }
 
@@ -102,7 +100,7 @@ public class TranslationWebService extends BaseWebService {
 
 
   private TranslationResponse buildTranslationResponse(TranslationRequest translationRequest,
-                                                       List<TranslationObj> translObjs, String serviceId) {
+      List<TranslationObj> translObjs, String serviceId) {
     TranslationResponse result = new TranslationResponse();
     result.setTranslations(
         translObjs.stream().map(el -> el.getTranslation()).collect(Collectors.toList()));
@@ -121,12 +119,6 @@ public class TranslationWebService extends BaseWebService {
     if (fallback != null) {
       cachedTranslationServices.add(instantiateCachedTranslationService(useCaching, fallback));
     }
-    // } else {
-    // translServicesToCall.add(translationService);
-    // if(fallback!=null) {
-    // translServicesToCall.add(fallback);
-    // }
-    // }
     return cachedTranslationServices;
   }
 
@@ -141,21 +133,22 @@ public class TranslationWebService extends BaseWebService {
 
   private List<TranslationObj> buildTranslationObjectList(TranslationRequest translationRequest) {
     // create a list of objects to be translated
-    List<TranslationObj> translObjs = new ArrayList<TranslationObj>(translationRequest.getText().size());
-    if(shouldTruncateText(translationRequest)) {
+    List<TranslationObj> translObjs = new ArrayList<>(translationRequest.getText().size());
+    if (shouldTruncateText(translationRequest)) {
       limitTextSizeForETranslation(translationRequest, translObjs);
     } else {
       fillTranslationObjects(translObjs, translationRequest);
     }
     return translObjs;
   }
-  
+
   private void fillTranslationObjects(List<TranslationObj> translationObjects,
       TranslationRequest translationRequest) {
-    //when we do not need the above method limitTextSizeForETranslationStressTest, leave just this for loop (as was before)
+    // when we do not need the above method limitTextSizeForETranslationStressTest, leave just this
+    // for loop (as was before)
     final String source = translationRequest.getSource();
     final String target = translationRequest.getTarget();
-    
+
     TranslationObj newTranslObj;
     for (String inputText : translationRequest.getText()) {
       newTranslObj = buildTranslationObject(source, target, inputText);
@@ -172,71 +165,80 @@ public class TranslationWebService extends BaseWebService {
     newTranslObj.setTranslated(false); // not translated yet hence set to false
     return newTranslObj;
   }
-  
+
   /*
-   * This method is used only for the purpose of eTranslation stress test and can be excluded afterwards
+   * This method is used only for the purpose of eTranslation stress test and can be excluded
+   * afterwards
    */
-  private void limitTextSizeForETranslation(TranslationRequest translationRequest, List<TranslationObj> translationObjects) {
+  private void limitTextSizeForETranslation(TranslationRequest translationRequest,
+      List<TranslationObj> translationObjects) {
     StringBuilder translJointString = new StringBuilder(TranslationUtils.STRING_BUILDER_INIT_SIZE);
-    
+
     TranslationObj newTranslObj;
-    
+
     for (String inputText : translationRequest.getText()) {
-        
-       //append delimiter if needed and doesn't exceed the limit 
-       if(!translJointString.isEmpty() && !exceedesSnippetLimit(translJointString, ETranslationTranslationService.MARKUP_DELIMITER)) {
-          //append new paragraph delimiter
-          translJointString.append(ETranslationTranslationService.MARKUP_DELIMITER);
-        } else if(exceedesSnippetLimit(translJointString, ETranslationTranslationService.MARKUP_DELIMITER)){
-          //cannot add more text as limit will exceed, if the delimiter is appended
-          //stop if delimiter cannot be appended
-          break;
-        }
-        
-        if(!exceedesSnippetLimit(translJointString, inputText)) {
-          //no truncation needed
-          //append to joint string
-          translJointString.append(inputText);
-          //add to translation objects
-          newTranslObj = buildTranslationObject(translationRequest.getSource(), translationRequest.getTarget(), inputText);
-          translationObjects.add(newTranslObj);
-         } else {
-          //truncation is needed
-          final int charsAvailableForSnippet = ETranslationTranslationService.ETRANSLATION_SNIPPET_LIMIT - translJointString.length();
-          //ensure end index is smaller or equal than the length of the text
-          //TODO: eventually ensure to break at last space (or punctuation) char
-          final int lastCharIndex = Math.min(charsAvailableForSnippet, inputText.length());
-          String truncatedInput=inputText.substring(0, lastCharIndex);
-          
-          //append to joint string
-          translJointString.append(truncatedInput);
-          
-          //add to translation objects
-          newTranslObj = buildTranslationObject(translationRequest.getSource(), translationRequest.getTarget(), truncatedInput);
-          translationObjects.add(newTranslObj);
-          
-          //stop after truncated text
-          break;
-        }
+
+      // append delimiter if needed and doesn't exceed the limit
+      if (StringUtils.isNotEmpty(translJointString) && !exceedesSnippetLimit(translJointString,
+          ETranslationTranslationService.MARKUP_DELIMITER)) {
+        // append new paragraph delimiter
+        translJointString.append(ETranslationTranslationService.MARKUP_DELIMITER);
+      } else if (exceedesSnippetLimit(translJointString,
+          ETranslationTranslationService.MARKUP_DELIMITER)) {
+        // cannot add more text as limit will exceed, if the delimiter is appended
+        // stop if delimiter cannot be appended
+        break;
       }
+
+      if (exceedesSnippetLimit(translJointString, inputText)) {
+        // truncation is needed
+        final int charsAvailableForSnippet =
+            ETranslationTranslationService.ETRANSLATION_SNIPPET_LIMIT - translJointString.length();
+        // ensure end index is smaller or equal than the length of the text
+        // TODO: eventually ensure to break at last space (or punctuation) char
+        final int lastCharIndex = Math.min(charsAvailableForSnippet, inputText.length());
+        String truncatedInput = inputText.substring(0, lastCharIndex);
+
+        // append to joint string
+        translJointString.append(truncatedInput);
+
+        // add to translation objects
+        newTranslObj = buildTranslationObject(translationRequest.getSource(),
+            translationRequest.getTarget(), truncatedInput);
+        translationObjects.add(newTranslObj);
+
+        // stop after truncated text
+        break;
+      } else {
+        // no truncation needed
+        // append to joint string
+        translJointString.append(inputText);
+        // add to translation objects
+        newTranslObj = buildTranslationObject(translationRequest.getSource(),
+            translationRequest.getTarget(), inputText);
+        translationObjects.add(newTranslObj);
+      }
+    }
   }
 
   private boolean exceedesSnippetLimit(StringBuilder translJointString, String textToAppend) {
-    return translJointString.length() + textToAppend.length() >= ETranslationTranslationService.ETRANSLATION_SNIPPET_LIMIT;
+    return translJointString.length()
+        + textToAppend.length() >= ETranslationTranslationService.ETRANSLATION_SNIPPET_LIMIT;
   }
 
   private boolean shouldTruncateText(TranslationRequest translationRequest) {
     return translationConfig.isEtranslationTruncate()
-        && ETranslationTranslationService.DEFAULT_SERVICE_ID.equals(translationRequest.getService());
+        && ETranslationTranslationService.DEFAULT_SERVICE_ID
+            .equals(translationRequest.getService());
   }
 
   private TranslationService selectTranslationService(TranslationRequest translationRequest,
-      LanguagePair languagePair) throws ParamValidationException {
+      LanguagePair languagePair) throws InvalidParamException {
     final String serviceId = translationRequest.getService();
-    if (serviceId != null) {
+    if (StringUtils.isNotBlank(serviceId)) {
       // get the translation service by id
       return getTranslationService(serviceId, languagePair);
-    } else if (languagePair.getSrcLang() != null) {
+    } else if (StringUtils.isNotEmpty(languagePair.getSrcLang())) {
       // search in language mappings
       TranslationService translationService = selectFromLanguageMappings(languagePair);
       if (translationService != null) {
@@ -257,27 +259,27 @@ public class TranslationWebService extends BaseWebService {
   }
 
   private TranslationService getTranslationService(final String serviceId,
-      LanguagePair languagePair) throws ParamValidationException {
+      LanguagePair languagePair) throws InvalidParamException {
     return getTranslationService(serviceId, languagePair, false);
   }
 
   private TranslationService getTranslationService(final String serviceId,
-      LanguagePair languagePair, boolean fallback) throws ParamValidationException {
+      LanguagePair languagePair, boolean fallback) throws InvalidParamException {
     TranslationService result = translationServiceProvider.getTranslationServices().get(serviceId);
     String param = fallback ? TranslationAppConstants.FALLBACK : TranslationAppConstants.SERVICE;
     if (result == null) {
-      throw new ParamValidationException("Requested service id is invalid" + serviceId,
-          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE,
-          new String[] {param,
-              serviceId + " (available services: "
-                  + String.join(", ", translationServiceProvider.getTranslationServices().keySet())
-                  + ")"});
+      throw new InvalidParamException(List.of(
+          param,
+          "one of available services: "
+              + String.join(", ", translationServiceProvider.getTranslationServices().keySet()),
+          serviceId));
     }
     if (!result.isSupported(languagePair.getSrcLang(), languagePair.getTargetLang())) {
-      throw new ParamValidationException("Language pair not supported:" + languagePair,
-          ERROR_INVALID_PARAM_VALUE, ERROR_INVALID_PARAM_VALUE,
-          new String[] {LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
-              TranslationAppConstants.TARGET_LANG), languagePair.toString()});
+      throw new InvalidParamException(List.of(
+          LanguagePair.generateKey(TranslationAppConstants.SOURCE_LANG,
+              TranslationAppConstants.TARGET_LANG),
+          "one of the language pairs supported by hte service", 
+          languagePair.toString()));
     }
     return result;
   }

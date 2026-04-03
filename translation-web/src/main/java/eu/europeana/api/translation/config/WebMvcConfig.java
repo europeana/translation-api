@@ -1,8 +1,7 @@
 package eu.europeana.api.translation.config;
 
-import java.util.HashMap;
 import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,12 +14,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
   
   MediaType jsonLdMediaType =
-      MediaType.valueOf(eu.europeana.api.commons.web.http.HttpHeaders.CONTENT_TYPE_JSONLD);
-  Map<String, MediaType> mediaTypesMaping = new HashMap<String, MediaType>();
+      MediaType.valueOf(eu.europeana.api.commons_sb3.definitions.http.HttpHeaders.CONTENT_TYPE_JSONLD);
+  Map<String, MediaType> mediaTypesMaping = new ConcurrentHashMap<>();
 
   /** Setup CORS for all GET, HEAD and OPTIONS, requests. */
   @Override
-  @SuppressWarnings({"external_findsecbugs:PERMISSIVE_CORS", "PERMISSIVE_CORS", "java:S5122"}) //the API is public
   public void addCorsMappings(CorsRegistry registry) {
     registry
         .addMapping("/**")

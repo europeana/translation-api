@@ -34,10 +34,17 @@
 		  <artifactId>translation-service-common</artifactId>
 		  <version>0.1.4-SNAPSHOT</version>
 	  </dependency>
-      <dependency>
-		  <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-	  </dependency>
+	  
+	  <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+        </dependency>
 
   </dependencies>
 

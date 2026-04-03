@@ -13,9 +13,9 @@
 
   	<dependencies>
 		<dependency>
-            <groupId>eu.europeana.api.commons</groupId>
-            <artifactId>commons-definitions</artifactId>
-            <version>${api-commons.version}</version>
+            <groupId>eu.europeana.api</groupId>
+            <artifactId>commons-sb3-definitions</artifactId>
+            <version>${api-commons.sb3.version}</version>
         </dependency> 
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
@@ -26,22 +26,18 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${version.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>${version.jackson}</version>
 		</dependency>
 
 		

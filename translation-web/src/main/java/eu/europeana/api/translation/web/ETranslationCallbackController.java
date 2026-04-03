@@ -11,23 +11,36 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import eu.europeana.api.commons.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.definitions.oauth.Operations;
+import eu.europeana.api.commons_sb3.definitions.utils.LoggingUtils;
+import eu.europeana.api.commons_sb3.error.EuropeanaApiException;
+import eu.europeana.api.commons_sb3.oauth2.BaseRestController;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.web.model.CachedTranslation;
+import eu.europeana.api.translation.web.service.TranslationAuthorizationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
+/**
+ * Callback to fetch eTranslation response
+ */
 @RestController
 @Tag(name = "ETranslation callback controller", description = "Receives the eTranslation response")
-public class ETranslationCallbackController {
+public class ETranslationCallbackController extends BaseRestController{
 
   private static final Logger LOGGER = LogManager.getLogger(ETranslationCallbackController.class);
 
+  @Resource private TranslationAuthorizationService translAuthorizationService;
   RedisTemplate<String, CachedTranslation> redisTemplate;
 
   @Autowired
   public ETranslationCallbackController(RedisTemplate<String, CachedTranslation> redisTemplate) {
     this.redisTemplate = redisTemplate;
+  }
+  
+  protected TranslationAuthorizationService getAuthorizationService() {
+    return translAuthorizationService;
   }
 
   @Tag(description = "ETranslation callback endpoint", name = "eTranslationCallback")
@@ -51,7 +64,7 @@ public class ETranslationCallbackController {
     }
     /*
      * in case we send a document for the translation, we get the output in the body, or otherwise,
-     * if we send a text snippet in the text-to-translate field, we ge the output in the translated-text parameter 
+     * if we send a text snippet in the text-to-translate field, we get the output in the translated-text parameter 
      * (although also extracted from the body)
      */
     String translations = (translatedTextSnippet == null) ? body : translatedTextSnippet ;
@@ -62,6 +75,7 @@ public class ETranslationCallbackController {
 
   /**
    * This method is deprecated, it is used for manual simulations only, as the eTranslation send post callbacks
+   * @throws Exception 
    * @deprecated for simulation purposes only
    */
   @Tag(description = "ETranslation callback endpoint", name = "eTranslationCallback")
@@ -72,12 +86,21 @@ public class ETranslationCallbackController {
       @RequestParam(value = "translated-text", required = false) String translatedTextSnippet,
       @RequestParam(value = "request-id", required = false) String requestId,
       @RequestParam(value = "external-reference", required = false) String externalReference,
-      @RequestParam(value = "timeout", required = false) Integer timeout) throws InterruptedException {
+      @RequestParam(value = "timeout", required = false) Integer timeout,
+      HttpServletRequest request) throws EuropeanaApiException {
+    
+    verifyWriteAccess(Operations.CREATE, request);
     
     if (timeout != null && timeout > 0) {
       // for simulation purposes, wait for $timeout seconds
       final long SECONDS_MILIS = 1000;
-      Thread.sleep(timeout * SECONDS_MILIS);
+      try {
+        Thread.sleep(timeout * SECONDS_MILIS);
+      } catch (InterruptedException e) {
+        /* Clean up whatever needs to be handled before interrupting  */
+        Thread.currentThread().interrupt();
+        throw new EuropeanaApiException("Cannot sleep thread!", e);
+      }
       return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
@@ -143,6 +166,5 @@ public class ETranslationCallbackController {
       @RequestBody(required = false) String body) {
     handleErroCallback(errorCode, errorMessage, requestId, externalReference);
   }
-
 
 }

@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import eu.europeana.api.commons_sb3.error.config.ErrorMessage;
 import eu.europeana.api.translation.config.BeanNames;
 import eu.europeana.api.translation.config.TranslationServiceProvider;
 import eu.europeana.api.translation.definitions.vocabulary.TranslationAppConstants;
@@ -185,7 +186,7 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONObject obj = new JSONObject(response);
     Assertions.assertEquals(obj.get("success"), false);
     Assertions.assertEquals(obj.get("status"), HttpStatus.BAD_REQUEST.value());
-    Assertions.assertEquals(obj.get("code"), "mandatory_param_empty");
+    Assertions.assertEquals(obj.get("code"), ErrorMessage.PARAM_MISSING_400.getCode());
     Assertions.assertTrue(obj.has("error"));
     Assertions.assertTrue(obj.has("message"));
     Assertions.assertTrue(obj.has("timestamp"));
@@ -205,10 +206,11 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   @Test
   void langDetectionInvalidServiceParam() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_BAD_REQUEST_2);
-    mockMvc.perform(post(BASE_URL_DETECT)
+    String result = mockMvc.perform(post(BASE_URL_DETECT)
         .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).content(requestJson))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+    assertTrue(result.contains(ErrorMessage.PARAM_INVALID_400.getCode()));
   }
 
   // Hybrid lang detect tests
@@ -269,6 +271,6 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONObject json = new JSONObject(result);
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     assertEquals(1, langs.length());
-    assertTrue(langs.isNull(0));
+    assertEquals(JSONObject.EXPLICIT_NULL, langs.opt(0));
   }
 }
