@@ -6,12 +6,11 @@ package eu.europeana.api.translation.definitions.language;
  * @author Srishti Singh
  * Created 2 March 2023
  */
-public class Language {
+public final class Language {
+
+    public static final String PIVOT = "en";
 
     private Language() {
         // private constructor to prevent initialization
     }
-
-    public static final String PIVOT = "en";
-
 }
