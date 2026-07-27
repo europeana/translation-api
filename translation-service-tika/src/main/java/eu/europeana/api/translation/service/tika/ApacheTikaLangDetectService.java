@@ -116,7 +116,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       return chooseDetectedLangUsingThresholds(sourceText, tikaLanguages, langHint);
     }
 
-    // In case lang hint is not null, check if it myabe exists among the langs with
+    // In case lang hint is not null, check if it exists among the langs with
     // the highest confidence, and if so return the langHint as a detected lang, if
     // not return the first one.
     // if langHint is null, return the first detected language (has the highest
@@ -127,6 +127,11 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     } else if (langHint.equals(detectedLang) || containsHint(tikaLanguages, langHint)) {
       // search hint above confidence level
       detectedLang = langHint;
+    } else {
+      //check if the detected language is a close language to the hint. Use the hint in such cases
+      Set<String> closeLangs = ApacheTikaConstants.closeLanguages.get(langHint);
+      if(closeLangs.contains(detectedLang))
+        detectedLang = langHint;
     }
     return detectedLang;
   }
