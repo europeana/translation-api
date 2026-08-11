@@ -130,7 +130,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     } else {
       //check if the detected language is a close language to the hint. Use the hint in such cases
       Set<String> closeLangs = ApacheTikaConstants.closeLanguages.get(langHint);
-      if(closeLangs.contains(detectedLang))
+      if(closeLangs!=null && closeLangs.contains(detectedLang))
         detectedLang = langHint;
     }
     return detectedLang;
