@@ -14,6 +14,7 @@ import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
+import eu.europeana.api.translation.service.LanguageConstants;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
@@ -139,9 +140,11 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
    * @return
    */
   private String overideRegionalLanguage(String detectedLang, String langHint) {
-    Set<String> closeLangs = ApacheTikaConstants.closeLanguages.get(langHint);
-    if(closeLangs!=null && closeLangs.contains(detectedLang))
-      detectedLang = langHint;
+    if(langHint!=null) {
+      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      if(closeLangs!=null && closeLangs.contains(detectedLang))
+        detectedLang = langHint;
+    }
     return detectedLang;
   }
 
