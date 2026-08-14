@@ -40,12 +40,11 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
    * @throws LangDetectionServiceConfigurationException if the priori cannot be set
    */
   public void initDetectorPriors(List<String> expectedLanguages) throws LangDetectionServiceConfigurationException {
+    setExpectedLanguages(expectedLanguages);
     if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior()==null) {
       //no config for unsupported language priors
       return;
     }
-      
-    setExpectedLanguages(expectedLanguages);
      
     //build priors  
     HashMap<String, Float> defaultPriors =
@@ -130,11 +129,19 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       // search hint above confidence level
       detectedLang = langHint;
     } else {
-      //check if the detected language is a close language to the hint. Use the hint in such cases
-      Set<String> closeLangs = ApacheTikaConstants.closeLanguages.get(langHint);
-      if(closeLangs!=null && closeLangs.contains(detectedLang))
-        detectedLang = langHint;
+      detectedLang=overideRegionalLanguage(detectedLang, langHint);
     }
+    return detectedLang;
+  }
+
+  /**
+   * @param detectedLang check if the detected language is a close language to the hint. Use the hint in such cases
+   * @return
+   */
+  private String overideRegionalLanguage(String detectedLang, String langHint) {
+    Set<String> closeLangs = ApacheTikaConstants.closeLanguages.get(langHint);
+    if(closeLangs!=null && closeLangs.contains(detectedLang))
+      detectedLang = langHint;
     return detectedLang;
   }
 
@@ -157,10 +164,16 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       List<LanguageResult> tikaLanguages, String langHint) {
     //
     String detectedLang = tikaLanguages.get(0).getLanguage();
+    if (containsHint(tikaLanguages, langHint)) 
+      return langHint;
     float confidence = tikaLanguages.get(0).getRawScore();
-    if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence))
+    if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence)) {
+      if (!StringUtils.isBlank(langHint)) {
+        if (! langHint.equals(detectedLang)) 
+          detectedLang=overideRegionalLanguage(detectedLang, langHint);
+      }
       return detectedLang;
-    else
+    } else
       return StringUtils.isBlank(langHint) ? null : langHint;
   }
 

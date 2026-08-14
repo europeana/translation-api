@@ -142,10 +142,31 @@ public class LangDetectionRestIT extends BaseTranslationTest {
     JSONObject json = new JSONObject(result);
     JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
     
-    assertTrue(langs.length() == 2 && "es".equals(langs.getString(0))
-        && "es".equals(langs.getString(1)) );
+    assertTrue(langs.length() == 2);
+    assertEquals("es", langs.getString(0));
+    assertEquals("es", langs.getString(1));
     String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
     assertEquals(BeanNames.SERVICE_TIKA_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
+  }  
+  
+  @Test
+  void langDetectionHybridRegional() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REGIONAL);
+    String result = mockMvc
+        .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .content(requestJson))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+
+    assertTrue(langs.length() == 2);
+    assertEquals("es", langs.getString(0));
+    assertEquals("es", langs.getString(1));
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertEquals(BeanNames.SERVICE_HYBRID_LANG_DETECT_SERVICE, serviceFieldValue);
   }  
   
   @Test

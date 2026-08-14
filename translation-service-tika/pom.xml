@@ -29,11 +29,5 @@
 			<artifactId>tika-langdetect-optimaize</artifactId>
 			<version>${apache.tika.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>5.12.2</version>
-		</dependency>
-
 	</dependencies>
 </project>
