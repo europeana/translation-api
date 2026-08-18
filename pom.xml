@@ -384,7 +384,7 @@
 						<version>${pmd-plugin.version}</version>
 						<configuration>
 							<rulesets>
-								<ruleset>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-pmd-ruleset.xml</ruleset>
+								<ruleset>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-pmd-ruleset-v4_10.xml</ruleset>
 							</rulesets>
 							<printFailingErrors>true</printFailingErrors>
 						</configuration>
