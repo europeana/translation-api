@@ -411,7 +411,7 @@
 							</execution>
 						</executions>
 						<configuration>
-							<includeFilterFile>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-findbugs-ruleset.xml</includeFilterFile>
+							<includeFilterFile>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-pmd-ruleset-v4_10.xml</includeFilterFile>
 							<!--We just want the reports; build should still pass -->
 							<failOnError>false</failOnError>
 							<!-- Import additional rules from plugins -->
