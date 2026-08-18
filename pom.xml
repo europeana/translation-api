@@ -94,7 +94,7 @@
 		<jacoco-plugin.version>0.8.14</jacoco-plugin.version>
 		<pmd-plugin.version>3.28.0</pmd-plugin.version>
 		<spotbugs-plugin.version>4.10.3.0</spotbugs-plugin.version>
-		<sonar-plugin.version>8.39.0.46279</sonar-plugin.version>
+		<sonar-plugin.version>5.7.0.6970</sonar-plugin.version>
 		<sonar.java.pmd.reportPaths>${project.build.directory}/pmd.xml</sonar.java.pmd.reportPaths>
 		<sonar.java.spotbugs.reportPaths>${project.build.directory}/spotbugsXml.xml</sonar.java.spotbugs.reportPaths>
 		<sonar.organization>europeana</sonar.organization>
