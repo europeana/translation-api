@@ -77,17 +77,17 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   }
   
   private LanguageDetector createDetector() {
-    OptimaizeLangDetector detector = new OptimaizeLangDetector();
+    OptimaizeLangDetector detectorInstance = new OptimaizeLangDetector();
     if(priors!=null) {
       try {
-          detector.setPriors(priors);
+          detectorInstance.setPriors(priors);
       } catch (IOException e) {
           throw new IllegalStateException(
                   "Could not initialize Tika language detector", e);
       }
     }
-    detector.loadModels();
-    return detector;
+    detectorInstance.loadModels();
+    return detectorInstance;
 }
 
   @Override
