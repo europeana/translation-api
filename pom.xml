@@ -411,6 +411,7 @@
 							</execution>
 						</executions>
 						<configuration>
+						  <!-- use the corect ruleset for the PMD version used by the pmd plugin https://github.com/europeana/api-commons/tree/master/misc/rulesets -->
 							<includeFilterFile>https://raw.githubusercontent.com/europeana/api-commons/master/misc/rulesets/europeana-pmd-ruleset-v4_10.xml</includeFilterFile>
 							<!--We just want the reports; build should still pass -->
 							<failOnError>false</failOnError>
