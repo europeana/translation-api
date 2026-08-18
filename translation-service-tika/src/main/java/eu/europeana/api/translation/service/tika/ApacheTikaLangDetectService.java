@@ -190,7 +190,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
 
   @Override
   public void close() {
-    // nothing to do
+    detector.remove();
   }
 
   public Set<String> getExpectedLanguages() {
