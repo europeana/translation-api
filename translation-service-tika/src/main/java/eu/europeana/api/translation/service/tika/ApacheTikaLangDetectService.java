@@ -17,7 +17,7 @@ import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageConstants;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
-
+ 
 /**
  * Apache Tika language detection service
  *
@@ -25,14 +25,17 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
-  private final LanguageDetector detector;
+  //Using a ThreadLocal for the Tika detector for thread-safe use
+  private final ThreadLocal<LanguageDetector> detector = ThreadLocal.withInitial(this::createDetector); 
+  //The list of languages that are likely to be in the text
   private Set<String> expectedLanguages;
+  //The probability priors for Tika, assigning a higher probability for languages in the list of expectedLanguages
+  private Map<String, Float> priors;
 
   /**
    * Default constructor
    */
   public ApacheTikaLangDetectService() {
-    this.detector = new OptimaizeLangDetector().loadModels();
   }
 
   /**
@@ -50,25 +53,19 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       return;
     }
 
+    LanguageDetector tmpDetector = new OptimaizeLangDetector().loadModels();
+    
     // build priors
-    HashMap<String, Float> defaultPriors = HashMap.newHashMap(ApacheTikaConstants.supportedLanguages.size());
+    priors = HashMap.newHashMap(ApacheTikaConstants.supportedLanguages.size());
     for (String lang : ApacheTikaConstants.supportedLanguages) {
       // only if model available
-      if (!detector.hasModel(lang)) {
+      if (!tmpDetector.hasModel(lang)) {
         continue;
       }
 
       // add prior
-      addPrior(lang, defaultPriors);
+      addPrior(lang, priors);
     }
-
-    // set priors
-    try {
-      detector.setPriors(defaultPriors);
-    } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException("Error setting Tika's language priors", e);
-    }
-
   }
 
   private void addPrior(String lang, Map<String, Float> defaultPriors) {
@@ -78,6 +75,20 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       defaultPriors.put(lang, getThresholdsConf().getNonSupportedLangPrior());
     }
   }
+  
+  private LanguageDetector createDetector() {
+    OptimaizeLangDetector detector = new OptimaizeLangDetector();
+    if(priors!=null) {
+      try {
+          detector.setPriors(priors);
+      } catch (IOException e) {
+          throw new IllegalStateException(
+                  "Could not initialize Tika language detector", e);
+      }
+    }
+    detector.loadModels();
+    return detector;
+}
 
   @Override
   public boolean isSupported(String srcLang) {
@@ -94,7 +105,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     List<LanguageResult> tikaLanguages = null;
     for (LanguageDetectionObj obj : languageDetectionObjs) {
       // returns all tika languages sorted by score
-      tikaLanguages = this.detector.detectAll(obj.getText());
+      tikaLanguages = this.detector.get().detectAll(obj.getText());
       detectedLangs.add(chooseDetectedLang(obj.getText(), tikaLanguages, obj.getHint()));
     }
 
