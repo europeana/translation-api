@@ -29,5 +29,10 @@
 			<artifactId>tika-langdetect-optimaize</artifactId>
 			<version>${apache.tika.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-langdetect-opennlp</artifactId>
+            <version>${apache.tika.version}</version>
+        </dependency>
 	</dependencies>
 </project>

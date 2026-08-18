@@ -1,6 +1,5 @@
 package eu.europeana.api.translation.service;
 
-import java.util.List;
 import java.util.Map;
 import static java.util.Map.entry;
 import java.util.Set;

@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
+
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageConstants;
@@ -23,11 +23,11 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  *
  * @author Srdjan
  */
-public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService{
+public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
   private final LanguageDetector detector;
   private Set<String> expectedLanguages;
-  
+
   /**
    * Default constructor
    */
@@ -36,46 +36,47 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   }
 
   /**
-   * Set detector's priors based on service configurations for API's supported languages 
+   * Set detector's priors based on service configurations for API's supported
+   * languages
+   * 
    * @param expectedLanguages the languages supported by the API
-   * @throws LangDetectionServiceConfigurationException if the priori cannot be set
+   * @throws LangDetectionServiceConfigurationException if the priori cannot be
+   *                                                    set
    */
   public void initDetectorPriors(List<String> expectedLanguages) throws LangDetectionServiceConfigurationException {
     setExpectedLanguages(expectedLanguages);
-    if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior()==null) {
-      //no config for unsupported language priors
+    if (getThresholdsConf() == null || getThresholdsConf().getNonSupportedLangPrior() == null) {
+      // no config for unsupported language priors
       return;
     }
-     
-    //build priors  
-    HashMap<String, Float> defaultPriors =
-        new HashMap<>(ApacheTikaConstants.supportedLanguages.size());
+
+    // build priors
+    HashMap<String, Float> defaultPriors = HashMap.newHashMap(ApacheTikaConstants.supportedLanguages.size());
     for (String lang : ApacheTikaConstants.supportedLanguages) {
-      //only if model available
-      if(!detector.hasModel(lang)) {
+      // only if model available
+      if (!detector.hasModel(lang)) {
         continue;
       }
-      
-      //add prior
+
+      // add prior
       addPrior(lang, defaultPriors);
     }
-    
+
     // set priors
     try {
       detector.setPriors(defaultPriors);
     } catch (IOException e) {
-      throw new LangDetectionServiceConfigurationException("Error setting Tika's language priors",
-          e);
+      throw new LangDetectionServiceConfigurationException("Error setting Tika's language priors", e);
     }
-    
+
   }
 
   private void addPrior(String lang, Map<String, Float> defaultPriors) {
     if (getExpectedLanguages() != null && getExpectedLanguages().contains(lang)) {
-        defaultPriors.put(lang, 1F);
+      defaultPriors.put(lang, 1F);
     } else {
-        defaultPriors.put(lang, getThresholdsConf().getNonSupportedLangPrior());
-     }
+      defaultPriors.put(lang, getThresholdsConf().getNonSupportedLangPrior());
+    }
   }
 
   @Override
@@ -84,8 +85,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   }
 
   @Override
-  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs)
-      throws LanguageDetectionException {
+  public void detectLang(List<LanguageDetectionObj> languageDetectionObjs) throws LanguageDetectionException {
     if (languageDetectionObjs.isEmpty()) {
       return;
     }
@@ -100,9 +100,8 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
 
     // fallback check - if the lang detection is complete / successful
     if (detectedLangs.size() != languageDetectionObjs.size()) {
-      throw new LanguageDetectionException(
-          "The Language detection is not completed successfully. Expected "
-              + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
+      throw new LanguageDetectionException("The Language detection is not completed successfully. Expected "
+          + languageDetectionObjs.size() + " but received: " + detectedLangs.size());
     }
     // build results
     for (int i = 0; i < detectedLangs.size(); i++) {
@@ -110,8 +109,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     }
   }
 
-  protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages,
-      String langHint) {
+  protected String chooseDetectedLang(String sourceText, List<LanguageResult> tikaLanguages, String langHint) {
     if (tikaLanguages.isEmpty())
       return null;
     if (getThresholdsConf() != null) {
@@ -130,19 +128,20 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       // search hint above confidence level
       detectedLang = langHint;
     } else {
-      detectedLang=overideRegionalLanguage(detectedLang, langHint);
+      detectedLang = overideRegionalLanguage(detectedLang, langHint);
     }
     return detectedLang;
   }
 
   /**
-   * @param detectedLang check if the detected language is a close language to the hint. Use the hint in such cases
+   * @param detectedLang check if the detected language is a close language to the
+   *                     hint. Use the hint in such cases
    * @return
    */
   private String overideRegionalLanguage(String detectedLang, String langHint) {
-    if(langHint!=null) {
+    if (langHint != null) {
       Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
-      if(closeLangs!=null && closeLangs.contains(detectedLang))
+      if (closeLangs != null && closeLangs.contains(detectedLang))
         detectedLang = langHint;
     }
     return detectedLang;
@@ -153,7 +152,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       return false;
     }
     boolean ret = false;
-    //enable when  float confidence = tikaLanguages.get(0).getRawScore();
+    // enable when float confidence = tikaLanguages.get(0).getRawScore();
     for (int i = 1; i < tikaLanguages.size(); i++) {
       if (langHint.equals(tikaLanguages.get(i).getLanguage())) {
         ret = true;
@@ -163,18 +162,16 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     return ret;
   }
 
-  protected String chooseDetectedLangUsingThresholds(String sourceText,
-      List<LanguageResult> tikaLanguages, String langHint) {
+  protected String chooseDetectedLangUsingThresholds(String sourceText, List<LanguageResult> tikaLanguages,
+      String langHint) {
     //
-    String detectedLang = tikaLanguages.get(0).getLanguage();
-    if (containsHint(tikaLanguages, langHint)) 
+    if (containsHint(tikaLanguages, langHint))
       return langHint;
     float confidence = tikaLanguages.get(0).getRawScore();
     if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence)) {
-      if (!StringUtils.isBlank(langHint)) {
-        if (! langHint.equals(detectedLang)) 
-          detectedLang=overideRegionalLanguage(detectedLang, langHint);
-      }
+      String detectedLang = tikaLanguages.get(0).getLanguage();
+      if (!StringUtils.isBlank(langHint) && !langHint.equals(detectedLang))
+        detectedLang = overideRegionalLanguage(detectedLang, langHint);
       return detectedLang;
     } else
       return StringUtils.isBlank(langHint) ? null : langHint;
@@ -192,6 +189,5 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
   public void setExpectedLanguages(List<String> expectedLanguages) {
     this.expectedLanguages = Set.copyOf(expectedLanguages);
   }
-
 
 }
