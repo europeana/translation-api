@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
+import org.springframework.util.CollectionUtils;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageConstants;
@@ -140,7 +141,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       // search hint above confidence level
       detectedLang = langHint;
     } else {
-      detectedLang = overideRegionalLanguage(detectedLang, langHint);
+      detectedLang = selectByRegionalLanguage(detectedLang, langHint);
     }
     return detectedLang;
   }
@@ -150,12 +151,20 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
    *                     hint. Use the hint in such cases
    * @return
    */
-  private String overideRegionalLanguage(String detectedLang, String langHint) {
-    if (langHint != null) {
-      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
-      if (closeLangs != null && closeLangs.contains(detectedLang))
-        detectedLang = langHint;
+  private String selectByRegionalLanguage(String detectedLang, String langHint) {
+    
+    if(StringUtils.isBlank(langHint)) {
+      return detectedLang;
     }
+    
+    //choose related language if not same as hint  
+    if (!detectedLang.equals(langHint)){
+      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      if (closeLangs != null && closeLangs.contains(detectedLang)) {
+        return langHint;
+      }  
+    }
+
     return detectedLang;
   }
 
@@ -176,17 +185,23 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
 
   protected String chooseDetectedLangUsingThresholds(String sourceText, List<LanguageResult> tikaLanguages,
       String langHint) {
-    //
-    if (containsHint(tikaLanguages, langHint))
+    if(CollectionUtils.isEmpty(tikaLanguages)) {
+      return null;
+    }
+    
+    if (containsHint(tikaLanguages, langHint)) {
       return langHint;
-    float confidence = tikaLanguages.get(0).getRawScore();
+    }
+    
+    LanguageResult firstDetectionResult = tikaLanguages.get(0);
+    String detectedLang = firstDetectionResult.getLanguage();
+    float confidence = firstDetectionResult.getRawScore();
+    
     if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence)) {
-      String detectedLang = tikaLanguages.get(0).getLanguage();
-      if (!StringUtils.isBlank(langHint) && !langHint.equals(detectedLang))
-        detectedLang = overideRegionalLanguage(detectedLang, langHint);
-      return detectedLang;
-    } else
+      return selectByRegionalLanguage(detectedLang, langHint);
+    } else {
       return StringUtils.isBlank(langHint) ? null : langHint;
+    }
   }
 
   @Override
