@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
-
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageConstants;
@@ -25,6 +25,8 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
+  private final Logger logger = LogManager.getLogger(getClass());
+  
   //Using a ThreadLocal for the Tika detector for thread-safe use
   private final ThreadLocal<LanguageDetector> detector = ThreadLocal.withInitial(this::createDetector); 
   //The list of languages that are likely to be in the text
@@ -76,14 +78,13 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     }
   }
   
-  private LanguageDetector createDetector() {
+  private LanguageDetector createDetector(){
     OptimaizeLangDetector detectorInstance = new OptimaizeLangDetector();
     if(priors!=null) {
       try {
           detectorInstance.setPriors(priors);
       } catch (IOException e) {
-          throw new IllegalStateException(
-                  "Could not initialize Tika language detector", e);
+        logger.warn("Could not initialize the priors for Tika language detector service", e);  
       }
     }
     detectorInstance.loadModels();
