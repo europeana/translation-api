@@ -105,8 +105,12 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
   private String overideRegionalLanguage(String detectedLang, String langHint) {
     if(langHint!=null) {
       Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
-      if(closeLangs!=null && closeLangs.contains(detectedLang))
+      if(closeLangs!=null && closeLangs.contains(detectedLang)) {
+        if(logger.isDebugEnabled()) {
+          logger.debug("Overwritting language with the hint: {} of related language: {}: by service: {}", langHint, detectedLang,  getServiceId());
+        }
         detectedLang = langHint;
+      }
     }
     return detectedLang;
   }
