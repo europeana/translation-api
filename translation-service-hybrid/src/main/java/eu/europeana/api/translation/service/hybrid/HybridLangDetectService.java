@@ -1,10 +1,13 @@
 package eu.europeana.api.translation.service.hybrid;
 
 import java.util.List;
+import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
+import eu.europeana.api.translation.service.LanguageConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
@@ -46,7 +49,7 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
       //create temporary hint from request and reset hint
       String savedHint = obj.getHint();
       obj.setHint(null);
-      delegateLanguageDetection(obj);
+      delegateLanguageDetection(obj, savedHint);
       //use hint if not detected with good confidence
       if (obj.getDetectedLang() == null) {
         obj.setDetectedLang(savedHint);
@@ -56,7 +59,7 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
     }
   }
 
-  private void delegateLanguageDetection(LanguageDetectionObj obj)
+  private void delegateLanguageDetection(LanguageDetectionObj obj, String langHint)
       throws LanguageDetectionException {
     
     if(getReferencedServices() == null || getReferencedServices().isEmpty()) {
@@ -68,6 +71,7 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
     for (LanguageDetectionService service : getReferencedServices()) {
       service.detectLang(isolatedObj);
       if (obj.getDetectedLang() != null) {
+        obj.setDetectedLang(overideRegionalLanguage(obj.getDetectedLang(), langHint));
         if(logger.isDebugEnabled()) {
           logger.debug("Language: {} detected with service: {} for text: {} ", obj.getDetectedLang(), service.getServiceId(), obj.getText());
         }
@@ -94,4 +98,17 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
     return false;
   }
 
+  /**
+   * @param detectedLang check if the detected language is a close language to the hint. Use the hint in such cases
+   * @return
+   */
+  private String overideRegionalLanguage(String detectedLang, String langHint) {
+    if(langHint!=null) {
+      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      if(closeLangs!=null && closeLangs.contains(detectedLang))
+        detectedLang = langHint;
+    }
+    return detectedLang;
+  }
+  
 }

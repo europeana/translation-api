@@ -13,6 +13,7 @@ public abstract class IntegrationTestUtils {
   public static final String LANG_DETECT_REQUEST = "/content/lang_detection_request.json";
   public static final String LANG_DETECT_APACHE_TIKA = "/content/lang_detection_apache_tika.json";
   public static final String LANG_DETECT_APACHE_TIKA_TRSH = "/content/lang_detection_apache_tika_trsh.json";
+  public static final String LANG_DETECT_APACHE_TIKA_REGIONAL = "/content/lang_detection_apache_tika_regional.json";
   public static final String LANG_DETECT_PANGEANIC_REQUEST = "/content/pangeanic/detect/lang_detection_pangeanic_request.json";
   public static final String LANG_DETECT_PANGEANIC_RESPONSE = "/content/pangeanic/detect/lang_detection_pangeanic_response.json";
   
@@ -39,6 +40,7 @@ public abstract class IntegrationTestUtils {
   public static final String LANG_DETECT_HYBRID_REQUEST_2 = "/content/lang_detection_hybrid_request_2.json";
   public static final String LANG_DETECT_HYBRID_REQUEST_3 = "/content/lang_detection_hybrid_request_3.json";
   public static final String LANG_DETECT_HYBRID_REQUEST_4 = "/content/lang_detection_hybrid_request_4.json";
+  public static final String LANG_DETECT_HYBRID_REGIONAL = "/content/lang_detection_hybrid_regional.json";
 
   public static final String TRANSLATION_REQUEST = "/content/translation_request.json";
   public static final String TRANSLATION_GOOGLE_REQUEST = "/content/google/translate/translate_google_request.txt";

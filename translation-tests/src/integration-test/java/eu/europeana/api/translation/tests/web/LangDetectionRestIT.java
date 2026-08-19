@@ -130,6 +130,46 @@ public class LangDetectionRestIT extends BaseTranslationTest {
   }
 
   @Test
+  void langDetectionApacheTikaRegional() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_APACHE_TIKA_REGIONAL);
+    String result = mockMvc
+        .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .content(requestJson))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+    
+    assertEquals(2, langs.length());
+    assertEquals("es", langs.getString(0));
+    assertEquals("es", langs.getString(1));
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertEquals(BeanNames.SERVICE_TIKA_TRSH_LANG_DETECT_SERVICE, serviceFieldValue);
+  }  
+  
+  @Test
+  void langDetectionHybridRegional() throws Exception {
+    String requestJson = getJsonStringInput(LANG_DETECT_HYBRID_REGIONAL);
+    String result = mockMvc
+        .perform(post(BASE_URL_DETECT).header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .content(requestJson))
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    
+    assertNotNull(result);
+    JSONObject json = new JSONObject(result);
+    JSONArray langs = json.getJSONArray(TranslationAppConstants.LANGS);
+
+    assertEquals(2, langs.length());
+    assertEquals("es", langs.getString(0));
+    assertEquals("es", langs.getString(1));
+    String serviceFieldValue = json.getString(TranslationAppConstants.SERVICE);
+    assertEquals(BeanNames.SERVICE_HYBRID_LANG_DETECT_SERVICE, serviceFieldValue);
+  }  
+  
+  @Test
   void langDetectionGoogle() throws Exception {
     String requestJson = getJsonStringInput(LANG_DETECT_REQUEST_3);
     String result = mockMvc
