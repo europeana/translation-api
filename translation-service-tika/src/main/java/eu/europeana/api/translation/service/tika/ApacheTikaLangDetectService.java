@@ -26,7 +26,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
-  private final static Logger logger = LogManager.getLogger(ApacheTikaLangDetectService.class);
+  private final static Logger LOGGER = LogManager.getLogger(ApacheTikaLangDetectService.class);
   
   //Using a ThreadLocal for the Tika detector for thread-safe use
   private final ThreadLocal<LanguageDetector> detector = ThreadLocal.withInitial(this::createDetector); 
@@ -85,7 +85,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       try {
           detectorInstance.setPriors(priors);
       } catch (IOException e) {
-        logger.warn("Could not initialize the priors for Tika language detector service", e);  
+        LOGGER.warn("Could not initialize the priors for Tika language detector service", e);  
       }
     }
     detectorInstance.loadModels();
