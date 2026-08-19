@@ -25,7 +25,7 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
-  private final Logger logger = LogManager.getLogger(getClass());
+  private final static Logger logger = LogManager.getLogger(AbstractLanguageDetectionService.class);
   
   //Using a ThreadLocal for the Tika detector for thread-safe use
   private final ThreadLocal<LanguageDetector> detector = ThreadLocal.withInitial(this::createDetector); 
