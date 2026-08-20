@@ -1,0 +1,3 @@
+-- add your elastic-apm-agent.jar jar to this folder, and make sure to remove the version from the file name
+-- builds may overwrite the jar file with newer versions 
+-- current version: https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.56.0/elastic-apm-agent-1.56.0.jar
