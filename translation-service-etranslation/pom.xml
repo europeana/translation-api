@@ -11,24 +11,7 @@
   <description>The Java APIs for the eTranslation service</description>
 
   <dependencies>
-	  <dependency>
-		  <groupId>org.springframework.boot</groupId>
-		  <artifactId>spring-boot-starter-data-redis</artifactId>
-		  <exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
-      </dependency>		
-      <!-- https://mvnrepository.com/artifact/org.springframework/spring-web -->
-      <!--
-	  <dependency>
-	      <groupId>org.springframework</groupId>
-	      <artifactId>spring-web</artifactId>
-	  </dependency>
-	  -->
-      
+	    
 	  <dependency>
 		  <groupId>eu.europeana.api</groupId>
 		  <artifactId>translation-service-common</artifactId>

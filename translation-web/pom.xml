@@ -26,12 +26,15 @@
 			</exclusions>
 		</dependency>
 
-		<!-- overeride the transitive dependency from spring starter tomcat GHSA-r29c-68gh-xp6x  -->
+		<!-- override the transitive dependency from spring starter tomcat GHSA-r29c-68gh-xp6x  -->
+		<!--		
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
+			<version>${tomcat-embed.version}</version>
 			<version>10.1.55</version>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
