@@ -39,10 +39,10 @@ public class TranslationConfig{
   @Value("${europeana.apikey.serviceurl:}")
   private String apiKeyUrl;
 
-  @Value("${translation.pangeanic.endpoint.detect}")
+  @Value("${translation.pangeanic.endpoint.detect:}")
   private String pangeanicDetectEndpoint;
 
-  @Value("${translation.pangeanic.endpoint.translate}")
+  @Value("${translation.pangeanic.endpoint.translate:}")
   private String pangeanicTranslateEndpoint;
   
   @Value("${translation.google.projectId:}")
