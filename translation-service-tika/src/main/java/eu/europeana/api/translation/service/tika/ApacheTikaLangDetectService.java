@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
-
+import org.springframework.util.CollectionUtils;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
 import eu.europeana.api.translation.service.LanguageConstants;
@@ -25,6 +26,8 @@ import eu.europeana.api.translation.service.exception.LanguageDetectionException
  */
 public class ApacheTikaLangDetectService extends AbstractLanguageDetectionService {
 
+  private final static Logger LOGGER = LogManager.getLogger(ApacheTikaLangDetectService.class);
+  
   //Using a ThreadLocal for the Tika detector for thread-safe use
   private final ThreadLocal<LanguageDetector> detector = ThreadLocal.withInitial(this::createDetector); 
   //The list of languages that are likely to be in the text
@@ -76,14 +79,13 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     }
   }
   
-  private LanguageDetector createDetector() {
+  private LanguageDetector createDetector(){
     OptimaizeLangDetector detectorInstance = new OptimaizeLangDetector();
     if(priors!=null) {
       try {
           detectorInstance.setPriors(priors);
       } catch (IOException e) {
-          throw new IllegalStateException(
-                  "Could not initialize Tika language detector", e);
+        LOGGER.warn("Could not initialize the priors for Tika language detector service", e);  
       }
     }
     detectorInstance.loadModels();
@@ -139,7 +141,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
       // search hint above confidence level
       detectedLang = langHint;
     } else {
-      detectedLang = overideRegionalLanguage(detectedLang, langHint);
+      detectedLang = selectByRegionalLanguage(detectedLang, langHint);
     }
     return detectedLang;
   }
@@ -149,12 +151,20 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
    *                     hint. Use the hint in such cases
    * @return
    */
-  private String overideRegionalLanguage(String detectedLang, String langHint) {
-    if (langHint != null) {
-      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
-      if (closeLangs != null && closeLangs.contains(detectedLang))
-        detectedLang = langHint;
+  private String selectByRegionalLanguage(String detectedLang, String langHint) {
+    
+    if(StringUtils.isBlank(langHint)) {
+      return detectedLang;
     }
+    
+    //choose related language if not same as hint  
+    if (!detectedLang.equals(langHint)){
+      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      if (closeLangs != null && closeLangs.contains(detectedLang)) {
+        return langHint;
+      }  
+    }
+
     return detectedLang;
   }
 
@@ -175,17 +185,23 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
 
   protected String chooseDetectedLangUsingThresholds(String sourceText, List<LanguageResult> tikaLanguages,
       String langHint) {
-    //
-    if (containsHint(tikaLanguages, langHint))
+    if(CollectionUtils.isEmpty(tikaLanguages)) {
+      return null;
+    }
+    
+    if (containsHint(tikaLanguages, langHint)) {
       return langHint;
-    float confidence = tikaLanguages.get(0).getRawScore();
+    }
+    
+    LanguageResult firstDetectionResult = tikaLanguages.get(0);
+    String detectedLang = firstDetectionResult.getLanguage();
+    float confidence = firstDetectionResult.getRawScore();
+    
     if (getThresholdsConf().isAcceptableDetection(sourceText, langHint, confidence)) {
-      String detectedLang = tikaLanguages.get(0).getLanguage();
-      if (!StringUtils.isBlank(langHint) && !langHint.equals(detectedLang))
-        detectedLang = overideRegionalLanguage(detectedLang, langHint);
-      return detectedLang;
-    } else
+      return selectByRegionalLanguage(detectedLang, langHint);
+    } else {
       return StringUtils.isBlank(langHint) ? null : langHint;
+    }
   }
 
   @Override

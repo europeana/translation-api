@@ -23,6 +23,4 @@ configMapGenerator:
   - name: translation-services-config-json
     files:
       - translation_service_configuration.json    
-  - name: pangeanic-tresholds-properties
-    files:
-      - pangeanic_language_thresholds.properties    
+  
