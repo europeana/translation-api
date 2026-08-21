@@ -1,8 +1,15 @@
 package eu.europeana.api.translation.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import static java.util.Map.entry;
+import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Constants used by the Apache Tika language detection service
@@ -12,34 +19,39 @@ import java.util.Set;
  */
 public final class LanguageConstants {
 
-  public static final Map<String, Set<String>> closeLanguages = Map.ofEntries(
-      entry("bg", Set.of("mk", "chu")),
-      entry("cs", Set.of("sk", "hsb", "dsb")),
-      entry("da", Set.of("no", "sv", "fo", "is")),
-      entry("de", Set.of("gsw", "bar", "yi", "ltz")),
-      entry("el", Set.of("pnt", "tsd", "cpg", "grc")),
-      entry("en", Set.of("sco", "frs", "fy")),
-      entry("es", Set.of("ca", "cat", "gl", "glg", "ast", "lns", "ext", "fal", "arg", "lad", "mwl")),
-      entry("et", Set.of("fi", "fkv", "izh", "vot")),
-      entry("fi", Set.of("et", "krl", "vep", "fkv")),
-      entry("fr", Set.of("wln", "pcd", "frp", "oc")),
-      entry("ga", Set.of("gd", "gv")),
-      entry("hr", Set.of("bs", "sr", "cnr")),
-      entry("hu", Set.of("mdf", "myv", "kca", "mns")),
-      entry("it", Set.of("scn", "nap", "co", "lij")),
-      entry("lt", Set.of("lv", "sgs", "ltg")),
-      entry("lv", Set.of("lt", "ltg", "sgs")),
-      entry("mt", Set.of("ary", "arz", "acy")),
-      entry("nl", Set.of("af", "lim", "nds")),
-      entry("pl", Set.of("csb", "szl", "hsb")),
-      entry("pt", Set.of("gl", "fal", "mwl")),
-      entry("ro", Set.of("ruo", "rup", "rum")),
-      entry("sk", Set.of("cs", "pl", "szl")),
-      entry("sl", Set.of("hr", "sr", "bs")),
-      entry("sv", Set.of("da", "no", "gln", "dlc")),
-      entry("no", Set.of("da", "sv", "is", "fo")),
-      entry("ca", Set.of("oc", "es", "fr", "it"))
-  );
+  private static final Logger LOGGER = LogManager.getLogger(LanguageConstants.class);
+  public static final String CLOSE_LANGUAGES_PROPERTIES_FILE = "/close-languages.properties";
+
+  public static final Map<String, Set<String>> closeLanguages = loadCloseLanguages();
+
+  private static Map<String, Set<String>> loadCloseLanguages() {
+    Properties properties = new Properties();
+    try (InputStream in = LanguageConstants.class.getResourceAsStream(CLOSE_LANGUAGES_PROPERTIES_FILE)) {
+      if (in == null) {
+        LOGGER.error("Properties file {} not found on classpath", CLOSE_LANGUAGES_PROPERTIES_FILE);
+        throw new IllegalStateException("Properties file " + CLOSE_LANGUAGES_PROPERTIES_FILE + " not found on classpath");
+      }
+      properties.load(in);
+    } catch (IOException e) {
+      LOGGER.error("Failed to load properties file {}", CLOSE_LANGUAGES_PROPERTIES_FILE, e);
+      throw new IllegalStateException("Failed to load properties file " + CLOSE_LANGUAGES_PROPERTIES_FILE, e);
+    }
+
+    Map<String, Set<String>> map = new HashMap<>();
+    for (String key : properties.stringPropertyNames()) {
+      String value = properties.getProperty(key);
+      if (value != null && !value.isBlank()) {
+        Set<String> set = Arrays.stream(value.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toUnmodifiableSet());
+        map.put(key.trim(), set);
+      } else {
+        map.put(key.trim(), Set.of());
+      }
+    }
+    return Map.copyOf(map);
+  }
   
   /**
    * No instances
