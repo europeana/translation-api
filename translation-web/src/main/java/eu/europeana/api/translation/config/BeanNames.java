@@ -16,6 +16,7 @@ public interface BeanNames {
   String BEAN_I18N_SERVICE = "i18nService";
   String BEAN_CLIENT_DETAILS_SERVICE = "europeanaClientDetailsService";
   String BEAN_TRANSLATION_CONFIG = "translationConfig";
+  String BEAN_RELATED_LANGUAGES = "relatedLanguages";
   String BEAN_SERVICE_PROVIDER = "translationServiceProvider";
   String BEAN_SERVICE_CONFIG_INFO_CONTRIBUTOR =
       "translationServiceConfigInfoContributor";

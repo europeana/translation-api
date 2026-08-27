@@ -15,7 +15,6 @@ import org.apache.tika.language.detect.LanguageResult;
 import org.springframework.util.CollectionUtils;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageConstants;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
  
@@ -159,7 +158,7 @@ public class ApacheTikaLangDetectService extends AbstractLanguageDetectionServic
     
     //choose related language if not same as hint  
     if (!detectedLang.equals(langHint)){
-      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      Set<String> closeLangs = getRelatedLanguages().getCloseLanguages(langHint);
       if (closeLangs != null && closeLangs.contains(detectedLang)) {
         return langHint;
       }  

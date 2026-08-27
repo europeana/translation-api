@@ -21,6 +21,7 @@ import eu.europeana.api.translation.config.services.DetectCfg;
 import eu.europeana.api.translation.config.services.DetectServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.RelatedLanguages;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
@@ -80,7 +81,7 @@ public abstract class AbstractServiceInstantiationUtils {
         clientWrapper);
   }
 
-  LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg, DetectCfg detectCfg)
+  LanguageDetectionService createServiceInstance(DetectServiceCfg serviceCfg, DetectCfg detectCfg, RelatedLanguages relatedLanguages)
       throws LangDetectionServiceConfigurationException {
 
     LanguageDetectionService service;
@@ -112,6 +113,9 @@ public abstract class AbstractServiceInstantiationUtils {
       if(detectCfg.getSupported()!= null && service instanceof ApacheTikaLangDetectService tikaService) {
         tikaService.initDetectorPriors(detectCfg.getSupported());
       }
+      
+      //add related languages
+      service.setRelatedLanguages(relatedLanguages);
       
     } catch (ClassNotFoundException | IOException | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | NoSuchMethodException

@@ -31,6 +31,7 @@ import eu.europeana.api.translation.config.services.TranslationServiceCfg;
 import eu.europeana.api.translation.config.services.TranslationServicesConfiguration;
 import eu.europeana.api.translation.definitions.language.LanguagePair;
 import eu.europeana.api.translation.service.LanguageDetectionService;
+import eu.europeana.api.translation.service.RelatedLanguages;
 import eu.europeana.api.translation.service.TranslationService;
 import eu.europeana.api.translation.service.etranslation.ETranslationTranslationService;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
@@ -74,6 +75,9 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   
   @Resource(name = BeanNames.BEAN_REDIS_MESSAGE_LISTENER_CONTAINER) 
   RedisMessageListenerContainer redisMessageListenerContainer;
+  
+  @Resource(name = BeanNames.BEAN_RELATED_LANGUAGES)
+  public RelatedLanguages relatedLanguages;
 
   private GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
 
@@ -416,8 +420,8 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
       }
 
       // create service instance
-      LanguageDetectionService detectService = createServiceInstance(detectServiceCfg, translationServicesConfig.getLangDetectConfig());
-
+      LanguageDetectionService detectService = createServiceInstance(detectServiceCfg, translationServicesConfig.getLangDetectConfig(), relatedLanguages);
+      
       // instantiate referenced services
       initReferencedServices(detectService, detectServiceCfg, translationServicesConfig.getLangDetectConfig());
 
@@ -432,7 +436,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
       List<LanguageDetectionService> referencedServices =
           new ArrayList<>(detectServiceCfg.getReferencedServices().size());
       for (DetectServiceCfg referencedServiceCfg : detectServiceCfg.getReferencedServices()) {
-        referencedServices.add(createServiceInstance(referencedServiceCfg, detectCfg));
+        referencedServices.add(createServiceInstance(referencedServiceCfg, detectCfg, relatedLanguages));
       }
       detectService.setReferencedServices(referencedServices);
     }

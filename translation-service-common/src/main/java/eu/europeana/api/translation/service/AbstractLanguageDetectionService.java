@@ -13,6 +13,7 @@ public abstract class AbstractLanguageDetectionService implements LanguageDetect
   private ThresholdsConfiguration thresholdsConf;
   private List<LanguageDetectionService> referencedServices;
   private String serviceId;
+  private RelatedLanguages relatedLanguages;
   
   @Override
   public void setThresholdsConf(ThresholdsConfiguration thresholdsConf) throws LangDetectionServiceConfigurationException {
@@ -47,5 +48,13 @@ public abstract class AbstractLanguageDetectionService implements LanguageDetect
   @Override
   public void setReferencedServices(List<LanguageDetectionService> services) {
     this.referencedServices = services;
+  }
+
+  public RelatedLanguages getRelatedLanguages() {
+    return relatedLanguages;
+  }
+
+  public void setRelatedLanguages(RelatedLanguages relatedLanguages) {
+    this.relatedLanguages = relatedLanguages;
   }
 }

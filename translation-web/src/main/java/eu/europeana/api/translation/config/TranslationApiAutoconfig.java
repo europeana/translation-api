@@ -1,9 +1,13 @@
 package eu.europeana.api.translation.config;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,11 +35,13 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.lang.NonNull;
 import eu.europeana.api.commons_sb3.error.ApiRequestPathMethodService;
 import eu.europeana.api.commons_sb3.error.config.ErrorConfig;
 import eu.europeana.api.commons_sb3.error.i18n.I18nService;
 import eu.europeana.api.commons_sb3.error.i18n.I18nServiceImpl;
 import eu.europeana.api.commons_sb3.oauth2.service.impl.EuropeanaClientDetailsService;
+import eu.europeana.api.translation.service.RelatedLanguages;
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.exception.TranslationServiceConfigurationException;
 import eu.europeana.api.translation.web.exception.AppConfigurationException;
@@ -64,11 +70,17 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private static final String PATTERN = "\\p{IsAlphabetic}{2,}";
   private static final Pattern IsAlphabetic = Pattern.compile(PATTERN);
 
-  private final TranslationConfig translationConfig;
   TranslationServiceProvider translationServiceProvider;
+  RelatedLanguages relatedLanguages;
+
+  private final TranslationConfig translationConfig;
 
   @Value("${translation.service.config.file:}")
   private String serviceConfigFile;
+
+  @Value("${translation.related.languages.config.file:}")
+  private String relatedLanguagesConfigFile;
+
 
   /**
    * Constructor
@@ -85,12 +97,12 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     clientDetailsService.setApiKeyServiceUrl(translationConfig.getApiKeyUrl());
     return clientDetailsService;
   }
-  
+
   @Bean("requestMethodService")
   public ApiRequestPathMethodService getRequestPathMethodService() {
     return new ApiRequestPathMethodService();
   }
-  
+
 
   @Bean("messageSource")
   public MessageSource getMessageSource() {
@@ -101,10 +113,11 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     messageSource.setDefaultLocale(Locale.ENGLISH);
     return messageSource;
   }
-  
+
   @Bean(name = ErrorConfig.BEAN_I18nService)
   public I18nService getI18nService() {
-    ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+    ReloadableResourceBundleMessageSource messageSource =
+        new ReloadableResourceBundleMessageSource();
     messageSource.setBasenames(ErrorConfig.COMMON_MESSAGE_SOURCE, "classpath:messages");
     messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
     return new I18nServiceImpl(messageSource);
@@ -121,6 +134,64 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
     }
 
     return translationServiceProvider;
+  }
+
+  @Bean(BeanNames.BEAN_RELATED_LANGUAGES)
+  public RelatedLanguages getRelatedLanguages() throws AppConfigurationException {
+    if(relatedLanguages != null) {
+      return relatedLanguages;
+    }
+    
+    Properties relatedLanugagesProps = null;
+    if (StringUtils.isNotEmpty(relatedLanguagesConfigFile)) {
+      File propertiesFile =  translationConfig.getConfigFile(relatedLanguagesConfigFile);
+      relatedLanugagesProps = loadPropertiesFromFile(propertiesFile);
+    } else {
+      relatedLanugagesProps = loadPropertiesFromClassPath(RelatedLanguages.RELATED_LANGUAGES_CONFIG_FILE);
+    } 
+    
+    relatedLanguages = new RelatedLanguages(relatedLanugagesProps);
+    return relatedLanguages;
+  }
+
+  Properties loadPropertiesFromFile(@NonNull File propertiesFile)
+      throws AppConfigurationException {
+
+    if (!propertiesFile.exists()) {
+      return null;
+    }
+    
+    Properties properties = new Properties();
+    try {
+      properties.load(Files.newInputStream(propertiesFile.toPath()));
+    } catch (IOException e) {
+      // should actually not happen as the file exists
+      throw new AppConfigurationException(
+          "Unexpected error occured when reading properties from configFile: " + propertiesFile, e);
+    }
+
+    return properties;
+  }
+  
+  Properties loadPropertiesFromClassPath(@NonNull String configFileName)
+      throws AppConfigurationException {
+
+    Properties properties = new Properties();
+    try {
+      InputStream resourceAsStream = TranslationApiAutoconfig.class.getResourceAsStream(configFileName);
+      if(resourceAsStream == null) {
+        //file does not exist
+        throw new AppConfigurationException(
+            "Config file not found on the classpath: " + configFileName);
+      }
+      properties.load(resourceAsStream);
+    } catch (IOException e) {
+      // should actually not happen as the file exists
+      throw new AppConfigurationException(
+          "Unexpected error occured when reading properties from classpath: " + configFileName, e);
+    }
+
+    return properties;
   }
 
   @Bean(BeanNames.BEAN_LANGDETECT_PRE_PROCESSOR_SERVICE)
@@ -281,7 +352,7 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
   private void printRegisteredBeans(ApplicationContext ctx) {
     String[] beanNames = ctx.getBeanDefinitionNames();
     Arrays.sort(beanNames);
-    logger.debug("Instantiated beans: {}", () -> StringUtils.join(beanNames, "\n"));  
+    logger.debug("Instantiated beans: {}", () -> StringUtils.join(beanNames, "\n"));
   }
 
 }
