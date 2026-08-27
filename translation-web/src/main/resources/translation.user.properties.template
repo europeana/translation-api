@@ -58,3 +58,7 @@ translation.eTranslation.maxWaitMillisec=
 #if longer texts need to be split in chunks for eTranslation service
 translation.eTranslation.truncate=true
 
+#properties file containing the map for related languages
+#translation.related.languages.config.file=related-languages.properties
+
+

@@ -58,4 +58,10 @@ public interface LanguageDetectionService {
   void setReferencedServices(List<LanguageDetectionService> services) ;
 
   List<LanguageDetectionService> getReferencedServices();
+  
+  void setRelatedLanguages(RelatedLanguages relatedLanguages);
+  
+  RelatedLanguages getRelatedLanguages();
+  
+  
 }

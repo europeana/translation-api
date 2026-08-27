@@ -2,12 +2,10 @@ package eu.europeana.api.translation.service.hybrid;
 
 import java.util.List;
 import java.util.Set;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import eu.europeana.api.translation.definitions.model.LanguageDetectionObj;
 import eu.europeana.api.translation.service.AbstractLanguageDetectionService;
-import eu.europeana.api.translation.service.LanguageConstants;
 import eu.europeana.api.translation.service.LanguageDetectionService;
 import eu.europeana.api.translation.service.exception.LanguageDetectionException;
 
@@ -104,7 +102,7 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
    */
   private String overideRegionalLanguage(String detectedLang, String langHint) {
     if(langHint!=null) {
-      Set<String> closeLangs = LanguageConstants.closeLanguages.get(langHint);
+      Set<String> closeLangs = getRelatedLanguages().getCloseLanguages(langHint);
       if(closeLangs!=null && closeLangs.contains(detectedLang)) {
         if(logger.isDebugEnabled()) {
           logger.debug("Overwritting language with the hint: {} of related language: {}: by service: {}", langHint, detectedLang,  getServiceId());
@@ -114,5 +112,5 @@ public class HybridLangDetectService extends AbstractLanguageDetectionService{
     }
     return detectedLang;
   }
-  
+
 }
