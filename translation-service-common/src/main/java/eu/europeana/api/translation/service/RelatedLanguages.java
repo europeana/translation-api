@@ -21,7 +21,7 @@ public class RelatedLanguages {
   private Map<String, Set<String>> relatedLanguages;
  
 
-  protected Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
+  private  Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
     Map<String, Set<String>> map = new HashMap<>();
     for (String key : properties.stringPropertyNames()) {
       String value = properties.getProperty(key);
