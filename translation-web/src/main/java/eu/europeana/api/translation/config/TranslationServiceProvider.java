@@ -77,7 +77,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   RedisMessageListenerContainer redisMessageListenerContainer;
   
   @Resource(name = BeanNames.BEAN_RELATED_LANGUAGES)
-  public RelatedLanguages relatedLanguages;
+  RelatedLanguages relatedLanguages;
 
   private GoogleTranslationServiceClientWrapper googleTranslationServiceClientWrapper;
 
@@ -469,8 +469,7 @@ public class TranslationServiceProvider extends AbstractServiceInstantiationUtil
   GoogleTranslationServiceClientWrapper getGoogleTranslationServiceClientWrapper()
       throws IOException {
     if (googleTranslationServiceClientWrapper == null) {
-      googleTranslationServiceClientWrapper = AbstractServiceInstantiationUtils
-          .createGoogleTranslationClientWrapperInstance(translationConfig);
+      googleTranslationServiceClientWrapper = createGoogleTranslationClientWrapperInstance(translationConfig);
     }
     return googleTranslationServiceClientWrapper;
   }

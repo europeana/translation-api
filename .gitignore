@@ -36,3 +36,4 @@ build/
 **/log4j2.xml
 
 **/src/main/resources/translation_service_configuration.json
+**/elastic-apm-agent.jar
