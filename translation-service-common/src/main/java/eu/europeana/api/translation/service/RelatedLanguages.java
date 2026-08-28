@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author Nuno Freire
  * @since 29/01/2025
  */
-public class RelatedLanguages implements Cloneable{
+public class RelatedLanguages{
 
   public static final String RELATED_LANGUAGES_CONFIG_FILE = "/related-languages.properties";
 
@@ -79,7 +79,7 @@ public class RelatedLanguages implements Cloneable{
    * @param properties related languages as props
    * @return the map of related languages
    */
-  private final Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
+  private Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
     Map<String, Set<String>> map = new ConcurrentHashMap<>();
     for (String key : properties.stringPropertyNames()) {
       String value = properties.getProperty(key);
