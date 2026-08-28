@@ -1,7 +1,6 @@
 package eu.europeana.api.translation.service;
 
 import java.util.List;
-
 import eu.europeana.api.translation.service.exception.LangDetectionServiceConfigurationException;
 import eu.europeana.api.translation.service.threshold.ThresholdsConfiguration;
 
@@ -23,7 +22,7 @@ public abstract class AbstractLanguageDetectionService implements LanguageDetect
   @Override
   public String getExternalServiceEndPoint() {
     // overwrite in subclasses when needed
-    return "";
+    return "#no-endpoint"; //this method does not need to be abstract, it might not be needed after removing pangeanic support completely
   }
   
   @Override
@@ -47,7 +46,7 @@ public abstract class AbstractLanguageDetectionService implements LanguageDetect
 
   @Override
   public void setReferencedServices(List<LanguageDetectionService> services) {
-    this.referencedServices = services;
+    this.referencedServices = List.copyOf(services);
   }
 
   public RelatedLanguages getRelatedLanguages() {

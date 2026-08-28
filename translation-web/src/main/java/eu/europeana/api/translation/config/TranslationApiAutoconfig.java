@@ -138,49 +138,51 @@ public class TranslationApiAutoconfig implements ApplicationListener<Application
 
   @Bean(BeanNames.BEAN_RELATED_LANGUAGES)
   public RelatedLanguages getRelatedLanguages() throws AppConfigurationException {
-    if(relatedLanguages != null) {
+    if (relatedLanguages != null) {
       return relatedLanguages;
     }
-    
+
     Properties relatedLanugagesProps = null;
     if (StringUtils.isNotEmpty(relatedLanguagesConfigFile)) {
-      File propertiesFile =  translationConfig.getConfigFile(relatedLanguagesConfigFile);
+      File propertiesFile = translationConfig.getConfigFile(relatedLanguagesConfigFile);
       relatedLanugagesProps = loadPropertiesFromFile(propertiesFile);
     } else {
-      relatedLanugagesProps = loadPropertiesFromClassPath(RelatedLanguages.RELATED_LANGUAGES_CONFIG_FILE);
-    } 
-    
+      relatedLanugagesProps =
+          loadPropertiesFromClassPath(RelatedLanguages.RELATED_LANGUAGES_CONFIG_FILE);
+    }
+
     relatedLanguages = new RelatedLanguages(relatedLanugagesProps);
     return relatedLanguages;
   }
 
-  Properties loadPropertiesFromFile(@NonNull File propertiesFile)
-      throws AppConfigurationException {
+  Properties loadPropertiesFromFile(@NonNull File propertiesFile) throws AppConfigurationException {
 
-    if (!propertiesFile.exists()) {
-      return null;
-    }
-    
     Properties properties = new Properties();
-    try {
-      properties.load(Files.newInputStream(propertiesFile.toPath()));
-    } catch (IOException e) {
-      // should actually not happen as the file exists
-      throw new AppConfigurationException(
-          "Unexpected error occured when reading properties from configFile: " + propertiesFile, e);
+
+    if (propertiesFile.exists()) {
+      try (InputStream inputStream = Files.newInputStream(propertiesFile.toPath())) {
+        properties.load(inputStream);
+      } catch (IOException e) {
+        // should actually not happen as the file exists
+        throw new AppConfigurationException(
+            "Unexpected error occured when reading properties from configFile: " + propertiesFile,
+            e);
+      }
     }
 
     return properties;
   }
-  
+
   Properties loadPropertiesFromClassPath(@NonNull String configFileName)
       throws AppConfigurationException {
 
     Properties properties = new Properties();
-    try {
-      InputStream resourceAsStream = TranslationApiAutoconfig.class.getResourceAsStream(configFileName);
-      if(resourceAsStream == null) {
-        //file does not exist
+    
+    try (InputStream resourceAsStream =
+        TranslationApiAutoconfig.class.getResourceAsStream(configFileName)) {
+      
+      if (resourceAsStream == null) {
+        // file does not exist
         throw new AppConfigurationException(
             "Config file not found on the classpath: " + configFileName);
       }

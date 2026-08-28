@@ -2,10 +2,10 @@ package eu.europeana.api.translation.service;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -14,15 +14,73 @@ import java.util.stream.Collectors;
  * @author Nuno Freire
  * @since 29/01/2025
  */
-public class RelatedLanguages {
+public class RelatedLanguages{
 
   public static final String RELATED_LANGUAGES_CONFIG_FILE = "/related-languages.properties";
 
-  private Map<String, Set<String>> relatedLanguages;
+  private final Map<String, Set<String>> relatedLanguagesMap;
  
-
-  protected Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
-    Map<String, Set<String>> map = new HashMap<>();
+  /**
+   * default constructor with no close languages
+   */
+  public RelatedLanguages() {
+    //initialize with empty map, allowing the use of addCloseLanguages
+    this.relatedLanguagesMap =  new ConcurrentHashMap<>();
+  }
+  
+  /**
+   * Constructor with related languages provided as properties
+   * @param relatedLanguagesProps related languages provided as properties
+   */
+  public RelatedLanguages(Properties relatedLanguagesProps) {
+    if(relatedLanguagesProps == null || relatedLanguagesProps.isEmpty()) {
+      this.relatedLanguagesMap =  new ConcurrentHashMap<>();
+    } else {
+      this.relatedLanguagesMap = parseRelatedLanguages(relatedLanguagesProps);  
+    }
+  }
+   
+  /**
+   * Constructor with related languages provided as map
+   * @param relatedLanguagesMap
+   */
+  public RelatedLanguages(Map<String, Set<String>> relatedLanguagesMap) {
+    if(relatedLanguagesMap == null) {
+      this.relatedLanguagesMap =  new ConcurrentHashMap<>();
+    } else {
+      this.relatedLanguagesMap = Map.copyOf(relatedLanguagesMap);   
+    }
+  }
+  
+  
+  /**
+   * Provides the set of related languages
+   * @param mainLanguage main language in the family
+   * @return set of related languages (ISO Code )
+   */
+  public Set<String> getCloseLanguages(String mainLanguage) {
+    if(relatedLanguagesMap == null || !relatedLanguagesMap.containsKey(mainLanguage)) {
+      return Collections.emptySet();
+    }
+    return relatedLanguagesMap.get(mainLanguage);
+  }
+  
+  
+  /**
+   * Method to add related languages 
+   * @param relatedLanguagesProps related languages provided as properties
+   */
+  public void addCloseLanguages(Properties relatedLanguagesProps) {
+    this.relatedLanguagesMap.putAll(parseRelatedLanguages(relatedLanguagesProps));
+  }
+  
+  /**
+   * Parse the related languages from properties to map
+   * @param properties related languages as props
+   * @return the map of related languages
+   */
+  private Map<String, Set<String>> parseRelatedLanguages(Properties properties) {
+    Map<String, Set<String>> map = new ConcurrentHashMap<>();
     for (String key : properties.stringPropertyNames()) {
       String value = properties.getProperty(key);
       if (value != null && !value.isBlank()) {
@@ -38,48 +96,4 @@ public class RelatedLanguages {
     return map;
   }
   
-  /**
-   * No instances
-   */
-  public RelatedLanguages() {
-    //initialize with empty map, allowing the use of addCloseLanguages
-    this.relatedLanguages =  new HashMap<>();
-  }
-  
-  /**
-   * No instances
-   */
-  public RelatedLanguages(Properties relatedLanguagesProps) {
-    if(relatedLanguagesProps == null || relatedLanguagesProps.isEmpty()) {
-      this.relatedLanguages =  new HashMap<>();
-    } else {
-      this.relatedLanguages = parseRelatedLanguages(relatedLanguagesProps);  
-    }
-  }
-   
-  public RelatedLanguages(Map<String, Set<String>> relatedLanguagesMap) {
-    if(relatedLanguagesMap == null) {
-      this.relatedLanguages =  new HashMap<>();
-    } else {
-      this.relatedLanguages = Map.copyOf(relatedLanguagesMap);   
-    }
-  }
-  
-  
-  /**
-   * Provides the set of 
-   * @param mainLanguage main language in the family
-   * @return set of related languages (ISO Code )
-   */
-  public Set<String> getCloseLanguages(String mainLanguage) {
-    if(relatedLanguages == null || !relatedLanguages.containsKey(mainLanguage)) {
-      return Collections.emptySet();
-    }
-    return relatedLanguages.get(mainLanguage);
-  }
-  
-  
-  public void addCloseLanguages(Properties relatedLanguagesProps) {
-    this.relatedLanguages.putAll(parseRelatedLanguages(relatedLanguagesProps));
-  }
 }
