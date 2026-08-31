@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>eu.europeana.api</groupId>
 		<artifactId>translation-api</artifactId>
-		<version>0.1.4</version>
+		<version>0.1.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>translation-service-hybrid</artifactId>
 	<name>translation-service-hybrid</name>
@@ -14,12 +14,12 @@
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-common</artifactId>
-			<version>0.1.4</version>
+			<version>0.1.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europeana.api</groupId>
 			<artifactId>translation-service-tika</artifactId>
-			<version>0.1.4</version>
+			<version>0.1.5-SNAPSHOT</version>
 		</dependency> 
 	</dependencies>
 </project>
