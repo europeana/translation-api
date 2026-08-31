@@ -91,8 +91,8 @@
 		-->
 		
 		<!-- plugins -->
-		<failsafe.version>3.5.3</failsafe.version>
-		<surefire.version>3.5.3</surefire.version>
+		<failsafe.version>3.5.5</failsafe.version>
+		<surefire.version>3.5.5</surefire.version>
 		<git-commit-id.version>5.0.0</git-commit-id.version>
 		<git-code-format.version>3.1</git-code-format.version>
 		
@@ -333,7 +333,7 @@
 				<plugin>
 			      <groupId>org.apache.maven.plugins</groupId>
 			      <artifactId>maven-surefire-report-plugin</artifactId>
-			      <version>${version.maven-surefire-plugin}</version>
+			      <version>${surefire.version}</version>
 				</plugin>
 				
 				<plugin>
